@@ -1,4 +1,6 @@
-## Veezean Home Page
-
-You can use the [editor on GitHub](https://github.com/veezean/veezean.github.com/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
-
+---
+# You don't need to edit this file, it's empty on purpose.
+# Edit theme's home layout instead if you wanna make some changes
+# See: https://jekyllrb.com/docs/themes/#overriding-theme-defaults
+layout: home
+---
