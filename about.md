@@ -1,10 +1,14 @@
 ---
 layout: page
-title: 关于我 
+title: About Me 
 ---
 
 A little coder
-A big dream
+in the huge world
+with a big dream
+
+this is me
+this is veezean
 
 
 {% include comments.html %}
