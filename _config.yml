@@ -1,70 +1,63 @@
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely need to edit after that.
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'jekyll serve'. If you change this file, please restart the server process.
+
+# Site settings
+baseurl: "" # the subpath of your site, e.g. /blog
+
 # Basic
 title: Veezean‘s Blog
-subtitle: A little coder with a big dream...
+brief-intro: 混迹民国旧都的小小攻城狮一枚...
 description: 混迹民国旧都的小小攻城狮一枚
-# 头像里面的标题
-avatarTitle: veezean
-# 头像里面的描述
-avatarDesc: 初心如锦时、归来仍少年
 url: "https://veezean.github.io"
 
-# Comment
-comment:
-    disqus: veezean
-    # uyan: 2143225  # 有言id,登录有言官网申请
+permalink: /:year/:month/:day/:title/
 
-# Social
-social:
-    weibo: wangweiren 
-    github: veezean
-    # twitter: 
-    mail: veezean@hotmail.com
+# other links
+twitter_username: 
+facebook_username:
+github_username:  veezean
+email: veezean@hotmail.com
+weibo_username: wangweiren
+zhihu_username: 
+linkedIn_username: 
+dribbble_username:
 
-# 百度统计 
-# 使用博客模板请去掉或者更换 id 
-#baidu:
-#    id: 8ba1c6be0953b6f9c2ba38e57f615421  
+description_footer: 混迹民国旧都的小小攻城狮一枚...
 
-# Google Analytics
-# 使用博客模板请去掉或者更换 id
-#ga:
-#    id: UA-84134159-3   
-#    host: auto  
+# comments
+# two ways to comment, only choose one, and use your own short name
+# 两种评论插件，选一个就好了，使用自己的 short_name
+duoshuo_shortname: #veezean
+disqus_shortname: veezean
 
+# statistic analysis 统计代码
+# 百度统计 id，将统计代码替换为自己的百度统计id，即
+# hm.src = "//hm.baidu.com/hm.js?xxxxxxxxxxxx";
+# xxxxx字符串
+baidu_tongji_id: 
+google_analytics_id:  # google 分析追踪id
 
-# 《----------------- 上面的信息修改成你自己的 ---------------------------》
-#
-#
-#  _post/ 下的文章更换成你自己的文章
-#  帮忙star一下，感谢~😆 地址： https://github.com/leopardpan/leopardpan.github.io
-#
-#
-# 《--------------- 下面的信息可以自行选择是否修改 ------------------------》
+# Build settings
+markdown: kramdown
 
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
 
-permalink: /:year/:month/:title/
-# Format
-highlighter: rouge
+# port
+# port: 1234
 
-textColor: #FF0000
+# url
+category_dir: category/
+tag_dir: tag/
 
-# supported colors: blue, green, purple, red, orange or slate. If you need clear, leave it empty.
-cover_color: clear
+# excerpt
+excerpt_separator: "\n\n\n\n"
 
-# The blog button should not be removed.
-blog_button:
-    title: 博客主页
-
-# Navigation buttons in the front page.s
-nav:
-    - {title: 所有文章, description: archive, url: '/archive'}   
-    - {title: 标签, description: tags, url: '/tags'}      
-    - {title: 关于我, description: about, url: '/about'}      
-    
-
-# Pagination
-gems: [jekyll-paginate,jekyll-sitemap]
-paginate: 20
-paginate_path: "page/:num/"
-
-
+# paginate
+gems: [jekyll-paginate]
+paginate: 10
