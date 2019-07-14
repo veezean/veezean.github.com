@@ -2,7 +2,7 @@
 layout: post
 title: JAVA中LinkedHashMap要点记录
 date: 2017-09-28
-categories: JAVA语言
+categories: JAVA
 tags: JAVA LinkedHashMap
 ---
 

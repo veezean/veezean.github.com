@@ -1,11 +1,11 @@
 header {
-    background: #222;
+    background: #d4d4d4;
     height: 52px;
-    color: #9d9d9d;
-    box-shadow: 0 2px 4px 1px rgba(0,0,0,0.5);
+    color: #a92407;
+    // box-shadow: 0 2px 4px 1px rgba(0,0,0,0.5);
     margin-bottom: 20px;
     a {
-        color: #9d9d9d;
+        color: #826601;
         -webkit-transition: 0.2s ease;
         transition: 0.2s ease;
         &:hover {
@@ -17,7 +17,7 @@ header {
         margin: 0 auto;
         line-height: 52px;
         .brand {
-            font-size: 18px;
+            font-size: 24px;
         }
         small {
             margin-left: 26px;
@@ -43,7 +43,7 @@ header {
                         padding: 0 10px;
                         height: 52px;
                         &:hover {
-                            background-color: #000;
+                            background-color: #8c8209;
                         }
                         i {
                             margin-right: 5px;
@@ -51,8 +51,8 @@ header {
                     }
                     >.active {
                         color: #fff;
-                        background-color: #000;
-                        box-shadow: 0 25px 25px -15px rgba(255,255,255,0.93);
+                        background-color: #8c8209;
+                        // box-shadow: 0 25px 25px -15px rgba(255,255,255,0.93);
                     }
                 }
             }
@@ -147,7 +147,7 @@ header {
                 ul {
                     background: #222;
                     border-radius: 0 0 4px 4px;
-                    box-shadow: 0px 3px 4px 1px rgba(0,0,0,0.5);
+                    // box-shadow: 0px 3px 4px 1px rgba(0,0,0,0.5);
                     li {
                         font-size: 14px;
                         display: block;
