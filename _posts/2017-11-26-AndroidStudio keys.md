@@ -3,7 +3,7 @@ layout: post
 title: AndroidStudio中各种常用操作快捷键记录
 date: 2017-11-30
 categories: 工具使用
-tags: AndroidStudio, 快捷键
+tags: AndroidStudio 快捷键
 ---
 
 * content

@@ -27,6 +27,6 @@ this is veezean
 * email：<veezean@hotmail.com>
 * Weibo: [http://weibo.com/wangweiren](http://weibo.com/wangweiren)
 
-## Comments
+## 评论列表
 
 {% include comments.html %}
