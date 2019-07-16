@@ -9,9 +9,8 @@
 baseurl: "" # the subpath of your site, e.g. /blog
 
 # Basic
-title: Veezean‘s Blog
+title: Veezean's Blog
 brief-intro: 混迹民国旧都的小小攻城狮一枚...
-description: 混迹民国旧都的小小攻城狮一枚
 url: "https://veezean.github.io"
 
 permalink: /:year/:month/:day/:title/
