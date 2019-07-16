@@ -7,6 +7,21 @@
 .clearfix {
     *zoom: 1;
 }
+.endTag {
+    display:block;
+    width:100px;
+    margin:5px auto;
+    line-height:25px;
+    padding:10px;
+    background-color:#9aafb7;
+    color:#fff;
+    text-align:center;
+    text-decoration:none;
+    border-radius:10px;
+    font-weight:bold;
+    font-size:16px;
+}
+
 .page {
     width: 1140px;
     box-sizing: border-box;
