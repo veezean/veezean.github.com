@@ -27,7 +27,7 @@ tags: JAVA LinkedHashMap
 可以通过覆写`removeEldestEntry`方法，来实现控制此Map的最大key条数，当Map中key数量达到指定的设定值的时候，就会按照指定的排序规则，将排在最前面的数据给删除掉，然后插入新的数据（覆写方法之后，在调用put方法的时候会自动调用，无需业务代码中显式调用），示例代码如下所示：
 
 ```java
-public class FixedLengthLinkedHashMap<K, Vextends LinkedHashMap<K, V> {
+public class FixedLengthLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
     private static final long serialVersionUID = 1287190405215174569L;
     private int maxEntries;
       
@@ -36,8 +36,8 @@ public class FixedLengthLinkedHashMap<K, Vextends LinkedHashMap<K, V> {
         this.maxEntries = maxEntries;
     }
     
-    protected boolean removeEldestEntry(Map.Entry<K, Veldest) {
-        return size() maxEntries;
+    protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+        return size() > maxEntries;
     }
 }
 ```
