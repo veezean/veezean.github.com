@@ -10,7 +10,7 @@ baseurl: "" # the subpath of your site, e.g. /blog
 
 # Basic
 title: Veezean's Blog
-brief-intro: 混迹民国旧都的小小攻城狮一枚...
+brief-intro: 来自民国旧都的挨踢攻城狮
 url: "https://veezean.github.io"
 
 permalink: /:year/:month/:day/:title/
@@ -25,7 +25,7 @@ zhihu_username:
 linkedIn_username: 
 dribbble_username:
 
-description_footer: 混迹民国旧都的小小攻城狮一枚...
+description_footer: 逐光不止、以码为诗...
 
 # comments
 # two ways to comment, only choose one, and use your own short name
