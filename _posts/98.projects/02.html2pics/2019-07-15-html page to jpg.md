@@ -17,7 +17,7 @@ tags: html PhantomJS chromedriver
 
 按照前面提出的思路，一种简单的业务处理场景可以抽象为如下的模型：
 
-![](/assets/post_pics/2.png)
+![](/assets/post_pics/2019-07-15-html%20page%20to%20jpg.md/2.png)
 
 主机服务器上部署一个服务， 从来源处获取到 url 信息， 然后请求此 url 内容并生成截图保存在文件服务器中， 可以在数据库中保存此图片与 url 的映射关系， 便于后续查找。
 
@@ -155,7 +155,7 @@ for url in urls:
 
 抓取到的图片效果如下：
 
-![](/assets/post_pics/3.png)
+![](/assets/post_pics/2019-07-15-html%20page%20to%20jpg.md/3.png)
 
 ## 性能考量
 
