@@ -210,7 +210,7 @@ public class RpcConsumerService {
 
 通过`http://localhost:8848/nacos/`打开Nacos的管理界面，可以看到注册的服务信息如下：
 
-![](/assets/post_pics/2020-02-24-nacos_notes.md/md_pics_2020-02-24-17-40-49.png)
+![](\assets/post_pics/2020-02-24-nacos_notes.md/md_pics_2020-02-24-17-40-49.png)
 
 通过`http://localhost:28812/demo/dubbo/get/time/`触发consumer向provider发起100次调用请求，查看下请求被分配到2个provider上的情况如下：
 
