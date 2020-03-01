@@ -220,3 +220,10 @@ provider2 call count: 53
 ```
 
 从验证结果上看，基本上是在group中的多个provider之间进行负载均衡分发请求的。
+
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)

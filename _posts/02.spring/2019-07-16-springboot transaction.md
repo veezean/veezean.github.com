@@ -125,3 +125,9 @@ public String testSaveAndFlushData3(
 
 打断点测试发现：当`saveAndFlush`方法执行完之后，数据库中并查询不到记录。只有在`executeSave`方法执行完成跳出此方法之后，即执行到调用逻辑中`return ""`语句的时候，数据库中才能查询到记录。由此可以看出，当`@Transactional`修饰的方法或者类执行结束跳出的时候，也即事务结束。
 
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)

@@ -66,3 +66,10 @@ itemWidth = (LayoutWidth / 2) - (margin * 2)
 ![](/assets/post_pics/2019-07-26-tv-dev-problems.md/Screenshot_1564209331.png)
 
 和模拟器上效果一致，达到预期效果。
+
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)

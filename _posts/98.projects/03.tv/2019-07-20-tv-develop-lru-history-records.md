@@ -96,3 +96,9 @@ public void printMap() {
 看下播放历史功能的一个实现效果：
 
 ![](/assets/post_pics/2019-07-20-tv-develop-lru-history-records.md/problem_pics11.gif)
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)

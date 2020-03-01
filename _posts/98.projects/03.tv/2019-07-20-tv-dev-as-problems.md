@@ -55,3 +55,8 @@ e #rgb, #argb, #rrggbb, or #aarrggbb (at 'half_transparency_black' with value '#
 
 
 
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)

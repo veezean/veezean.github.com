@@ -37,3 +37,7 @@ column: 过程记录
 
 ![](/assets/post_pics/2019-07-21-network%20unavailable%20solution.md/problem_pics9.gif)
 
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)

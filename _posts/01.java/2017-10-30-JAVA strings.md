@@ -231,3 +231,10 @@ String被设置为final型的，通常情况下是不可以改变的。
 3. StringTokenizer
 
 字符串分割处理工具类。
+
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)
