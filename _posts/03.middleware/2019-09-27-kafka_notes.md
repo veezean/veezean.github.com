@@ -373,3 +373,14 @@ kafka中消息处理一般包含多个阶段。其中原始输入数据是从kaf
 
 ### 6.7 提交日志
 kafka可以作为一种分布式的外部日志，可帮助节点之间复制数据，并作为失败的节点来恢复数据重新同步，kafka的日志压缩功能很好的支持这种用法，这种用法类似于Apacha BookKeeper项目。
+
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+<center>
+
+   ![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)
+
+</center>

@@ -20,3 +20,14 @@ tags: 随笔
 
 
 后面就在这个地方积累下自己的一些技术上的总结或者感悟吧，也算是给自己的成长之路做个记录。
+
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+<center>
+
+   ![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)
+
+</center>

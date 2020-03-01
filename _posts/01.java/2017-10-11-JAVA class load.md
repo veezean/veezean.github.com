@@ -53,3 +53,13 @@ tags: JAVA 类初始化
 如果执行多次new对象操作，则从第二次new对象的时候，只会执行3、4、5、6四个步骤。
 
 如果new多个类对象，则只有第一个new对象的时候，会执行上述1中描述的代码初始化，后面new对象的时候，都只会执行2步骤。即：**static修饰的静态变量、静态常量、静态代码块，在整个虚拟机生命周期中只会初始化一次**。
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+<center>
+
+   ![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)
+
+</center>

@@ -344,3 +344,14 @@ http://127.0.0.1:28812/demo/dubbo/get/time/1
 ```
 
 可以发现，在consumer中的方法执行时，从consumer进程中RPC调用到了provider进程中对应的方法，并返回了方法具体的执行结果，测试验证完毕。
+
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+<center>
+
+   ![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)
+
+</center>

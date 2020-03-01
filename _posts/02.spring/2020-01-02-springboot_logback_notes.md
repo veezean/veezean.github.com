@@ -263,3 +263,13 @@ LogBack配置中可以对日志输出情况做一些个性化的定制，主要�
 **推荐使用`SLF4j/LogBack`替换`Log4j`作为日志打印框架**。
 
 
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+<center>
+
+   ![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)
+
+</center>

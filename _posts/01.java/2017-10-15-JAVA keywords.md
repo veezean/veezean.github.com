@@ -247,3 +247,13 @@ JAVA的保留关键字，目前JVM不提供此能力。
 **strictfp关键字可以应用于方法，类和接口**。
 
 Java strictfp关键字确保您将在每个平台上获得相同的结果，如果在浮点变量中执行操作。 不同平台的精度可能不同，这就是为什么java编程语言提供了strictfp关键字，它用于在每个平台上获得相同的结果。
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+<center>
+
+   ![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)
+
+</center>

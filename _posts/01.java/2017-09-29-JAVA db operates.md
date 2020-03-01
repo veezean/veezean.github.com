@@ -67,3 +67,14 @@ myBatis 作为 iBatis 高版本（iBatis只到2.x版本， 随后开发团队转
 **使用 Hibernate 的开发者应该总是关注对象的状态（state），不必考虑 SQL 语句的执行。**
 
 > 1. 根据**使用场景**来决定，如果一个项目组基本都是最简单的增删改查，则hibernate就很快，因为基本的SQL都已经封装好了，开发过程中不需要再去写SQL语句了，可以节省大量时间。但是如果项目中需要使用较多的复杂语句，或者对性能要求极其高，需要对SQL进行更为细致化的优化的时候，选择myBatis会更加好一些。
+
+
+---
+
+欢迎关注我的公众号“**架构笔录**”，原创技术文章第一时间推送，也可互动一起探讨交流技术。
+
+<center>
+
+   ![](https://raw.githubusercontent.com/veezean/pic_assets/master/assets/comm_pics/contact/gongzhonghao.png)
+
+</center>
