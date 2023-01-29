@@ -1,0 +1,579 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍 | Veezean的技术探秘馆</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本篇内容将在上一篇已有的内容基础上，进一步的聊一下项目中使用JPA的一些高阶复杂场景的实践指导，覆盖了主要核心的JPA使用场景，可以让你在需求开发的时候对JPA的使用更加的游刃有余。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍">
+<meta property="og:url" content="http://blog.codingcoder.cn/post/20220624161616.html">
+<meta property="og:site_name" content="Veezean的技术探秘馆">
+<meta property="og:description" content="本篇内容将在上一篇已有的内容基础上，进一步的聊一下项目中使用JPA的一些高阶复杂场景的实践指导，覆盖了主要核心的JPA使用场景，可以让你在需求开发的时候对JPA的使用更加的游刃有余。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202301292149805.png">
+<meta property="article:published_time" content="2022-06-24T08:16:16.000Z">
+<meta property="article:modified_time" content="2022-06-24T08:16:16.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="Spring Data JPA">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="Spring">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202301292149805.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://blog.codingcoder.cn/post/20220624161616.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的技术探秘馆","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-06-24 16:16:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的技术探秘馆"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的技术探秘馆</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-06-24T08:16:16.000Z" title="发表于 2022-06-24 16:16:16">2022-06-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-06-24T08:16:16.000Z" title="更新于 2022-06-24 16:16:16">2022-06-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Spring-Data-JPA%E7%B3%BB%E5%88%97/">Spring Data JPA系列</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>17分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20220624161616.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20220624161616.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301292149805.png"></p>
+<p>大家好，又见面了。</p>
+<p>到这里呢，已经是本<code>SpringData JPA</code>系列文档的第三篇了，先来回顾下前面两篇：</p>
+<ul>
+<li><p>在第1篇《<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/qQR8z3OhwiTxybmEwMME9A">Spring Data JPA系列1：JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？给你个选择SpringDataJPA的理由！</a>》中，我们对JPA的整体概念有了全面的了解。</p>
+</li>
+<li><p>在第2篇《<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/aUo2HmGI0MO-Nm57TBLUgQ">Spring Data JPA系列2：快速在SpringBoot项目中熟练使用JPA</a>》中也知晓了SpringBoot项目快速集成SpringData JPA以及快速上手使用JPA来进行基本的项目开发的技能。</p>
+</li>
+</ul>
+<p>本篇内容将在上一篇已有的内容基础上，进一步的聊一下项目中使用JPA的一些高阶复杂场景的实践指导，覆盖了主要核心的JPA使用场景，可以让你在需求开发的时候对JPA的使用更加的游刃有余。</p>
+<h2 id="Repository"><a href="#Repository" class="headerlink" title="Repository"></a>Repository</h2><p>上一篇文档中，我们知道业务代码中直接调用<code>Repository</code>层中默认提供的方法或者是自己自定义的接口方法，便可以进行DB的相关操作。这里我们再对repository的整体实现情况进一步探索下。</p>
+<h3 id="repository全貌梳理"><a href="#repository全貌梳理" class="headerlink" title="repository全貌梳理"></a>repository全貌梳理</h3><p>先看下Repository相关的类图：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c800b97762af4754acd2e09442097a7f~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>整体类图虽然咋看上去很庞杂，但其实主线脉络还是比较清晰的。</p>
+<blockquote>
+<ul>
+<li>先看下蓝色的部分其实就是Repository的一整个接口定义链条，而橙色的则是我们自己自定义的一些Repository接口类，继承父层接口的所有已有能力。</li>
+<li>左侧的类图与接口，其实都是JPA提供的一些用于实现或者定制查询操作的一些辅助实现类，后面章节中会看到他们的身影。</li>
+</ul>
+</blockquote>
+<p>对主体repository层级提供的主要方法进行简单的梳理，如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f8f96c7018534c5b8f229b873f5147f8~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>下面对各个repository接口进行简单的独立介绍。</p>
+<h3 id="JpaRepository与它的父类们"><a href="#JpaRepository与它的父类们" class="headerlink" title="JpaRepository与它的父类们"></a>JpaRepository与它的父类们</h3><ul>
+<li><code>Repository</code>位于<code>Spring Data Common</code>的lib里面，是Spring Data 里面做数据库操作的最底层的抽象接口、最顶级的父类，源码里面其实什么方法都没有，仅仅起到一个标识作用。</li>
+<li><code>CrudRepository</code>作为直接继承<code>Repository</code>的次顶层接口类，看名字也可以大致猜测出其主要作用就是封装提供基础CRUD操作。</li>
+<li><code>PagingAndSortingRepository</code>继承自<code>CrudRepository</code>，自然也就具备了<code>CrudRepository</code>提供的全部接口能力。此外，从其自身新提供的接口来看，增加了排序和分页查询列表的能力，非常符合其类名的含义。</li>
+</ul>
+<p><code>JpaRepository</code>与其前面的几个父类相比是个特殊的存在，其中补充添加了一组JPA规范的接口方法。前面的几个接口类都是Spring Data为了兼容NoSQL而进行的一些抽象封装（因为SpringData项目是一个庞大的家族，支持各种SQL与NoSQL的数据库，SpringData JPA是SpringData家族中面向SQL数据库的一个子分支项目），从<code>JpaRepository</code>开始是对关系型数据库进行抽象封装。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9c4e4c00c7a64047b819874635b4f7f9~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>从类图可以看得出来它继承了<code>PagingAndSortingRepository</code>类，也就继承了其所有方法，并且实现类也是<code>SimpleJpaRepository</code>。从类图上还可以看出<code>JpaRepository</code>继承和拥有了<code>QueryByExampleExecutor</code>的相关方法。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/412eab393e7f423294371b538bce1d22~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>通过源码和<code>CrudRepository</code>相比较，它支持Query By Example，批量删除，提高删除效率，手动刷新数据库的更改方法，并将默认实现的查询结果变成了List。</p>
+<p>额外补充一句：</p>
+<blockquote>
+<p>实际的项目编码中，大部分的场景中，我们自定义Repository都是继承<code>JpaRepository</code>来实现的。</p>
+</blockquote>
+<h3 id="自定义Repository"><a href="#自定义Repository" class="headerlink" title="自定义Repository"></a>自定义Repository</h3><p>先看个自定义Repository的例子，如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bee5dc26d29745ce9000aaca80599021~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>看下对应类图结构，自定义Repository继承了JpaRepository，具备了其父系所有的操作接口，此外，额外扩展了业务层面自定义的一些接口方法：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/1b7f39b6f19c498e9ceb623a3fe5520b~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p><code>自定义Repository</code>的时候，继承JpaRepository需要传入两个泛型：</p>
+<ul>
+<li>此Repository需要操作的具体Entity对象（Entity与具体DB中表映射，所以指定Entity也等同于指定了此Repository所对应的目标操作Table），</li>
+<li>此Entity实体的主键数据类型（也就是第一个参数指定的Entity类中以@Id注解标识的字段的类型）</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/01d2752a1bf6461daa344823de9c42da~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<h2 id="分页、排序，一招搞定"><a href="#分页、排序，一招搞定" class="headerlink" title="分页、排序，一招搞定"></a>分页、排序，一招搞定</h2><p>分页，排序使用<code>Pageable</code>对象进行传递，其中包含<code>Page</code>和<code>Sort</code>参数对象。</p>
+<p>查询的时候，直接传递<code>Pageable</code>参数即可（注意下，如果是用原生SQL查询的方式，此法行不通，后文有详细说明）。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+&#x2F;&#x2F; 定义repository接口的时候，直接传入Pageable参数即可
+List&lt;UserEntity&gt; findAllByDepartment(DepartmentEntity department, Pageable pageable);
+</code></pre>
+
+<p>还有一种特殊的分页场景。比如，DB表中有100w条记录，然后现在需要将这些数据全量的加载到ES中。如果逐条查询然后插入ES，显然效率太慢；如果一次性全部查询出来然后直接往ES写，服务端内存可能会爆掉。</p>
+<p>这种场景，其实可以基于<code>Slice</code>结果对象进行实现。Slice的作用是，只知道是否有下一个<code>Slice</code>可用，不会执行count，所以当查询较大的结果集时，只知道数据是足够的就可以了，而且相关的业务场景也不用关心一共有多少页。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+private &lt;T extends EsDocument, F&gt; void fullLoadToEs(IESLoadService&lt;T, F&gt; esLoadService) &#123;
+    try &#123;
+        final int batchHandleSize &#x3D; 10000;
+        Pageable pageable &#x3D; PageRequest.of(0, batchHandleSize);
+        do &#123;
+            &#x2F;&#x2F; 批量加载数据，返回Slice类型结果
+            Slice&lt;F&gt; entitySilce &#x3D; esLoadService.slicePageQueryData(pageable);
+
+            &#x2F;&#x2F; 具体业务处理逻辑
+            List&lt;T&gt; esDocumentData &#x3D; esLoadService.buildEsDocumentData(entitySilce);
+            esUtil.batchSaveOrUpdateAsync(esDocumentData);
+
+            &#x2F;&#x2F; 获取本次实际上加载到的具体数据量
+            int pageLoadedCount &#x3D; entitySilce.getNumberOfElements();
+            if (!entitySilce.hasNext()) &#123;
+                break;
+            &#125;
+
+            &#x2F;&#x2F; 自动重置page分页参数，继续拉取下一批数据
+            pageable &#x3D; entitySilce.nextPageable();
+        &#125; while (true);
+    &#125; catch (Exception e) &#123;
+        log.error(&quot;error occurred when load data into es&quot;, e);
+    &#125;
+&#125;
+</code></pre>
+
+<h2 id="复杂搜索，其实不复杂"><a href="#复杂搜索，其实不复杂" class="headerlink" title="复杂搜索，其实不复杂"></a>复杂搜索，其实不复杂</h2><p>按照条件进行搜索查询，是项目中遇到的非常典型且常用的场景。但是条件搜索也分几种场景，下面分开说下。</p>
+<h3 id="简单固定场景"><a href="#简单固定场景" class="headerlink" title="简单固定场景"></a>简单固定场景</h3><p>所谓简单固定，即查询条件就是固定的1个字段或者若干个字段，且查询字段数量不会变，比如根据部门查询具体人员列表这种。<br>这种情况，我们可以简单的直接在repository中，根据命名规范定义一个接口即可。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+@Repository
+public interface UserRepository extends JpaRepository&lt;UserEntity, Long&gt; &#123;
+    &#x2F;&#x2F; 根据一个固定字段查询
+    List&lt;UserEntity&gt; findAllByDepartment(DepartmentEntity department);
+    &#x2F;&#x2F; 根据多个固定字段组合查询
+    UserEntity findFirstByWorkIdAndUserNameAndDepartment(String workId, String userName, DepartmentEntity department);
+&#125;
+</code></pre>
+
+<h3 id="简单不固定场景"><a href="#简单不固定场景" class="headerlink" title="简单不固定场景"></a>简单不固定场景</h3><p>考虑一种场景，界面上需要做一个用户搜索的能力，要求支持根据用户名、工号、部门、性别、年龄、职务等等若干个字段中的1个或者多个的组合来查询符合条件的用户信息。<br>显然，上述通过直接在repository中按照命名规则定义接口的方式行不通了。这个时候，<code>Example</code>对象便排上用场了。</p>
+<p>其实在前面整体介绍Repository的UML图中，就已经有了<code>Example</code>的身影了，虽然这个名字起的很敷衍，但其功能确是挺实在的。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ba91cb364cfa40abb65cca32ce5e042d~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>看下具体用法：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public Page&lt;UserEntity&gt; queryUsers(Request request, UserEntity queryParams) &#123;
+    &#x2F;&#x2F; 查询条件构造出对应Entity对象，转为Example查询条件
+    Example&lt;UserEntity&gt; example &#x3D; Example.of(queryParams);
+    &#x2F;&#x2F; 构造分页参数
+    Pageable pageable &#x3D; PageHelper.buildPageable(request);
+    
+    &#x2F;&#x2F; 按照条件查询，并分页返回结果
+    return userRepository.findAll(example, pageable);
+&#125;
+</code></pre>
+
+<h3 id="复杂场景"><a href="#复杂场景" class="headerlink" title="复杂场景"></a>复杂场景</h3><p>如果是一些自定义的复杂查询场景，可以通过定制SQL语句的方式来实现。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+@Repository
+public interface UserRepository extends JpaRepository&lt;UserEntity, Long&gt; &#123;
+    @Query(
+        value &#x3D; &quot;select t.*,(select group_concat(a.assigner_name) from workflow_task a where a.state&#x3D;&#39;R&#39; and a.proc_inst_id&#x3D;t.proc_inst_id) deal_person,&quot;
+            + &quot; (select a.task_name from workflow_task a where a.state&#x3D;&#39;R&#39; and a.proc_inst_id&#x3D;t.proc_inst_id limit 1) cur_step &quot;
+            + &quot;   from workflow_info t where t.state&#x3D;&#39;R&#39;  and t.type in (?1) &quot;
+            + &quot;and exists(select 1 from workflow_task b where b.assigner&#x3D;?2 and b.state&#x3D;&#39;R&#39; and b.proc_inst_id&#x3D;t.proc_inst_id) order by t.create_time desc&quot;,
+        countQuery &#x3D; &quot;select count(1) from workflow_info t where t.state&#x3D;&#39;R&#39;  and t.type in (?1) &quot;
+            + &quot;and exists(select 1 from workflow_task b where b.assigner&#x3D;?2 and b.state&#x3D;&#39;R&#39; and b.proc_inst_id&#x3D;t.proc_inst_id) &quot;,
+        nativeQuery &#x3D; true)
+    Page&lt;FlowResource&gt; queryResource(List&lt;String&gt; type, String workId, Pageable pageable);
+&#125;
+</code></pre>
+
+<p>此外，还可以基于<code>JpaSpecificationExecutor</code>提供的能力接口来实现。<br>自定义接口需要增加<code>JpaSpecificationExecutor</code>的继承，然后利用<code>Page&lt;T&gt; findAll(@Nullable Specification&lt;T&gt; spec, Pageable pageable);</code>接口来实现复杂查询能力。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+&#x2F;&#x2F; 增加对JpaSpecificationExecutor的继承
+@Repository
+public interface UserRepository extends JpaRepository&lt;UserEntity, Long&gt;, JpaSpecificationExecutor&lt;UserEntity&gt; &#123;
+
+&#125;
+</code></pre>
+
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public List&lt;UserEntity&gt; queryUsers(QueryParams queryParams) &#123;
+    &#x2F;&#x2F; 构造Specification查询条件
+    Specification&lt;UserEntity&gt; specification &#x3D;
+        (root, query, cb) -&gt; &#123;
+            List&lt;Predicate&gt; predicates &#x3D; new ArrayList&lt;&gt;();
+            &#x2F;&#x2F; 范围查询条件构造
+            predicates.add(cb.greaterThanOrEqualTo(root.get(&quot;age&quot;), queryParams.getMinAge()));
+            predicates.add(cb.lessThanOrEqualTo(root.get(&quot;age&quot;), queryParams.getMaxAge()));
+            &#x2F;&#x2F; 精确匹配查询条件构造
+            predicates.add(cb.equal(root.get(&quot;department&quot;), queryParams.getDepartment()));
+            &#x2F;&#x2F; 关键字模糊匹配条件构造
+            if (Objects.nonNull(queryParams.getNameKeyword())) &#123;
+                predicates.add(cb.like(root.get(&quot;userName&quot;), &quot;%&quot; + queryParams.getNameKeyword() + &quot;%&quot;));
+            &#125;
+            return query.where(predicates.toArray(new Predicate[0])).getRestriction();
+        &#125;;
+    &#x2F;&#x2F; 执行复杂查询条件
+    return userRepository.findAll(specification);
+&#125;
+</code></pre>
+
+<h2 id="自定义Listener，玩出花样"><a href="#自定义Listener，玩出花样" class="headerlink" title="自定义Listener，玩出花样"></a>自定义Listener，玩出花样</h2><p>实际项目中，经常会有一种场景，就是需要监听某个数据的变更然后做一些额外的处理逻辑。一种逻辑，是写操作的时候顺便调用下相关业务的处理API，这样会造成业务间耦合加深；优化点的策略是搞个MQ队列，然后在这个写DB操作的同时发个消息到MQ里面，然后一堆的consumer会监听MQ并去做对应的处理逻辑，这样引入个消息队列代价也有点高。</p>
+<p>这个时候，我们可以借助JPA的自定义<code>EntityListener</code>功能来完美解决。通过监听某个Entity表的变更情况，通知或者调用相关其他的业务代码处理，完美实现了与主体业务逻辑的解耦，也无需引入其他组件。</p>
+<p>举个例子：现有一个论坛发帖系统，发帖Post和评论Comment属于两个相对独立又有点关系的数据，现在需要检测当评论变化的时候，需要更新下Post对应记录的评论数字段。下面演示下具体实现。</p>
+<ul>
+<li>首先，定制一个Listener类，并指定Callbacks注解</li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public class CommentCountAuditListener &#123;
+    &#x2F;**
+     *  当Comment表有新增数据的操作时，触发此方法的调用
+     *&#x2F;
+    @PostPersist
+    public void postPersist(CommentEntity entity) &#123;
+        &#x2F;&#x2F; 执行Post表中评论数字段的更新
+        &#x2F;&#x2F; do something here...
+    &#125;
+
+    &#x2F;**
+     *  当Comment表有删除数据的操作时，触发此方法的调用
+     *&#x2F;
+    @PostRemove
+    public void postRemove(CommentEntity entity) &#123;
+        &#x2F;&#x2F; 执行Post表中评论数字段的更新
+        &#x2F;&#x2F; do something here...
+    &#125;
+
+    &#x2F;**
+     *  当Comment表有更新数据的操作时，触发此方法的调用
+     *&#x2F;
+    @PostUpdate
+    public void postUpdate(CommentEntity entity) &#123;
+        &#x2F;&#x2F; 执行Post表中评论数字段的更新
+        &#x2F;&#x2F; do something here...
+    &#125;
+    
+&#125;
+</code></pre>
+
+<ul>
+<li>其次，在评论实体CommentEntity上，加上自定义Listener信息</li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+@Entity
+@Table(&quot;t_comment&quot;)
+&#x2F;&#x2F; 指定前面定制的Listener
+@EntityListeners(&#123;CommentCountAuditListener.class&#125;)
+public class CommentEntity extends AbstractAuditable &#123;
+    &#x2F;&#x2F; ...
+&#125;
+</code></pre>
+
+<p>这样就搞定了。</p>
+<p>自定义Listener还有个典型的使用场景，就是可以统一的记录DB数据的操作日志。</p>
+<h2 id="定制化SQL，随心所欲"><a href="#定制化SQL，随心所欲" class="headerlink" title="定制化SQL，随心所欲"></a>定制化SQL，随心所欲</h2><p>JPA提供@Query注解，可以实现自定义SQL语句的能力。比如：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+@Query(value &#x3D; &quot;select * from user &quot; +
+        &quot;where work_id in (?1) &quot; +
+        &quot;and department_id &#x3D; 0 &quot; +
+        &quot;order by CREATE_TIME desc &quot;,
+        nativeQuery &#x3D; true)
+List&lt;OssFileInfoEntity&gt; queryUsersByWorkIdIn(List&lt;String&gt; workIds);
+</code></pre>
+
+<p>如果需要执行写操作SQL的时候，需要额外增加@Modifying注解标识，如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+@Modifying
+@Query(value &#x3D; &quot;insert into user (work_id, user_name) values (?1, ?2)&quot;,
+        nativeQuery &#x3D; true)
+int createUser(String workId, String userName);
+</code></pre>
+
+<p>其中，<code>nativeQuery = true</code>表示<code>@Query</code>注解中提供的value值为原生SQL语句。如果<code>nativeQuery</code>未设置或者设置为false，则表示将使用<code>JPQL</code>语言来执行。所谓JPQL，即JAVA持久化查询语句，是一种类似SQL的语法，不同点在于其使用类名来替代表名，使用类字段来替代表字段名。比如：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+@Query(&quot;SELECT u FROM com.vzn.demo.UserInfo u WHERE u.userName &#x3D; ?1&quot;)
+public UserInfo getUserInfoByName(String name);
+</code></pre>
+
+<p>几个关注点要特别阐述下：</p>
+<ul>
+<li>like查询的时候，参数前后的<code>%</code>需要手动添加，系统是不会自动加上的</li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+&#x2F;&#x2F; like 需要手动添加百分号
+@Query(&quot;SELECT u FROM com.vzn.demo.UserInfo u WHERE u.userName like %?1&quot;)
+public UserInfo getUserInfoByName(String name);
+</code></pre>
+
+<ul>
+<li>使用<code>nativeQuery=true</code>查询的时候（原生SQL方式），不支持API接口里面传入Sort对象然后进行混合执行</li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+&#x2F;&#x2F; 错误示范：  自定义sql与API中Sort参数不可同时混用
+@Query(&quot;SELECT * FROM t_user u WHERE u.user_name &#x3D; ?1&quot;, nativeQuery&#x3D;true)
+public UserInfo getUserInfoByName(String name, Sort sort);
+
+
+&#x2F;&#x2F; 正确示范：  自定义SQL完成对应sort操作
+@Query(&quot;SELECT * FROM t_user u WHERE u.user_name &#x3D; ?1 order by ?2&quot;, nativeQuery&#x3D;true)
+public UserInfo getUserInfoByName(String name, String sortColumn);
+</code></pre>
+
+<ul>
+<li>未指定<code>nativeQuery=true</code>查询的时候(JPQL方式)，支持API接口里面传入<code>Sort</code>、<code>PageRequest</code>等对象然后进行混合执行，来完成排序、分页等操作</li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+&#x2F;&#x2F; 正确：自定义jpql与API中Sort参数不可同时混用
+@Query(&quot;SELECT u FROM com.vzn.demo.UserInfo u WHERE u.userName &#x3D; ?1&quot;)
+public UserInfo getUserInfoByName(String name, Sort sort);
+</code></pre>
+
+<ul>
+<li>支持使用参数名作为<code>@Query</code>查询中的SQL或者JPQL语句的入参，取代参数顺序占位符</li>
+</ul>
+<p>默认情况下，参数是通过顺序绑定在自定义执行语句上的，这样如果API接口传参顺序或者位置改变，极易引起自定义查询传参出问题，为了解决此问题，我们可以使用<code>@Param</code>注解来绑定一个具体的参数名称，然后以参数名称的形式替代位置顺序占位符，这也是比较推荐的一种做法。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+&#x2F;&#x2F; 默认的顺序位置传参
+@Query(&quot;SELECT * FROM t_user u WHERE u.user_name &#x3D; ?1 order by ?2&quot;, nativeQuery&#x3D;true)
+public UserInfo getUserInfoByName(String name, String sortColumn);
+
+&#x2F;&#x2F; 使用参数名称传参
+@Query(&quot;SELECT * FROM t_user u WHERE u.user_name &#x3D; :name order by :sortColumn&quot;, nativeQuery&#x3D;true)
+public UserInfo getUserInfoByName(@Param(&quot;name&quot;) String name, @Param(&quot;sortColumn&quot;) String sortColumn);
+</code></pre>
+
+<h2 id="字段命名映射策略"><a href="#字段命名映射策略" class="headerlink" title="字段命名映射策略"></a>字段命名映射策略</h2><p>一般而言，JAVA的编码规范都要求filed字段命名需要遵循小驼峰命名的规范，比如userName，而DB中column命名的时候，很多人习惯于使用下划线分隔的方式命名，比如<code>user_name</code>这种。这样就涉及到一个映射的策略问题，需要让JPA知道代码里面的userName就对应着DB中的<code>user_name</code>。</p>
+<p>这里就会涉及到对命名映射策略的映射。主要有两种映射配置，下面分别阐述下。</p>
+<ul>
+<li>implicit-strategy</li>
+</ul>
+<p>配置项key值：</p>
+<pre class="line-numbers language-none"><code class="language-none">spring.jpa.hibernate.naming.implicit-strategy&#x3D;xxxxx</code></pre>
+
+<p>取值说明：</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>映射规则说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImp</td>
+<td>默认的命名策略，兼容JPA2.0规范</td>
+</tr>
+<tr>
+<td>org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyHbmImpl</td>
+<td>兼容老版本Hibernate的命名规范</td>
+</tr>
+<tr>
+<td>org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl</td>
+<td>与ImplicitNamingStrategyJpaCompliantImp基本相同</td>
+</tr>
+<tr>
+<td>org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl</td>
+<td>兼容JPA 1.0规范中的命名规范。</td>
+</tr>
+<tr>
+<td>org.hibernate.boot.model.naming.SpringImplicitNamingStrategy</td>
+<td>继承ImplicitNamingStrategyJpaCompliantImpl，对外键、链表查询、索引如果未定义，都有下划线的处理策略，而table和column名字都默认与字段一样</td>
+</tr>
+</tbody></table>
+<ul>
+<li>physical-strategy</li>
+</ul>
+<p>配置项key值：</p>
+<pre class="line-numbers language-none"><code class="language-none">spring.jpa.hibernate.naming.physical-strategy&#x3D;xxxxx</code></pre>
+
+<p>取值说明：</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>映射规则说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl</td>
+<td>默认字符串一致映射，不做任何转换处理，比如java类中userName，映射到table中列名也叫userName</td>
+</tr>
+<tr>
+<td>org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy</td>
+<td>java类中filed名称小写字母进行映射到DB表column名称，遇大写字母时转为分隔符”_”命名格式，比如java类中userName字段，映射到DB表column名称叫user_name</td>
+</tr>
+</tbody></table>
+<ul>
+<li>physical-strategy与implicit-strategy</li>
+</ul>
+<p>SpringData JPA只是对JPA规范的二次封装，其底层使用的是<code>Hibernate</code>，所以此处涉及到Hibernate提供的一些处理策略。Hibernate将对象模型映射到关系数据库分为两个步骤：</p>
+<ol>
+<li>从对象模型中确定逻辑名称。逻辑名可以由用户显式指定(使用<code>@Column</code>或<code>@Table</code>),也可以隐式指定。</li>
+<li>将逻辑名称映射到物理名称，也就是数据库中使用的名称。</li>
+</ol>
+<p>这里，<code>implicit-strategy</code>用于第一步隐式指定逻辑名称，而<code>physical-strategy</code>则用于第二步中逻辑名称到物理名称的映射。</p>
+<p>注意：<br>当没有使用<code>@Table</code>和<code>@Column</code>注解时，<code>implicit-strategy</code>配置项才会被使用，即<code>implicit-strategy</code>定义的是一种缺省场景的处理策略；而<code>physical-strategy</code>属于一种高优先级的策略，只要设置就会被执行，而不管是否有<code>@Table</code>和<code>@Column</code>注解。</p>
+<h2 id="小结，承上启下"><a href="#小结，承上启下" class="headerlink" title="小结，承上启下"></a>小结，承上启下</h2><p>好啦，本篇内容就介绍到这里。</p>
+<p>通过本篇的内容，我们对于如何在项目中使用<code>Spring Data JPA</code>来进行一些较为复杂场景的处理方案与策略有了进一步的了解，再结合本系列此前的内容，到此掌握的JPA的相关技能已经足以应付大部分项目开发场景。</p>
+<p>在实际项目中，为了保障数据操作的可靠、避免脏数据的产生，需要在代码中加入对数据库操作的事务控制。在下一篇文档中，我们将一起聊一聊Spring Data JPA业务代码开发中关于数据库事务的控制，以及编码中存在哪些可能会导致事务失效的场景等等。</p>
+<p>如果对本文有自己的见解，或者有任何的疑问或建议，都可以留言，我们一起探讨、共同进步。</p>
+<hr>
+<blockquote>
+<p><strong>补充</strong></p>
+<p><code>Spring Data JPA</code>作为<code>Spring Data</code>中对于关系型数据库支持的一种框架技术，属于<code>ORM</code>的一种，通过得当的使用，可以大大简化开发过程中对于数据操作的复杂度。</p>
+<p>本文档隶属于《<code>Spring Data JPA</code>用法与技能探究》系列的第3篇。本系列文档规划对<code>Spring Data JPA</code>进行全方位的使用介绍，一共分为<strong>5篇</strong>文档，如果感兴趣，欢迎关注交流。</p>
+<p>《Spring Data JPA用法与技能探究》系列涵盖内容：</p>
+<ul>
+<li>开篇介绍 —— 《<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/qQR8z3OhwiTxybmEwMME9A">Spring Data JPA系列1：JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？给你个选择SpringDataJPA的理由！</a>》</li>
+<li>快速上手 —— 《<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/aUo2HmGI0MO-Nm57TBLUgQ">Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA</a>》</li>
+<li>深度进阶 —— 《<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/NS156Z9aa4mUMbx79-7Z8w">Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍</a>》</li>
+<li>可靠保障 —— 《聊一聊数据库的事务，以及Spring体系下对事务的使用》</li>
+<li>周边扩展 —— 《JPA开发辅助效率提升方案介绍》</li>
+</ul>
+</blockquote>
+<hr>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请点个关注，也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ec7dd2aa21d14a9daa6fdc7472ab0051~tplv-k3u1fbpfcp-zoom-1.image"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn/post/20220624161616.html">http://blog.codingcoder.cn/post/20220624161616.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://blog.codingcoder.cn" target="_blank">Veezean的技术探秘馆</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spring-Data-JPA/">Spring Data JPA</a><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/Spring/">Spring</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202301292149805.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20220625213411.html" title="Spring Data JPA系列4：Spring声明式事务处理与多数据源支持"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172105608.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Spring Data JPA系列4：Spring声明式事务处理与多数据源支持</div></div></a></div><div class="next-post pull-right"><a href="/post/20220623164616.html" title="Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172113780.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20220625213411.html" title="Spring Data JPA系列4：Spring声明式事务处理与多数据源支持"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172105608.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-25</div><div class="title">Spring Data JPA系列4：Spring声明式事务处理与多数据源支持</div></div></a></div><div><a href="/post/20220623164616.html" title="Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172113780.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-23</div><div class="title">Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA</div></div></a></div><div><a href="/post/20220621125417.html" title="Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206132103053.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-21</div><div class="title">Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！</div></div></a></div><div><a href="/post/20220628171111.html" title="Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172121044.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-28</div><div class="title">Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码</div></div></a></div><div><a href="/post/20221028085417.html" title="聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-28</div><div class="title">聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活</div></div></a></div><div><a href="/post/20221102081617.html" title="聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-02</div><div class="title">聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">这个是作者介绍</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Repository"><span class="toc-number">1.</span> <span class="toc-text">Repository</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#repository%E5%85%A8%E8%B2%8C%E6%A2%B3%E7%90%86"><span class="toc-number">1.1.</span> <span class="toc-text">repository全貌梳理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JpaRepository%E4%B8%8E%E5%AE%83%E7%9A%84%E7%88%B6%E7%B1%BB%E4%BB%AC"><span class="toc-number">1.2.</span> <span class="toc-text">JpaRepository与它的父类们</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89Repository"><span class="toc-number">1.3.</span> <span class="toc-text">自定义Repository</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E9%A1%B5%E3%80%81%E6%8E%92%E5%BA%8F%EF%BC%8C%E4%B8%80%E6%8B%9B%E6%90%9E%E5%AE%9A"><span class="toc-number">2.</span> <span class="toc-text">分页、排序，一招搞定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E6%90%9C%E7%B4%A2%EF%BC%8C%E5%85%B6%E5%AE%9E%E4%B8%8D%E5%A4%8D%E6%9D%82"><span class="toc-number">3.</span> <span class="toc-text">复杂搜索，其实不复杂</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E5%9B%BA%E5%AE%9A%E5%9C%BA%E6%99%AF"><span class="toc-number">3.1.</span> <span class="toc-text">简单固定场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E4%B8%8D%E5%9B%BA%E5%AE%9A%E5%9C%BA%E6%99%AF"><span class="toc-number">3.2.</span> <span class="toc-text">简单不固定场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E5%9C%BA%E6%99%AF"><span class="toc-number">3.3.</span> <span class="toc-text">复杂场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89Listener%EF%BC%8C%E7%8E%A9%E5%87%BA%E8%8A%B1%E6%A0%B7"><span class="toc-number">4.</span> <span class="toc-text">自定义Listener，玩出花样</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9A%E5%88%B6%E5%8C%96SQL%EF%BC%8C%E9%9A%8F%E5%BF%83%E6%89%80%E6%AC%B2"><span class="toc-number">5.</span> <span class="toc-text">定制化SQL，随心所欲</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%97%E6%AE%B5%E5%91%BD%E5%90%8D%E6%98%A0%E5%B0%84%E7%AD%96%E7%95%A5"><span class="toc-number">6.</span> <span class="toc-text">字段命名映射策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93%EF%BC%8C%E6%89%BF%E4%B8%8A%E5%90%AF%E4%B8%8B"><span class="toc-number">7.</span> <span class="toc-text">小结，承上启下</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"/></a><div class="content"><a class="title" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式">面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式</a><time datetime="2023-01-12T23:13:17.000Z" title="发表于 2023-01-13 07:13:17">2023-01-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"/></a><div class="content"><a class="title" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制">Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制</a><time datetime="2023-01-12T01:02:17.000Z" title="发表于 2023-01-12 09:02:17">2023-01-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"/></a><div class="content"><a class="title" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点">Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点</a><time datetime="2023-01-09T23:29:17.000Z" title="发表于 2023-01-10 07:29:17">2023-01-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"/></a><div class="content"><a class="title" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板</a><time datetime="2023-01-06T23:04:17.000Z" title="发表于 2023-01-07 07:04:17">2023-01-07</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 By Veezean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

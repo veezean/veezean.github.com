@@ -1,0 +1,528 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>解读JVM级别本地缓存Caffeine青出于蓝的要诀 —— 缘何会更强、如何去上手 | Veezean的技术探秘馆</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="继Guava Cache之后，我们再来聊一下各方面表现都更佳的Caffeine，看一下其具体使用方式、核心的优化改进点，窥探其青出于蓝的秘密所在。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="解读JVM级别本地缓存Caffeine青出于蓝的要诀 —— 缘何会更强、如何去上手">
+<meta property="og:url" content="http://blog.codingcoder.cn/post/20221207075417.html">
+<meta property="og:site_name" content="Veezean的技术探秘馆">
+<meta property="og:description" content="继Guava Cache之后，我们再来聊一下各方面表现都更佳的Caffeine，看一下其具体使用方式、核心的优化改进点，窥探其青出于蓝的秘密所在。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202210050807355.png">
+<meta property="article:published_time" content="2022-12-06T23:54:17.000Z">
+<meta property="article:modified_time" content="2022-12-06T23:54:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="缓存">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202210050807355.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://blog.codingcoder.cn/post/20221207075417.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的技术探秘馆","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '解读JVM级别本地缓存Caffeine青出于蓝的要诀 —— 缘何会更强、如何去上手',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-12-07 07:54:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的技术探秘馆"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的技术探秘馆</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">解读JVM级别本地缓存Caffeine青出于蓝的要诀 —— 缘何会更强、如何去上手</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-12-06T23:54:17.000Z" title="发表于 2022-12-07 07:54:17">2022-12-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-12-06T23:54:17.000Z" title="更新于 2022-12-07 07:54:17">2022-12-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%93%E5%AD%98%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E8%AE%BE%E8%AE%A1/">缓存原理与实战设计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>16分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="解读JVM级别本地缓存Caffeine青出于蓝的要诀 —— 缘何会更强、如何去上手"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20221207075417.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20221207075417.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><blockquote>
+<p>继Guava Cache之后，我们再来聊一下各方面表现都更佳的Caffeine，看一下其具体使用方式、核心的优化改进点，窥探其青出于蓝的秘密所在。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png"></p>
+<p>大家好，又见面了。</p>
+<hr>
+<blockquote>
+<p>本文是笔者作为掘金技术社区签约作者的身份输出的缓存专栏系列内容，将会通过系列专题，讲清楚缓存的方方面面。如果感兴趣，欢迎关注以获取后续更新。</p>
+</blockquote>
+<hr>
+<p>在前面的几篇文章中，我们一起聊了下本地缓存的动手实现、本地缓存相关的规范等，也聊了下Google的Guava Cache的相关原理与使用方式。比较心急的小伙伴已经坐不住了，提到本地缓存，怎么能不提一下“<strong>地上最强</strong>”的<code>Caffeine Cache</code>呢？</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211092016433.png"></p>
+<p>能被小伙伴称之为“地上最强”，可见<strong>Caffeine</strong>的魅力之大！的确，提到JAVA中的本地缓存框架，<code>Caffeine</code>是怎么也没法轻视的重磅嘉宾。前面几篇文章中，我们一起探索了JVM级别的优秀缓存框架Guava Cache，而相比之下，Caffeine可谓是站在巨人肩膀上，在很多方面做了深度的<strong>优化</strong>与<strong>改良</strong>，可以说在<em>性能表现</em>与<em>命中率</em>上全方位的碾压Guava Cache，表现堪称卓越。</p>
+<p>下面就让我们一起来解读下Caffeine Cache的设计实现改进点原理，揭秘Caffeine Cache青出于蓝的秘密所在，并看下如何在项目中快速的上手使用。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="巨人肩膀上的产物"><a href="#巨人肩膀上的产物" class="headerlink" title="巨人肩膀上的产物"></a>巨人肩膀上的产物</h2><p>先来回忆下之前创建一个<code>Guava cache</code>对象时的代码逻辑：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public LoadingCache&lt;String, User&gt; createUserCache() &#123;
+    return CacheBuilder.newBuilder()
+            .initialCapacity(1000)
+            .maximumSize(10000L)
+            .expireAfterWrite(30L, TimeUnit.MINUTES) 
+            .concurrencyLevel(8)
+            .recordStats()
+            .build((CacheLoader&lt;String, User&gt;) key -&gt; userDao.getUser(key));
+&#125;</code></pre>
+
+<p>而使用<code>Caffeine</code>来创建Cache对象的时候，我们可以这么做：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public LoadingCache&lt;String, User&gt; createUserCache() &#123;
+    return Caffeine.newBuilder()
+            .initialCapacity(1000)
+            .maximumSize(10000L)
+            .expireAfterWrite(30L, TimeUnit.MINUTES)
+            &#x2F;&#x2F;.concurrencyLevel(8)
+            .recordStats()
+            .build(key -&gt; userDao.getUser(key));
+&#125;</code></pre>
+
+<p>可以发现，两者的使用思路与方法定义非常相近，对于使用过Guava Cache的小伙伴而言，几乎可以<strong>无门槛</strong>的直接上手使用。当然，两者也还是有点差异的，比如Caffeine创建对象时<strong>不支持</strong>使用<code>concurrencyLevel</code>来指定并发量（因为改进了并发控制机制），这些我们在下面章节中具体介绍。</p>
+<p>相较于Guava Cache，<code>Caffeine</code>在整体设计理念、实现策略以及接口定义等方面都基本继承了前辈的优秀特性。作为新时代背景下的后来者，Caffeine也做了很多细节层面的优化，比如：</p>
+<ul>
+<li><p><strong>基础数据结构层面优化</strong><br>借助JAVA8对<code>ConcurrentHashMap</code>底层由链表切换为<strong>红黑树</strong>、以及<strong>废弃分段锁</strong>逻辑的优化，提升了<em>Hash冲突</em>时的查询效率以及<em>并发场景</em>下的处理性能。</p>
+</li>
+<li><p><strong>数据驱逐（淘汰）策略的优化</strong><br>通过使用改良后的<code>W-TinyLFU</code>算法，提供了更佳的热点数据留存效果，提供了<strong>近乎完美</strong>的热点数据<code>命中率</code>，以及更低消耗的过程维护</p>
+</li>
+<li><p><strong>异步并行能力的全面支持</strong><br>完美适配<code>JAVA8</code>之后的<strong>并行编程</strong>场景，可以提供更为优雅的并行编码体验与并发效率。</p>
+</li>
+</ul>
+<p>通过各种措施的改良，成就了Caffeine在功能与性能方面不俗的表现。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="Caffeine与Guava-——-是传承而非竞争"><a href="#Caffeine与Guava-——-是传承而非竞争" class="headerlink" title="Caffeine与Guava —— 是传承而非竞争"></a>Caffeine与Guava —— 是传承而非竞争</h2><p>很多人都知道Caffeine在各方面的表现都由于Guava Cache， 甚至对比之下有些小伙伴觉得Guava Cache简直一无是处。但不可否认的是，在曾经的一段时光里，Guava Cache提供了尽可能高效且轻量级的并发本地缓存工具框架。技术总是在不断的更新与迭代的，纵使优秀如<code>Guava Cache</code>这般，终究是难逃沦为<strong>时代眼泪</strong>的结局。</p>
+<p>纵观<code>Caffeine</code>，其原本就是基于Guava cache基础上孵化而来的改良版本，众多的特性与设计思路都完全沿用了Guava Cache相同的逻辑，且提供的接口与使用风格也与Guava Cache无异。所以，从这个层面而言，本人更愿意将Caffeine看作是Guava Cache的一种优秀基因的<strong>传承</strong>与发扬光大，而非是<strong>竞争</strong>与打压关系。</p>
+<p>那么Caffeine能够青出于蓝的秘诀在哪呢？下面总结了其最关键的<strong>3大要点</strong>，一起看下。</p>
+<h3 id="贯穿始终的异步策略"><a href="#贯穿始终的异步策略" class="headerlink" title="贯穿始终的异步策略"></a>贯穿始终的异步策略</h3><p>Caffeine在请求上的处理流程做了很多的优化，效果比较显著的当属数据淘汰处理执行策略的改进。之前在<code>Guava Cache</code>的介绍中，有提过Guava Cache的策略是在请求的时候同时去执行对应的清理操作，也就是<strong>读请求中混杂着写操作</strong>，虽然Guava Cache做了一系列的策略来减少其触发的概率，但一旦触发总归是会对读取操作的性能有一定的影响。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211142219373.png"></p>
+<p><code>Caffeine</code>则采用了<strong>异步处理</strong>的策略，<code>get</code>请求中虽然也会触发淘汰数据的清理操作，但是将清理任务添加到了独立的线程池中进行异步的<strong>不会阻塞</strong> <code>get</code> 请求的执行与返回，这样大大缩短了<code>get</code>请求的执行时长，提升了响应性能。</p>
+<p>除了对自身的异步处理优化，Caffeine还提供了全套的<code>Async</code>异步处理机制，可以支持业务在异步并行流水线式处理场景中使用以获得更加丝滑的体验。</p>
+<p>Caffeine完美的支持了在异步场景下的<strong>流水线</strong>处理使用场景，回源操作也支持<strong>异步</strong>的方式来完成。<code>CompletableFuture</code>并行流水线能力，是<code>JAVA8</code>在<strong>异步编程</strong>领域的一个重大改进。可以将一系列耗时且无依赖的操作改为并行同步处理，并等待各自处理结果完成后继续进行后续环节的处理，由此来降低阻塞等待时间，进而达到降低请求链路时长的效果。</p>
+<p>比如下面这段异步场景使用Caffeine并行处理的代码：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) throws Exception &#123;
+    AsyncLoadingCache&lt;String, String&gt; asyncLoadingCache &#x3D; buildAsyncLoadingCache();
+    &#x2F;&#x2F; 写入缓存记录（value值为异步获取）
+    asyncLoadingCache.put(&quot;key1&quot;, CompletableFuture.supplyAsync(() -&gt; &quot;value1&quot;));
+    &#x2F;&#x2F; 异步方式获取缓存值
+    CompletableFuture&lt;String&gt; completableFuture &#x3D; asyncLoadingCache.get(&quot;key1&quot;);
+    String value &#x3D; completableFuture.join();
+    System.out.println(value);
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="ConcurrentHashMap优化特性"><a href="#ConcurrentHashMap优化特性" class="headerlink" title="ConcurrentHashMap优化特性"></a>ConcurrentHashMap优化特性</h3><p>作为使用JAVA8新特性进行构建的Caffeine，充分享受了JAVA8语言层面优化改进所带来的性能上的增益。我们知道<code>ConcurrentHashMap</code>是JDK原生提供的一个线程安全的HashMap容器类型，而Caffeine底层也是基于ConcurrentHashMap进行构建与数据存储的。</p>
+<p>在<strong>JAVA7</strong>以及更早的版本中，ConcurrentHashMap采用的是<code>分段锁</code>的策略来实现线程安全的（前面文章中我们讲过Guava Cache采用的也是分段锁的策略），分段锁虽然在一定程度上可以降低锁竞争的冲突，但是在一些极高并发场景下，或者并发请求分布较为集中的时候，仍然会出现较大概率的阻塞等待情况。此外，这些版本中ConcurrentHashMap底层采用的是<code>数组+链表</code>的存储形式，这种情况在<strong>Hash冲突</strong>较为明显的情况下，需要频繁的<em>遍历链表</em>操作，也会影响整体的处理性能。</p>
+<p><strong>JAVA8</strong>中对ConcurrentHashMap的实现策略进行了较大调整，大幅提升了其在的并发场景的性能表现。主要可以分为<code>2个方面</code>的优化。</p>
+<ul>
+<li><strong>数组+链表结构自动升级为<code>数组+红黑树</code></strong></li>
+</ul>
+<p>默认情况下，ConcurrentHashMap的底层结构是<em>数组+链表</em>的形式，元素存储的时候会先计算下key对应的Hash值来将其划分到对应的数组对应的链表中，而当链表中的元素个数超过8个的时候，链表会自动转换为<code>红黑树</code>结构。如下所示：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206281633385.png"></p>
+<p>在遍历查询方面，红黑树有着比链表要更加卓越的性能表现。</p>
+<ul>
+<li><strong>分段锁升级为<code>synchronized+CAS</code>锁</strong></li>
+</ul>
+<p>分段锁的核心思想就是缩小锁的范围，进而降低锁竞争的概率。当数据量特别大的时候，其实每个锁涵盖的数据范围依旧会很大，如果并发请求量特别大的时候，依旧会出现很多线程抢夺同一把分段锁的情况。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924683167139344194.png"></p>
+<p>在JAVA8中，ConcurrentHashMap <strong>废弃分段锁</strong>的概念，改为了<code>synchronized+CAS</code>的策略，借助CAS的<strong>乐观锁</strong>策略，大大提升了<em>读多写少</em>场景下的并发能力。</p>
+<p>得益于JAVA8对<code>ConcurrentHashMap</code>的优化，使得Caffeine在多线程并发场景下的表现非常的出色。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="淘汰算法W-LFU的加持"><a href="#淘汰算法W-LFU的加持" class="headerlink" title="淘汰算法W-LFU的加持"></a>淘汰算法W-LFU的加持</h3><p>常规的<strong>缓存淘汰算法</strong>一般采用<code>FIFO</code>、<code>LRU</code>或者<code>LFU</code>，但是这些算法在实际缓存场景中都会存在一些<strong>弊端</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>弊端说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FIFO</td>
+<td><code>先进先出</code>策略，属于一种最为简单与原始的策略。如果缓存使用频率较高，会导致缓存数据<strong>始终在不停的进进出出</strong>，影响性能，且命中率表现也一般。</td>
+</tr>
+<tr>
+<td>LRU</td>
+<td><code>最近最久未使用</code>策略，保留最近被访问到的数据，而淘汰最久没有被访问的数据。如果遇到偶尔的批量刷数据情况，<strong>很容易将其他缓存内容都挤出内存</strong>，带来缓存击穿的风险。</td>
+</tr>
+<tr>
+<td>LFU</td>
+<td><code>最近少频率</code>策略，这种根据访问次数进行淘汰，相比而言内存中存储的热点数据命中率会更高些，缺点就是<strong>需要维护独立字段</strong>用来记录每个元素的访问次数，占用内存空间。</td>
+</tr>
+</tbody></table>
+<p>为了保证命中率，一般缓存框架都会选择使用LRU或者LFU策略，很少会有使用FIFO策略进行数据淘汰的。Caffeine缓存的LFU采用了<code>Count-Min Sketch</code>频率统计算法（参见下图示意，图片来源：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/3c6161e5337b">点此查看</a>），由于该LFU的计数器只有<code>4bit</code>大小，所以称为<strong>TinyLFU</strong>。在TinyLFU算法基础上引入一个基于LRU的<code>Window Cache</code>，这个新的算法叫就叫做<strong>W-TinyLFU</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211142245058.png" alt="图源网络"><br><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211142247540.png" alt="图源网络"></p>
+<p><code>W-TinyLFU</code>算法有效的解决了LRU以及LFU存在的弊端，为Caffeine提供了大部分场景下<strong>近乎完美</strong>的<strong>命中率</strong>表现。</p>
+<p>关于<code>W-TinyLFU</code>的具体说明，有兴趣的话可以<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/3c6161e5337b">点此了解</a>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="如何选择"><a href="#如何选择" class="headerlink" title="如何选择"></a>如何选择</h3><p>在Caffeine与Guava Cache之间如何选择？其实Spring已经给大家做了示范，从<code>Spring5</code>开始，其内置的本地缓存框架由Guava Cache切换到了Caffeine。应用到项目中的缓存选型，可以结合项目实际从多个方面进行抉择。</p>
+<ul>
+<li><p><strong>全新项目</strong>，闭眼选Caffeine<br>Java8也已经被广泛的使用多年，现在的新项目基本上都是JAVA8或以上的版本了。如果有新的项目需要做本地缓存选型，闭眼选择Caffeine就可以，错不了。</p>
+</li>
+<li><p>历史<strong>低版本JAVA项目</strong><br>由于Caffeine对JAVA版本有依赖要求，对于一些历史项目的维护而言，如果项目的<strong>JDK版本过低</strong>则无法使用Caffeine，这种情况下<code>Guava Cache</code>依旧是一个不错的选择。当然，也可以下定决心将项目的JDK版本升级到<code>JDK1.8+</code>版本，然后使用Caffeine来获得更好的性能体验 —— 但是对于一个历史项目而言，升级基础JDK版本带来的影响可能会比较大，需要提前评估好。</p>
+</li>
+<li><p>有同时使用<strong>Guava其它能力</strong><br>如果你的项目里面已经有引入并使用了Guava提供的相关功能，这种情况下为了避免太多外部组件的引入，也可以直接使用Guava提供的Cache组件能力，毕竟Guava Cache的表现并不算差，应付常规场景的本都缓存诉求完全足够。当然，为了追求更加极致的性能表现，另外引入并使用Caffeine也完全没有问题。</p>
+</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="Caffeine使用"><a href="#Caffeine使用" class="headerlink" title="Caffeine使用"></a>Caffeine使用</h2><h3 id="依赖引入"><a href="#依赖引入" class="headerlink" title="依赖引入"></a>依赖引入</h3><p>使用Caffeine，首先需要引入对应的库文件。如果是<em>Maven</em>项目，则可以在<code>pom.xml</code>中添加依赖声明来完成引入。</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup">&lt;dependency&gt;
+    &lt;groupId&gt;com.github.ben-manes.caffeine&lt;&#x2F;groupId&gt;
+    &lt;artifactId&gt;caffeine&lt;&#x2F;artifactId&gt;
+    &lt;version&gt;3.1.1&lt;&#x2F;version&gt;
+&lt;&#x2F;dependency&gt;</code></pre>
+
+<p>注意，如果你的本地<em>JDK版本比较低</em>，引入上述较新版本的时候可能会编译报错：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211092150853.png"></p>
+<p>遇到这种情况，可以考虑升级本地JDK版本（实际项目中升级可能有难度），或者将Caffeine版本降低一些，比如使用<code>2.9.3</code>版本。具体的版本列表，可以<a target="_blank" rel="noopener" href="https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine">点击此处</a>进行查询。</p>
+<p>这样便大功告成啦。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="容器创建"><a href="#容器创建" class="headerlink" title="容器创建"></a>容器创建</h3><p>和之前我们聊过的Guava Cache创建缓存对象的操作相似，我们可以通过构造器来方便的创建出一个Caffeine对象。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">Cache&lt;Integer, String&gt; cache &#x3D; Caffeine.newBuilder().build();</code></pre>
+
+<p>除了上述这种方式，Caffeine还支持使用不同的构造器方法，构建不同类型的Caffeine对象。对各种构造器方法梳理如下：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>build()</td>
+<td>构建一个手动回源的Cache对象</td>
+</tr>
+<tr>
+<td>build(CacheLoader)</td>
+<td>构建一个支持使用给定CacheLoader对象进行自动回源操作的LoadingCache对象</td>
+</tr>
+<tr>
+<td>buildAsync()</td>
+<td>构建一个支持异步操作的异步缓存对象</td>
+</tr>
+<tr>
+<td>buildAsync(CacheLoader)</td>
+<td>使用给定的CacheLoader对象构建一个支持异步操作的缓存对象</td>
+</tr>
+<tr>
+<td>buildAsync(AsyncCacheLoader)</td>
+<td>与buildAsync(CacheLoader)相似，区别点仅在于传入的参数类型不一样。</td>
+</tr>
+</tbody></table>
+<p>为了便于<strong>异步场景</strong>中处理，可以通过<code>buildAsync()</code>构建一个手动回源数据加载的缓存对象：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) &#123;
+    AsyncCache&lt;String, User&gt; asyncCache &#x3D; Caffeine.newBuilder()
+    .buildAsync();
+    User user &#x3D; asyncCache.get(&quot;123&quot;, s -&gt; &#123;
+        System.out.println(&quot;异步callable thread:&quot; + Thread.currentThread().getId());
+        return userDao.getUser(s);
+    &#125;).join();
+&#125;</code></pre>
+
+<p>当然，为了支持异步场景中的自动异步回源，我们可以通过<code>buildAsync(CacheLoader)</code>或者<code>buildAsync(AsyncCacheLoader)</code>来实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) throws Exception&#123;
+    AsyncLoadingCache&lt;String, User&gt; asyncLoadingCache &#x3D;
+            Caffeine.newBuilder().maximumSize(1000L).buildAsync(key -&gt; userDao.getUser(key));
+    User user &#x3D; asyncLoadingCache.get(&quot;123&quot;).join();
+&#125;</code></pre>
+
+<p>在创建缓存对象的同时，可以指定此缓存对象的一些处理策略，比如<em>容量限制</em>、比如<em>过期策略</em>等等。作为以替换Guava Cache为己任的后继者，Caffeine在缓存容器对象创建时的相关构建API也沿用了与Guava Cache相同的定义，常见的方法及其含义梳理如下：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>initialCapacity</td>
+<td>待创建的缓存容器的初始容量大小（记录<strong>条数</strong>）</td>
+</tr>
+<tr>
+<td>maximumSize</td>
+<td>指定此缓存容器的最大容量(最大缓存记录<strong>条数</strong>)</td>
+</tr>
+<tr>
+<td>maximumWeight</td>
+<td>指定此缓存容器的最大容量（最大<strong>比重</strong>值），需结合<code>weighter</code>方可体现出效果</td>
+</tr>
+<tr>
+<td>expireAfterWrite</td>
+<td>设定过期策略，按照数据<strong>写入时间</strong>进行计算</td>
+</tr>
+<tr>
+<td>expireAfterAccess</td>
+<td>设定过期策略，按照数据最后<strong>访问时间</strong>来计算</td>
+</tr>
+<tr>
+<td>expireAfter</td>
+<td>基于<strong>个性化定制</strong>的逻辑来实现过期处理（可以定制基于<code>新增</code>、<code>读取</code>、<code>更新</code>等场景的过期策略，甚至支持为<em>不同记录指定不同过期时间</em>）</td>
+</tr>
+<tr>
+<td>weighter</td>
+<td>入参为一个函数式接口，用于指定每条存入的缓存数据的权重占比情况。这个需要与<code>maximumWeight</code>结合使用</td>
+</tr>
+<tr>
+<td>refreshAfterWrite</td>
+<td>缓存写入到缓存之后</td>
+</tr>
+<tr>
+<td>recordStats</td>
+<td>设定开启此容器的数据加载与缓存命中情况统计</td>
+</tr>
+</tbody></table>
+<p>综合上述方法，我们可以创建出更加符合自己业务场景的缓存对象。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) &#123;
+    AsyncLoadingCache&lt;String, User&gt; asyncLoadingCache &#x3D; CaffeinenewBuilder()
+            .initialCapacity(1000) &#x2F;&#x2F; 指定初始容量
+            .maximumSize(10000L) &#x2F;&#x2F; 指定最大容量
+            .expireAfterWrite(30L, TimeUnit.MINUTES) &#x2F;&#x2F; 指定写入30分钟后过期
+            .refreshAfterWrite(1L, TimeUnit.MINUTES) &#x2F;&#x2F; 指定每隔1分钟刷新下数据内容
+            .removalListener((key, value, cause) -&gt;
+                    System.out.println(key + &quot;移除，原因：&quot; + cause)) &#x2F;&#x2F; 监听记录移除事件
+            .recordStats() &#x2F;&#x2F; 开启缓存操作数据统计
+            .buildAsync(key -&gt; userDao.getUser(key)); &#x2F;&#x2F; 构建异步CacheLoader加载类型的缓存对象
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="业务使用"><a href="#业务使用" class="headerlink" title="业务使用"></a>业务使用</h3><p>在上一章节创建缓存对象的时候，Caffeine支持创建出<strong>同步缓存</strong>与<strong>异步缓存</strong>，也即<code>Cache</code>与<code>AsyncCache</code>两种不同类型。而如果指定了CacheLoader的时候，又可以细分出<code>LoadingCache</code>子类型与<code>AsyncLoadingCache</code>子类型。对于常规业务使用而言，知道这四种类型的缓存类型基本就可以满足大部分场景的正常使用了。但是Caffeine的整体缓存类型其实是细分成了很多不同的具体类型的，从下面的<code>UML图</code>上可以看出一二。</p>
+<ul>
+<li><strong>同步缓存</strong></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211132205284.png"></p>
+<ul>
+<li><strong>异步缓存</strong></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211132205364.png"></p>
+<p>业务层面对缓存的使用，无外乎往缓存里面写入数据、从缓存里面读取数据。不管是同步还是异步，常见的用于操作缓存的方法梳理如下：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>get</td>
+<td>根据key获取指定的缓存值，如果没有则执行<strong>回源</strong>操作获取</td>
+</tr>
+<tr>
+<td>getAll</td>
+<td>根据给定的key列表批量获取对应的缓存值，返回一个<code>map格式</code>的结果，没有命中缓存的部分会执行<strong>回源</strong>操作获取</td>
+</tr>
+<tr>
+<td>getIfPresent</td>
+<td><strong>不执行回源</strong>操作，直接从缓存中尝试获取key对应的缓存值</td>
+</tr>
+<tr>
+<td>getAllPresent</td>
+<td><strong>不执行回源</strong>操作，直接从缓存中尝试获取给定的key列表对应的值，返回查询到的map格式结果， <em>异步场景不支持</em>此方法</td>
+</tr>
+<tr>
+<td>put</td>
+<td>向缓存中写入指定的key与value记录</td>
+</tr>
+<tr>
+<td>putAll</td>
+<td>批量向缓存中写入指定的key-value记录集，<em>异步场景不支持</em>此方法</td>
+</tr>
+<tr>
+<td>asMap</td>
+<td>将缓存中的数据转换为map格式返回</td>
+</tr>
+</tbody></table>
+<p>针对<strong>同步</strong>缓存，业务代码中操作使用举例如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) throws Exception &#123;
+    LoadingCache&lt;String, String&gt; loadingCache &#x3D; buildLoadingCache();
+    loadingCache.put(&quot;key1&quot;, &quot;value1&quot;);
+    String value &#x3D; loadingCache.get(&quot;key1&quot;);
+    System.out.println(value);
+&#125;</code></pre>
+
+<p>同样地，<strong>异步</strong>缓存的时候，业务代码中操作示意如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) throws Exception &#123;
+    AsyncLoadingCache&lt;String, String&gt; asyncLoadingCache &#x3D; buildAsyncLoadingCache();
+    &#x2F;&#x2F; 写入缓存记录（value值为异步获取）
+    asyncLoadingCache.put(&quot;key1&quot;, CompletableFuture.supplyAsync(() -&gt; &quot;value1&quot;));
+    &#x2F;&#x2F; 异步方式获取缓存值
+    CompletableFuture&lt;String&gt; completableFuture &#x3D; asyncLoadingCache.get(&quot;key1&quot;);
+    String value &#x3D; completableFuture.join();
+    System.out.println(value);
+&#125;</code></pre>
+
+<h2 id="小结回顾"><a href="#小结回顾" class="headerlink" title="小结回顾"></a>小结回顾</h2><p>好啦，关于<code>Caffeine Cache</code>的具体使用方式、核心的优化改进点相关的内容，以及与<code>Guava Cache</code>的比较，就介绍到这里了。不知道小伙伴们是否对Caffeine Cache有了全新的认识了呢？而关于Caffeine Cache与Guava Cache的差别，你是否有自己的一些想法与见解呢？欢迎评论区一起交流下，期待和各位小伙伴们一起切磋、共同成长。</p>
+<blockquote>
+<p>下一篇文章中，我们将深入讲解下Caffeine同步、异步回源操作的各种不同实现，以及对应的实现与底层设计逻辑。如有兴趣，欢迎关注后续更新。</p>
+</blockquote>
+<p>📣 <strong>补充说明1</strong> ：</p>
+<blockquote>
+<p>本文属于《<a target="_blank" rel="noopener" href="https://juejin.cn/column/7140852038258147358">深入理解缓存原理与实战设计</a>》系列专栏的内容之一。该专栏围绕缓存这个宏大命题进行展开阐述，全方位、系统性地深度剖析各种缓存实现策略与原理、以及缓存的各种用法、各种问题应对策略，并一起探讨下缓存设计的哲学。</p>
+<p>如果有兴趣，也欢迎关注此专栏。</p>
+</blockquote>
+<p>📣 <strong>补充说明2</strong> ：</p>
+<ul>
+<li>关于本文中涉及的<strong>演示代码</strong>的完整示例，我已经整理并提交到github中，如果您有需要，可以自取：<a target="_blank" rel="noopener" href="https://github.com/veezean/JavaBasicSkills">https://github.com/veezean/JavaBasicSkills</a></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312091.gif"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn/post/20221207075417.html">http://blog.codingcoder.cn/post/20221207075417.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://blog.codingcoder.cn" target="_blank">Veezean的技术探秘馆</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%AD%98/">缓存</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202210050807355.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20221214070417.html" title="解读JVM级别本地缓存Caffeine青出于蓝的要诀2 —— 弄清楚Caffeine的同步、异步回源方式"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">解读JVM级别本地缓存Caffeine青出于蓝的要诀2 —— 弄清楚Caffeine的同步、异步回源方式</div></div></a></div><div class="next-post pull-right"><a href="/post/20221129090317.html" title="重新认识下JVM级别的本地缓存框架Guava Cache(3)——探寻实现细节与核心机制"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">重新认识下JVM级别的本地缓存框架Guava Cache(3)——探寻实现细节与核心机制</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20221028085417.html" title="聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-28</div><div class="title">聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活</div></div></a></div><div><a href="/post/20221102081617.html" title="聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-02</div><div class="title">聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性</div></div></a></div><div><a href="/post/20221107085417.html" title="手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-07</div><div class="title">手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架</div></div></a></div><div><a href="/post/20221107115817.html" title="手写本地缓存实战1——各个击破，按需应对实际使用场景"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-07</div><div class="title">手写本地缓存实战1——各个击破，按需应对实际使用场景</div></div></a></div><div><a href="/post/20221116065417.html" title="JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-16</div><div class="title">JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache</div></div></a></div><div><a href="/post/20221123080317.html" title="重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-23</div><div class="title">重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">这个是作者介绍</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A8%E4%BA%BA%E8%82%A9%E8%86%80%E4%B8%8A%E7%9A%84%E4%BA%A7%E7%89%A9"><span class="toc-number">1.</span> <span class="toc-text">巨人肩膀上的产物</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Caffeine%E4%B8%8EGuava-%E2%80%94%E2%80%94-%E6%98%AF%E4%BC%A0%E6%89%BF%E8%80%8C%E9%9D%9E%E7%AB%9E%E4%BA%89"><span class="toc-number">2.</span> <span class="toc-text">Caffeine与Guava —— 是传承而非竞争</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%AF%E7%A9%BF%E5%A7%8B%E7%BB%88%E7%9A%84%E5%BC%82%E6%AD%A5%E7%AD%96%E7%95%A5"><span class="toc-number">2.1.</span> <span class="toc-text">贯穿始终的异步策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ConcurrentHashMap%E4%BC%98%E5%8C%96%E7%89%B9%E6%80%A7"><span class="toc-number">2.2.</span> <span class="toc-text">ConcurrentHashMap优化特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%98%E6%B1%B0%E7%AE%97%E6%B3%95W-LFU%E7%9A%84%E5%8A%A0%E6%8C%81"><span class="toc-number">2.3.</span> <span class="toc-text">淘汰算法W-LFU的加持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9"><span class="toc-number">2.4.</span> <span class="toc-text">如何选择</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Caffeine%E4%BD%BF%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">Caffeine使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E5%BC%95%E5%85%A5"><span class="toc-number">3.1.</span> <span class="toc-text">依赖引入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E5%88%9B%E5%BB%BA"><span class="toc-number">3.2.</span> <span class="toc-text">容器创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E4%BD%BF%E7%94%A8"><span class="toc-number">3.3.</span> <span class="toc-text">业务使用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93%E5%9B%9E%E9%A1%BE"><span class="toc-number">4.</span> <span class="toc-text">小结回顾</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"/></a><div class="content"><a class="title" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式">面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式</a><time datetime="2023-01-12T23:13:17.000Z" title="发表于 2023-01-13 07:13:17">2023-01-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"/></a><div class="content"><a class="title" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制">Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制</a><time datetime="2023-01-12T01:02:17.000Z" title="发表于 2023-01-12 09:02:17">2023-01-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"/></a><div class="content"><a class="title" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点">Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点</a><time datetime="2023-01-09T23:29:17.000Z" title="发表于 2023-01-10 07:29:17">2023-01-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"/></a><div class="content"><a class="title" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板</a><time datetime="2023-01-06T23:04:17.000Z" title="发表于 2023-01-07 07:04:17">2023-01-07</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 By Veezean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

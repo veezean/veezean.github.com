@@ -1,0 +1,563 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架 | Veezean的技术探秘馆</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="作为缓存系列专栏的第四篇文章，我们将在上一篇的基础之上进行升华，一起思考如何构建一个完整且通用的本地缓存框架，并在过程中体会缓存实现的关键点与架构设计的思路。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架">
+<meta property="og:url" content="http://blog.codingcoder.cn/post/20221107085417.html">
+<meta property="og:site_name" content="Veezean的技术探秘馆">
+<meta property="og:description" content="作为缓存系列专栏的第四篇文章，我们将在上一篇的基础之上进行升华，一起思考如何构建一个完整且通用的本地缓存框架，并在过程中体会缓存实现的关键点与架构设计的思路。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202210050807355.png">
+<meta property="article:published_time" content="2022-11-07T00:54:17.000Z">
+<meta property="article:modified_time" content="2022-11-07T00:54:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="缓存">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202210050807355.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://blog.codingcoder.cn/post/20221107085417.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的技术探秘馆","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-11-07 08:54:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的技术探秘馆"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的技术探秘馆</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-11-07T00:54:17.000Z" title="发表于 2022-11-07 08:54:17">2022-11-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-11-07T00:54:17.000Z" title="更新于 2022-11-07 08:54:17">2022-11-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%93%E5%AD%98%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E8%AE%BE%E8%AE%A1/">缓存原理与实战设计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>15分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20221107085417.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20221107085417.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><blockquote>
+<p>作为缓存系列专栏的第四篇文章，我们将在上一篇的基础之上进行升华，一起思考如何构建一个完整且通用的本地缓存框架，并在过程中体会缓存实现的关键点与架构设计的思路。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png"></p>
+<p>大家好，又见面了。</p>
+<hr>
+<blockquote>
+<p>本文是笔者作为掘金技术社区签约作者的身份输出的缓存专栏系列内容，将会通过系列专题，讲清楚缓存的方方面面。如果感兴趣，欢迎关注以获取后续更新。</p>
+</blockquote>
+<hr>
+<p>村上春树有本著名的小说名叫《当我谈跑步时我谈些什么》，讲述了一个人怎么样通过跑步去悟道出人生的很多哲理与感悟。而读书的价值，就是让我们可以将别人参悟出的道理化为己用，将别人走过的路化为充实自己的养料。</p>
+<p>在上一篇文章《<a target="_blank" rel="noopener" href="https://juejin.cn/post/7154212378316374030">手写本地缓存实战1——各个击破，按需应对实际使用场景</a>》中，我们领略了实际项目中一些零散的缓存场景的实现方式，并对缓存实现中的<code>LRU淘汰策略</code>、<code>TTL过期清理</code>机制实现方案进行了探讨。作为《<a target="_blank" rel="noopener" href="https://juejin.cn/column/7140852038258147358">深入理解缓存原理与实战设计</a>》系列专栏的第四篇文章，我们将在上一篇的基础之上进行升华，一起思考如何构建一个<strong>完整且通用</strong>的本地缓存框架，并在过程中体会缓存实现的关键点与架构设计的思路。</p>
+<p>有的小伙伴可能会有疑问，现在有很多成熟的开源库，比如JAVA项目<code>的Guava cache</code>、<code>Caffeine Cache</code>、<code>Spring Cache</code>等（这些在我们的系列文章中，后面都会逐个介绍），它们都提供了相对完善、开箱即用的本地缓存能力，为什么这里还要去自己手写本地缓存呢？这不是重复造轮子吗？</p>
+<p>是也？非也！在编码的进阶之路上，“会用”永远都只是让自己停留在入门级别。正所谓知其然更要知其所以然，通过一起探讨手写缓存的实现与设计关键点，来切身的体会蕴藏在缓存架构中的设计哲学。只有真正的掌握其原理，才能在使用中更好的去发挥其最大价值。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="缓存框架定调"><a href="#缓存框架定调" class="headerlink" title="缓存框架定调"></a>缓存框架定调</h2><p>在一个项目系统中需要缓存数据的场景会非常多，而且需要缓存的数据类型也不尽相同。如果每个使用到缓存的地方，我们都单独的去实现一套缓存，那开发小伙伴们的工作量又要上升了，且后续各业务逻辑独立的缓存部分代码的维护也是一个可预见的头疼问题。</p>
+<p>作为应对之法，我们的本地缓存必须往一个<strong>更高层级</strong>进行演进，使得项目中不同的缓存场景都可以通用 —— 也即将其抽象封装为一个通用的<code>本地缓存框架</code>。既然定位为业务通用的本地缓存框架，那至少从规范或者能力层面，具备一些框架该有的样子：</p>
+<ul>
+<li><p><strong>泛型化设计</strong>，不同业务维度可以通用</p>
+</li>
+<li><p><strong>标准化接口</strong>，满足大部分场景的使用诉求</p>
+</li>
+<li><p><strong>轻量级集成</strong>，对业务逻辑不要有太强侵入性</p>
+</li>
+<li><p><strong>多策略可选</strong>，允许选择不同实现策略甚至是缓存存储机制，打破众口难调的困局</p>
+</li>
+</ul>
+<p>下面，我们以上述几个点要求作为出发点，一起来勾勒一个符合上述诉求的本地缓存框架的模样。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="缓存框架实现"><a href="#缓存框架实现" class="headerlink" title="缓存框架实现"></a>缓存框架实现</h2><h3 id="缓存容器接口设计"><a href="#缓存容器接口设计" class="headerlink" title="缓存容器接口设计"></a>缓存容器接口设计</h3><p>在前一篇文章中，我们有介绍过项目中常见的缓存使用场景。基于提及的几种具体应用场景，我们可以归纳出业务对本地缓存的<em>API接口</em>层的一些共性诉求。如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>接口名称</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>get</td>
+<td>根据key查询对应的值</td>
+</tr>
+<tr>
+<td>put</td>
+<td>将对应的记录添加到缓存中</td>
+</tr>
+<tr>
+<td>remove</td>
+<td>将指定的缓存记录删除</td>
+</tr>
+<tr>
+<td>containsKey</td>
+<td>判断缓存中是否有指定的值</td>
+</tr>
+<tr>
+<td>clear</td>
+<td>清空缓存</td>
+</tr>
+<tr>
+<td>getAll</td>
+<td>传入多个key，然后批量查询各个key对应的值，批量返回，提升调用方的使用效率</td>
+</tr>
+<tr>
+<td>putAll</td>
+<td>一次性批量将多个键值对添加到缓存中，提升调用方的使用效率</td>
+</tr>
+<tr>
+<td>putIfAbsent</td>
+<td>如果不存在的情况下则添加到缓存中，如果存在则不做操作</td>
+</tr>
+<tr>
+<td>putIfPresent</td>
+<td>如果key已存在的情况下则去更新key对应的值，如果不存在则不做操作</td>
+</tr>
+</tbody></table>
+<p>为了满足一些场景对数据过期的支持，还需要提供或者重载一些接口用于设定<em>过期时间</em>：</p>
+<table>
+<thead>
+<tr>
+<th>接口名称</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>expireAfter</td>
+<td>用于指定某个记录的过期时间长度</td>
+</tr>
+<tr>
+<td>put</td>
+<td>重载方法，增加过期时间的参数设定</td>
+</tr>
+<tr>
+<td>putAll</td>
+<td>重载方法，增加过期时间的参数设定</td>
+</tr>
+</tbody></table>
+<p>基于上述提供的各个API方法，我们可以确定缓存的具体接口类定义：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
+ * 缓存容器接口
+ *
+ * @author 架构悟道
+ * @since 2022&#x2F;10&#x2F;15
+ *&#x2F;
+public interface ICache&lt;K, V&gt; &#123;
+    V get(K key);
+    void put(K key, V value);
+    void put(K key, V value, int timeIntvl, TimeUnit timeUnit);
+    V remove(K key);
+    boolean containsKey(K key);
+    void clear();
+    boolean containsValue(V value);
+    Map&lt;K, V&gt; getAll(Set&lt;K&gt; keys);
+    void putAll(Map&lt;K, V&gt; map);
+    void putAll(Map&lt;K, V&gt; map, int timeIntvl, TimeUnit timeUnit);
+    boolean putIfAbsent(K key, V value);
+    boolean putIfPresent(K key, V value);
+    void expireAfter(K key, int timeIntvl, TimeUnit timeUnit);
+&#125;</code></pre>
+
+<p>此外，为了方便框架层面对缓存数据的管理与维护，我们也可以定义一套统一的<em>管理API</em>接口：</p>
+<table>
+<thead>
+<tr>
+<th>接口名称</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>removeIfExpired</td>
+<td>如果给定的key过期则直接删除</td>
+</tr>
+<tr>
+<td>clearAllExpiredCaches</td>
+<td>清除当前容器中已经过期的所有缓存记录</td>
+</tr>
+</tbody></table>
+<p>同样地，我们可以基于上述接口说明，敲定接口定义如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public interface ICacheClear&lt;K&gt; &#123;
+    void removeIfExpired(K key);
+    void clearAllExpiredCaches();
+&#125;</code></pre>
+
+<p>至此，我们已完成了缓存的操作与管理维护接口的定义，下面我们看下如何对缓存进行维护管理。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="缓存管理能力构建"><a href="#缓存管理能力构建" class="headerlink" title="缓存管理能力构建"></a>缓存管理能力构建</h3><p>在一个项目中，我们会涉及到多种不同业务维度的数据缓存，而不同业务缓存对应的数据存管要求也各不相同。</p>
+<p>比如对于一个公司行政管理系统而言，其涉及到如下数据的缓存：</p>
+<ul>
+<li>部门信息</li>
+</ul>
+<p>部门信息量比较少，且部门组织架构相对固定，所以需要<em>全量存储</em>，数据<strong>不允许过期</strong>。</p>
+<ul>
+<li>员工信息</li>
+</ul>
+<p>员工信息总体体量也不大，但是员工信息可能会变更，如员工可能会修改签名、头像或者更换部门等。这些操作对实时性的要求并不高，所以需要设置每条记录缓存30分钟，<em>超时</em>则从缓存中删除，后续使用到之后重新查询DB并写入缓存中。</p>
+<p>从上面的示例场景中，可以提炼出缓存框架需要关注到的两个管理能力诉求：</p>
+<ol>
+<li><p>需要支持<strong>托管多个缓存容器</strong>，分别存储不同的数据，比如部门信息和员工信息，需要存储在两个独立的缓存容器中，需要支持获取各自独立的缓存容器进行操作。</p>
+</li>
+<li><p>需要支持选择多种<strong>不同能力</strong>的缓存容器，比如常规的容器、支持数据过期的缓存容器等。</p>
+</li>
+<li><p>需要能够支持对缓存容器的管理，以及缓存基础维护能力的支持，比如<strong>销毁</strong>缓存容器、比如<strong>清理</strong>容器内的过期数据。</p>
+</li>
+</ol>
+<p>基于上述诉求，我们敲定管理接口类如下：</p>
+<table>
+<thead>
+<tr>
+<th>接口名称</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>createCache</td>
+<td>创建一个新的缓存容器</td>
+</tr>
+<tr>
+<td>getCache</td>
+<td>获取指定的缓存容器</td>
+</tr>
+<tr>
+<td>destoryCache</td>
+<td>销毁指定的缓存容器</td>
+</tr>
+<tr>
+<td>destoryAllCache</td>
+<td>销毁所有的缓存容器</td>
+</tr>
+<tr>
+<td>getAllCacheNames</td>
+<td>获取所有的缓存容器名称</td>
+</tr>
+</tbody></table>
+<p>对应地，可以完成接口类的定义：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public interface ICacheManager &#123;
+    &lt;K, V&gt; ICache&lt;K, V&gt; getCache(String key, Class&lt;K&gt; keyType, Class&lt;V&gt; valueType);
+    void createCache(String key, CacheType cacheType);
+    void destoryCache(String key);
+    void destoryAllCache();
+    Set&lt;String&gt; getAllCacheNames();
+&#125;</code></pre>
+
+<p>在上一节关于缓存容器的接口划定描述中，我们敲定了两大类的接口，一类是提供<strong>给业务调用</strong>的，另一类是<strong>给框架管理使用</strong>的。为了简化实现，我们的缓存容器可以同时实现这两类接口，对应UML图如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210161053511.png"></p>
+<p>为了能让业务自行选择使用的容器类型，可以通过专门的<strong>容器工厂</strong>来创建，根据传入的缓存容器类型，创建对应的缓存容器实例：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210161054909.png"></p>
+<p>这样，在<code>CacheManager</code>管理层面，我们可以很轻松的完成创建缓存容器或者获取缓存容器的接口实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Override
+public void createCache(String key, CacheType cacheType) &#123;
+    ICache cache &#x3D; CacheFactory.createCache(cacheType);
+    caches.put(key, cache);
+&#125;
+@Override
+public &lt;K, V&gt; ICache&lt;K, V&gt; getCache(String cacheCollectionKey, Class&lt;K&gt; keyType, Class&lt;V&gt;valueType) &#123;
+    try &#123;
+        return (ICache&lt;K, V&gt;) caches.get(cacheCollectionKey);
+    &#125; catch (Exception e) &#123;
+        throw new RuntimeException(&quot;failed to get cache&quot;, e);
+    &#125;
+&#125;</code></pre>
+
+<h3 id="过期清理"><a href="#过期清理" class="headerlink" title="过期清理"></a>过期清理</h3><p>作为缓存，经常会需要设定一个缓存有效期，这个有效期可以基于<code>Entry</code>维度进行实现，并且需要支持到期后自动删除此条数据。在前一篇文章《<a target="_blank" rel="noopener" href="https://juejin.cn/post/7154212378316374030">本地缓存实现的时候需要考虑什么——按需应对实际使用场景</a>》中我们有详细探讨过几种不同的过期数据清理机制，这里我们直接套用结论，采用<strong>惰性删除与定期清理</strong>结合的策略来实现。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210141141720.png"></p>
+<p>我们对实际缓存数据值套个外壳，用于存储一些管理类的属性，比如过期时间等。然后我们的容器类实现<code>ICacheClear</code>接口，并在对外提供的业务操作接口中进行惰性删除的实现逻辑。</p>
+<p>比如对于默认的缓存容器而言，其<code>ICacheClear</code>的实现逻辑可能如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Override
+public synchronized void removeIfExpired(K key) &#123;
+    Optional.ofNullable(data.get(key)).map(CacheItem::hasExpired).ifPresent(expired -&gt; &#123;
+        if (expired) &#123;
+            data.remove(key);
+        &#125;
+    &#125;);
+&#125;
+@Override
+public synchronized void clearAllExpiredCaches() &#123;
+    List&lt;K&gt; expiredKeys &#x3D; data.entrySet().stream()
+            .filter(cacheItemEntry -&gt; cacheItemEntry.getValue().hasExpired())
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
+    for (K key : expiredKeys) &#123;
+        data.remove(key);
+    &#125;
+&#125;</code></pre>
+
+<p>这样呢，按照<strong>惰性删除</strong>的策略，在各个业务接口中，需要先调用<code>removeIfExpired</code>方法移除已过期的数据：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Override
+public Optional&lt;V&gt; get(K key) &#123;
+    removeIfExpired(key);
+    return Optional.ofNullable(data.get(key)).map(CacheItem::getValue);
+&#125;</code></pre>
+
+<p>而在框架管理层面，作为兜底，需要提供<strong>定时机制</strong>，来清理各个容器中的过期数据：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public class CacheManager implements ICacheManager &#123;
+    private Map&lt;String, ICache&gt; caches &#x3D; new ConcurrentHashMap&lt;&gt;();
+    private List&lt;ICacheHandler&gt; handlers &#x3D; Collections.synchronizedList(new ArrayList&lt;&gt;());
+
+    public CacheManager() &#123;
+        new Timer().schedule(new TimerTask() &#123;
+            @Override
+            public void run() &#123;
+                System.out.println(&quot;start clean expired data timely&quot;);
+                handlers.forEach(ICacheHandler::clearAllExpiredCaches);
+            &#125;
+        &#125;, 60000L, 1000L * 60 * 60 * 24);
+    &#125;
+
+    &#x2F;&#x2F; 省略其它方法
+&#125;</code></pre>
+
+<p>这样呢，对缓存的数据过期能力的支撑便完成了。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="构建不同能力的缓存容器"><a href="#构建不同能力的缓存容器" class="headerlink" title="构建不同能力的缓存容器"></a>构建不同能力的缓存容器</h3><p>作为缓存框架，势必需要面临不同的业务各不相同的诉求。在框架搭建层面，我们整体框架的设计实现遵循着<code>里式替换</code>的原则，且借助<code>泛型</code>进行构建。这样，我们就可以实现给定的接口类，提供不同的缓存容器来满足业务的场景需要。</p>
+<p>比如我们需要提供两种类型的容器：</p>
+<ul>
+<li><p>普通的键值对容器</p>
+</li>
+<li><p>支持设定最大容量且使用LRU策略淘汰的键值对容器</p>
+</li>
+</ul>
+<p>可以直接创建两个不同的容器类，然后分别实现接口方法即可。对应UML示意如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210161122487.png"></p>
+<p>最后，需要将我们创建的不同的容器类型在<code>CacheType</code>中注册下，这样调用方便可以通过指定不同的<code>CacheType</code>来选择使用不同的缓存容器。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@AllArgsConstructor
+@Getter
+public enum CacheType &#123;
+    DEFAULT(DefaultCache.class),
+    LRU(LruCache.class);
+    private Class&lt;? extends ICache&gt; classType;
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="缓存框架使用初体验"><a href="#缓存框架使用初体验" class="headerlink" title="缓存框架使用初体验"></a>缓存框架使用初体验</h2><p>至此呢，我们的本地缓存框架就算是搭建完成了。在业务中有需要使用缓存的场景直接使用<code>CacheManager</code>中的<code>createCache</code>方法创建出对应缓存容器，然后调用缓存容器的接口进行缓存的操作即可。</p>
+<p>我们来调用一下，看看使用体验与功能如何。比如我们现在需要为用户信息创建一个独立的缓存，然后往里面写入一个用户记录并设定<code>1s</code>后过期：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) &#123;
+    manager.createCache(&quot;userData&quot;, CacheType.LRU);
+    ICache&lt;String, User&gt; userDataCache &#x3D; manager.getCache(&quot;userData&quot;, String.class, User.class);
+    userDataCache.put(&quot;user1&quot;, new User(&quot;user1&quot;));
+    userDataCache.expireAfter(&quot;user1&quot;, 1, TimeUnit.SECONDS);
+    userDataCache.get(&quot;user1&quot;).ifPresent(value -&gt; System.out.println(&quot;找到用户：&quot; + value));
+    try &#123;
+        Thread.sleep(2000L);
+    &#125; catch (Exception e) &#123;
+    &#125;
+    boolean present &#x3D; userDataCache.get(&quot;user1&quot;).isPresent();
+    if (!present) &#123;
+        System.out.println(&quot;用户不存在&quot;);
+    &#125;
+&#125;</code></pre>
+
+<p>执行之后，输出结果为:</p>
+<pre class="line-numbers language-none"><code class="language-none">找到用户：User(userName&#x3D;user1)
+用户不存在</code></pre>
+
+<p>可以发现，完全符合我们的预期，且过期数据清理机也已生效。同样地，如果需要为其它数据创建独立的缓存存储，也参考上面的逻辑，创建自己独立的缓存容器即可。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="扩展探讨"><a href="#扩展探讨" class="headerlink" title="扩展探讨"></a>扩展探讨</h2><h3 id="分布式场景下本地缓存漂移现象应对策略"><a href="#分布式场景下本地缓存漂移现象应对策略" class="headerlink" title="分布式场景下本地缓存漂移现象应对策略"></a>分布式场景下本地缓存漂移现象应对策略</h3><p>在本系列的开篇文章《<a target="_blank" rel="noopener" href="https://juejin.cn/post/7151937376578142216">聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活</a>》中，我们有提到过一个本地缓存在分布式场景下存在的一个缓存漂移问题：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210010815833.png"></p>
+<p>解决缓存漂移问题，一个简单的方案就是借助集中式缓存来解决（比如<code>Redis</code>）。但是在一些简单的小型分布式节点中，不太值得引入太多额外公共组件服务的时候，也可以考虑对本地缓存进行增强，提供一些同步更新各节点缓存的机制。</p>
+<p>下面介绍两个两个实现思路。</p>
+<ul>
+<li>组网广播</li>
+</ul>
+<p>在一些小型组网中，当某一个节点执行缓存更新操作的时候，都同时广播一个事件通知给其余节点，各个节点都进行节点自身缓存数据的更新。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210122207674.png"></p>
+<ul>
+<li>定时轮询式</li>
+</ul>
+<p>一般的系统中，都会有个数据库节点（比如<code>MySQL</code>），我们可以借助数据库作为一个中间辅助，每次更新之后，都将缓存的更新信息写入一个独立的表中，然后各个缓存节点都定时从DB中拉取增量更新的记录，然后更新到本地缓存中。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210122156938.png"></p>
+<p>值得注意的是，上面这些思路仅适用于写操作不是很频繁、并且对实时一致性要求不是特别严苛的场景 —— 当然，在实际项目中，真正这么搞的情况比较少。因为本地缓存设计存在的初衷就是用来应对单进程内的缓存独立缓存使用，而这种涉及到多节点之间缓存数据一致保证的场景，本就不是本地缓存的擅长领域。所以在分布式场景下，往往都会直接选择使用集中式缓存。</p>
+<p>当然啦，上面我们提到的两种本地缓存同步的机制，都是相对简单的一种实现。一些比较主流的本地缓存框架，也有提供一些集群化数据同步的机制，比如<code>Ehcache</code>就提供了高达<strong>5种</strong>不同的集群化策略，以达到各个本地缓存节点数据保持一致的效果：</p>
+<ul>
+<li><p><code>RMI</code>组播方式</p>
+</li>
+<li><p><code>JMS</code>消息方式</p>
+</li>
+<li><p><code>Cache Server</code>模式</p>
+</li>
+<li><p><code>JGroup</code>方式</p>
+</li>
+<li><p><code>Terracotta</code>方式</p>
+</li>
+</ul>
+<p>后续文章中我们会一起探讨下Ehcache的相关内容，这里先卖个关子，到时候我们细聊。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="小结回顾"><a href="#小结回顾" class="headerlink" title="小结回顾"></a>小结回顾</h2><p>好啦，关于手写本地通用缓存框架的内容，我们就聊这么多。通过本篇内容，我们完成了对前面文章中提过的一些缓存设计理论原则的实践，并一步步的阐述了缓存的设计与实现关键点，更展示了如何让一个缓存模块从简单的能用变为好用、通用。</p>
+<p>当然，本篇内容主要是为了通过手写缓存的模式，来让大家更切身的体会缓存实现中的关键点与架构设计思路，并能在后续的使用中更正确的去使用。在实际项目中，除非一些特殊定制诉求需要手动实现缓存机制外，我们倒也不必自己费时劳神地去手写缓存框架，直接采用现有的开源方案即可。比如JAVA类的项目，目前有很多开源库（比如<code>Guava cache</code>、<code>Caffeine Cache</code>、<code>Spring Cache</code>等）都提供了相对完善、开箱即用的本地缓存能力，可以直接使用，在后面的系列文章中，我们将逐个剖析。</p>
+<p>那么，关于缓存模块的设计与实现，你是否也曾手动编写过呢？你是如何解决这些问题的呢？你关于这些问题你是否有更好的理解与应对策略呢？欢迎评论区一起交流下，期待和各位小伙伴们一起切磋、共同成长。</p>
+<p>📣 <strong>补充说明1</strong> ：</p>
+<blockquote>
+<p>本文属于《<a target="_blank" rel="noopener" href="https://juejin.cn/column/7140852038258147358">深入理解缓存原理与实战设计</a>》系列专栏的内容之一。该专栏围绕缓存这个宏大命题进行展开阐述，全方位、系统性地深度剖析各种缓存实现策略与原理、以及缓存的各种用法、各种问题应对策略，并一起探讨下缓存设计的哲学。</p>
+<p>如果有兴趣，也欢迎关注此专栏。</p>
+</blockquote>
+<p>📣 <strong>补充说明2</strong> ：</p>
+<ul>
+<li>关于本文中涉及的<strong>演示代码</strong>的完整示例，我已经整理并提交到github中，如果您有需要，可以自取：<a target="_blank" rel="noopener" href="https://github.com/veezean/JavaBasicSkills">https://github.com/veezean/JavaBasicSkills</a></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312091.gif"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn/post/20221107085417.html">http://blog.codingcoder.cn/post/20221107085417.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://blog.codingcoder.cn" target="_blank">Veezean的技术探秘馆</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%AD%98/">缓存</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202210050807355.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20221107115817.html" title="手写本地缓存实战1——各个击破，按需应对实际使用场景"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">手写本地缓存实战1——各个击破，按需应对实际使用场景</div></div></a></div><div class="next-post pull-right"><a href="/post/20221102081617.html" title="聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20221028085417.html" title="聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-28</div><div class="title">聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活</div></div></a></div><div><a href="/post/20221102081617.html" title="聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-02</div><div class="title">聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性</div></div></a></div><div><a href="/post/20221107115817.html" title="手写本地缓存实战1——各个击破，按需应对实际使用场景"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-07</div><div class="title">手写本地缓存实战1——各个击破，按需应对实际使用场景</div></div></a></div><div><a href="/post/20221116065417.html" title="JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-16</div><div class="title">JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache</div></div></a></div><div><a href="/post/20221123080317.html" title="重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-23</div><div class="title">重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来</div></div></a></div><div><a href="/post/20221125071617.html" title="重新认识下JVM级别的本地缓存框架Guava Cache(2)——深入解读其容量限制与数据淘汰策略"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-25</div><div class="title">重新认识下JVM级别的本地缓存框架Guava Cache(2)——深入解读其容量限制与数据淘汰策略</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">这个是作者介绍</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E6%A1%86%E6%9E%B6%E5%AE%9A%E8%B0%83"><span class="toc-number">1.</span> <span class="toc-text">缓存框架定调</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E6%A1%86%E6%9E%B6%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">缓存框架实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E5%AE%B9%E5%99%A8%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.1.</span> <span class="toc-text">缓存容器接口设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E7%AE%A1%E7%90%86%E8%83%BD%E5%8A%9B%E6%9E%84%E5%BB%BA"><span class="toc-number">2.2.</span> <span class="toc-text">缓存管理能力构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%9C%9F%E6%B8%85%E7%90%86"><span class="toc-number">2.3.</span> <span class="toc-text">过期清理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E5%BB%BA%E4%B8%8D%E5%90%8C%E8%83%BD%E5%8A%9B%E7%9A%84%E7%BC%93%E5%AD%98%E5%AE%B9%E5%99%A8"><span class="toc-number">2.4.</span> <span class="toc-text">构建不同能力的缓存容器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E6%A1%86%E6%9E%B6%E4%BD%BF%E7%94%A8%E5%88%9D%E4%BD%93%E9%AA%8C"><span class="toc-number">3.</span> <span class="toc-text">缓存框架使用初体验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E6%8E%A2%E8%AE%A8"><span class="toc-number">4.</span> <span class="toc-text">扩展探讨</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E5%9C%BA%E6%99%AF%E4%B8%8B%E6%9C%AC%E5%9C%B0%E7%BC%93%E5%AD%98%E6%BC%82%E7%A7%BB%E7%8E%B0%E8%B1%A1%E5%BA%94%E5%AF%B9%E7%AD%96%E7%95%A5"><span class="toc-number">4.1.</span> <span class="toc-text">分布式场景下本地缓存漂移现象应对策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93%E5%9B%9E%E9%A1%BE"><span class="toc-number">5.</span> <span class="toc-text">小结回顾</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"/></a><div class="content"><a class="title" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式">面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式</a><time datetime="2023-01-12T23:13:17.000Z" title="发表于 2023-01-13 07:13:17">2023-01-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"/></a><div class="content"><a class="title" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制">Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制</a><time datetime="2023-01-12T01:02:17.000Z" title="发表于 2023-01-12 09:02:17">2023-01-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"/></a><div class="content"><a class="title" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点">Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点</a><time datetime="2023-01-09T23:29:17.000Z" title="发表于 2023-01-10 07:29:17">2023-01-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"/></a><div class="content"><a class="title" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板</a><time datetime="2023-01-06T23:04:17.000Z" title="发表于 2023-01-07 07:04:17">2023-01-07</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 By Veezean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

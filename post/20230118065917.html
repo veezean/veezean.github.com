@@ -1,0 +1,324 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现 | Veezean的技术探秘馆</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本篇文章，我们就一起聊一聊如何来更好的使用缓存，探寻下如何降低缓存交互过程的性能损耗、如何压缩缓存的存储空间占用、如何保证多个操作命令原子性等问题的解决策略，让缓存在项目中可以发挥出更佳的效果。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">
+<meta property="og:url" content="http://blog.codingcoder.cn/post/20230118065917.html">
+<meta property="og:site_name" content="Veezean的技术探秘馆">
+<meta property="og:description" content="本篇文章，我们就一起聊一聊如何来更好的使用缓存，探寻下如何降低缓存交互过程的性能损耗、如何压缩缓存的存储空间占用、如何保证多个操作命令原子性等问题的解决策略，让缓存在项目中可以发挥出更佳的效果。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202210050807355.png">
+<meta property="article:published_time" content="2023-01-17T22:59:17.000Z">
+<meta property="article:modified_time" content="2023-01-17T22:59:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="缓存">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202210050807355.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://blog.codingcoder.cn/post/20230118065917.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的技术探秘馆","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-01-18 06:59:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的技术探秘馆"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的技术探秘馆</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-01-17T22:59:17.000Z" title="更新于 2023-01-18 06:59:17">2023-01-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%93%E5%AD%98%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E8%AE%BE%E8%AE%A1/">缓存原理与实战设计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20230118065917.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20230118065917.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><blockquote>
+<p>本篇文章，我们就一起聊一聊如何来更好的使用缓存，探寻下如何降低缓存交互过程的性能损耗、如何压缩缓存的存储空间占用、如何保证多个操作命令原子性等问题的解决策略，让缓存在项目中可以发挥出更佳的效果。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png"></p>
+<p>大家好，又见面了。</p>
+<hr>
+<blockquote>
+<p>本文是笔者作为掘金技术社区签约作者的身份输出的缓存专栏系列内容，将会通过系列专题，讲清楚缓存的方方面面。如果感兴趣，欢迎关注以获取后续更新。</p>
+</blockquote>
+<hr>
+<p>通过前面的文章，我们一起剖析了<code>Guava Cache</code>、<code>Caffeine</code>、<code>Ehcache</code>等<strong>本地缓存</strong>框架的原理与使用场景，也一同领略了以<code>Redis</code>为代表的<strong>集中式缓存</strong>在分布式高并发场景下无可替代的价值。</p>
+<p>现在的很多大型高并发系统都是采用的分布式部署方式，而作为高并发系统的基石，缓存是不可或缺的重要环节。项目中使用缓存的目的是为了提升整体的运算处理效率、降低对外的IO请求，而集中式缓存是独立于进程之外部署的远端服务，需要基于网络IO的方式交互。如果一个业务逻辑中涉及到非常频繁的缓存操作，势必会导致引入大量的<strong>网络IO</strong>交互，造成过大的性能损耗、加剧缓存服务器的压力。另外，对于现在互联网系统的海量用户数据，如何压缩缓存数据<strong>占用容量</strong>，也是需要面临的一个问题。</p>
+<p>本篇文章，我们就一起聊一聊如何来更好的使用缓存，探寻下如何降低缓存交互过程的性能损耗、如何压缩缓存的存储空间占用、如何保证多个操作命令原子性等问题的解决策略，让缓存在项目中可以发挥出更佳的效果。</p>
+<h2 id="通过BitMap降低Reids存储容量压力"><a href="#通过BitMap降低Reids存储容量压力" class="headerlink" title="通过BitMap降低Reids存储容量压力"></a>通过BitMap降低Reids存储容量压力</h2><p>在一些互联网类的项目中，经常会有一些签到相关功能。如果使用Redis来缓存用户的签到信息，我们一般而言会怎么存储呢？常见的会有下面2种思路：</p>
+<ol>
+<li>使用Set类型，每天生层1个Set，然后将签到用户添加到对应的Set中；</li>
+<li>还是使用Set类型，每个用户一个Set，然后将签到的日期添加到Set中。</li>
+</ol>
+<p>对于海量用户的系统而言，按照上述的策略，那么每天仅签到信息这一项，就可能会有上千万的记录，一年累积下来的数据量更大 —— 这对Redis的存储而言是笔不小的开销。对于签到这种简单场景，只有签到和没签到两种情况，也即<code>0/1</code>的场景，我们也可以通过<strong>BitMap</strong>来进行存储以大大降低内存占用。</p>
+<p><code>BitMap（位图）</code>可以理解为一个bit数组，对应bit位可以存放0或者1，最终这个bit数组被转换为一个字符串的形式存储在Redis中。比如签到这个场景，我们可以每天设定一个key，然后存储的时候，我们可以将数字格式的<em>userId</em>表示在BitMap中具体的位置信息，而BitMap中此位置对应的bit值为1则表示该用户已签到。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211291524365.png"></p>
+<p>Redis其实也提供了对BitMap存储的支持。前面我们提过Redis支持String、Set、List、ZSet、Hash等数据结构，而BitMap能力的支持，其实是<em>对String数据结构的一种扩展</em>，使用String数据类型来支持BitMap的能力实现。比如下面的代码逻辑：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void userSignIn(long userId) &#123;
+    String today &#x3D; LocalDate.now().format(DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd&quot;));
+    String redisKey &#x3D; &quot;UserSginIn_&quot; + today;
+    Boolean hasSigned &#x3D; stringRedisTemplate.opsForValue().getBit(redisKey, userId);
+    if (Boolean.TRUE.equals(hasSigned)) &#123;
+        System.out.println(&quot;今日已签过到！&quot;);
+    &#125; else &#123;
+        stringRedisTemplate.opsForValue().setBit(&quot;TodayUserSign&quot;, userId, true);
+        System.out.println(&quot;签到成功！&quot;);
+    &#125;
+&#125;</code></pre>
+
+<p>对于Redis而言，每天就只有一条<code>key-value</code>数据。下面对比下使用BitMap与使用普通key-value模式的数据占用情况对比。模拟构造<em>10亿</em>用户数据量进行压测统计，结果如下：</p>
+<ul>
+<li>BitMap格式： 150M</li>
+<li>key-value格式： 41G</li>
+</ul>
+<p>可以看出，在<strong>存储容量</strong>占用方面，BitMap完胜。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="关于pipeline管道批处理与multi事务原子性"><a href="#关于pipeline管道批处理与multi事务原子性" class="headerlink" title="关于pipeline管道批处理与multi事务原子性"></a>关于pipeline管道批处理与multi事务原子性</h2><h3 id="使用Pipeline降低与Reids的IO交互频率"><a href="#使用Pipeline降低与Reids的IO交互频率" class="headerlink" title="使用Pipeline降低与Reids的IO交互频率"></a>使用Pipeline降低与Reids的IO交互频率</h3><p>在很多的业务场景中，我们可能会涉及到同时去执行好多条redis命令的操作，比如系统启动的时候需要将DB中存量的数据全部加载到Redis中重建缓存的时候。如果业务流程需要频繁的与Redis交互并提交命令，可能会导致在网络IO交互层面消耗太大，导致整体的性能降低。</p>
+<p>这种情况下，可以使用<code>pipeline</code>将各个具体的请求分批次提交到Redis服务器进行处理。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">private void redisPipelineInsert() &#123;
+    stringRedisTemplate.executePipelined(new SessionCallback() &#123;
+        @Override
+        public Object execute(RedisOperations operations) throws DataAccessException &#123;
+            try &#123;
+                &#x2F;&#x2F; 具体的redis操作，多条操作都在此处理，最后会一起提交到Redis远端去执行
+            &#125; catch (Exception e) &#123;
+                log.error(&quot;failed to execute pipelined...&quot;, e);
+            &#125;
+            return null;
+        &#125;
+    &#125;);
+&#125;</code></pre>
+
+<p>使用pipeline的方式，可以减少客户端与redis服务端之间的网络交互频次，但是pipeline也<em>只是负责将原本需要多次网络交互的请求封装一起提交</em>到redis上，在redis层面其执行命令的时候依旧是逐个去执行，并不会保证这一批次的所有请求一定是连贯被执行，其中可能会被插入其余的执行请求。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211291653066.png"></p>
+<p>也就是说，pipeline的操作是<strong>不具备原子性</strong>的。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="使用multi实现请求的事务"><a href="#使用multi实现请求的事务" class="headerlink" title="使用multi实现请求的事务"></a>使用multi实现请求的事务</h3><p>前面介绍pipeline的时候强调了其仅仅只是将多个命令打包一起提交给了服务器，然后服务器依旧是等同于逐个提交上来的策略进行处理，无法保证原子性。对于一些需要保证多个操作命令原子性的场景下，可以使用<code>multi</code>来实现。</p>
+<p>当客户端请求执行了multi命令之后，也即开启了事务，服务端会将这个客户端记录为一个特殊的状态，之后这个客户端发送到服务器上的命令，都会<em>被临时缓存</em>起来而不会执行。只有当收到此客户端发送<code>exec</code>命令的时候，redis才会将缓存的所有命令一起逐条的执行并且保证这一批命令被按照发送的顺序执行、执行期间不会被其他命令插入打断。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211291711549.png"></p>
+<p>代码示例如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">private void redisMulti() &#123;
+    stringRedisTemplate.multi();
+    stringRedisTemplate.opsForValue().set(&quot;key1&quot;, &quot;value1&quot;);
+    stringRedisTemplate.opsForValue().set(&quot;key2&quot;, &quot;value2&quot;);
+    stringRedisTemplate.exec();
+&#125;</code></pre>
+
+<p>需要注意的一点是，redis的事务与关系型数据库中的事务是两个不同概念，Redis的事务<strong>不支持回滚</strong>，只能算是Redis中的一种特殊标记，可以将这个事务范围内的请求以指定的顺序执行，中间不会被插入其余的请求，可以保证多个命令执行的原子性。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="pipeline与multi区别"><a href="#pipeline与multi区别" class="headerlink" title="pipeline与multi区别"></a>pipeline与multi区别</h3><p>从上面分别对<code>pipeline</code>与<code>multi</code>的介绍，可以看出两者在定位与功能分工上的差异点：</p>
+<ul>
+<li><p><strong>pipeline是客户端行为</strong>，只是负责将客户端的多个请求一次性打包传递到服务器端，服务端依旧是按照和单条请求一样的处理，批量传递到服务端的请求之间可能会插入别的客户端的请求操作，所以它是无法保证原子性的，侧重点在于其可以提升客户端的效率（降低频繁的网络交互损耗）</p>
+</li>
+<li><p><strong>multi是服务端行为</strong>，通过开启事务缓存，保证客户端在事务期间提交的请求可以被一起集中执行。它的侧重点是保证多条请求的原子性，执行期间不会被插入其余客户端的请求，但是由于开启事务以及命令缓存等额外的操作，其对性能略微有一些影响。</p>
+</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="多级缓存机制"><a href="#多级缓存机制" class="headerlink" title="多级缓存机制"></a>多级缓存机制</h2><h3 id="本地-远端的二级缓存机制"><a href="#本地-远端的二级缓存机制" class="headerlink" title="本地+远端的二级缓存机制"></a>本地+远端的二级缓存机制</h3><p>在涉及与集中式缓存之间频繁交互的时候，通过前面介绍的pipeline方式可以适当的降低与服务端之间网络交互的频次，但是很多情况下，依旧会产生大量的网络交互，对于一些追求极致性能的系统而言，可能依旧无法满足诉求。</p>
+<p>回想下此前文章中花费大量篇幅介绍的本地缓存，本地缓存在分布式场景下容易造成数据不一致的问题，但是其最大特点就是快，因为数据都存储在进程内。所以可以将本地缓存作为集中式缓存的一个补充策略，对于一些需要高频读取且不会经常变更的数据，缓存到本地进行使用。</p>
+<p>常见的<code>本地+远端</code>二级缓存有两种存在形式。</p>
+<ul>
+<li><strong>独立划分，各司其职</strong></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211282216146.png"></p>
+<p>这种情况，将缓存数据分为了2种类型，一种是<em>不常变更的数据</em>，比如系统配置信息等，这种数据直接系统启动的时候从DB中加载并缓存到进程内存中，然后业务运行过程中需要使用时候直接从内存读取。而对于其他可能会<em>经常变更</em>的业务层面的数据，则缓存到Redis中。</p>
+<ul>
+<li><strong>混合存储，多级缓存</strong></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211282230918.png"></p>
+<p>这种情况可以搭配<code>Caffeine</code>或者<code>Ehcache</code>等本地缓存框架一起实现。首先去本地缓存中执行查询，如果查询到则返回，查询不到则去Redis中尝试获取。如果Redis中也获取不到，则可以考虑去DB中进行回源兜底操作，然后将回源的结果存储到Redis以及本地缓存中。这种情况下需要注意下如果数据发生变更的时候，需要删除本地缓存，以确保下一次请求的时候，可以再次去Redis拉取最新的数据。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211282236062.png"></p>
+<p><strong>本地+远端</strong>的二级缓存机制有着多方面的优点：</p>
+<ul>
+<li><p>主要操作都在本地进行，可以充分的<strong>享受到本地缓存的速度优势</strong>；</p>
+</li>
+<li><p>大部分操作都在本地进行，充分降低了客户端与远端集中式缓存服务器之间的IO交互，也<strong>降低了带宽占用</strong>；</p>
+</li>
+<li><p>通过本地缓存层，抵挡了大部分的业务请求，对集中式缓存服务器端进行减压，大大<strong>降低服务端的压力</strong>；</p>
+</li>
+<li><p><strong>提升了业务的可靠性</strong>，本地缓存实际上也是一种额外的副本备份，极端情况下，及时集中式缓存的服务端宕机，因为本地还有缓存数据，所以业务节点依旧可以对外提供正常服务。</p>
+</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="二级缓存的应用身影"><a href="#二级缓存的应用身影" class="headerlink" title="二级缓存的应用身影"></a>二级缓存的应用身影</h3><p>其实，在<code>C-S架构</code>的系统里面，多级缓存的概念使用的也非常的频繁。经常<em>Clinet端</em>会缓存运行时需要的业务数据，然后采用定期更新或者事件触发的方式从服务端更新本地的数据。而<em>Server端</em>负责存储所有的数据，并保证数据更新的时候可以提供给客户端进行更新获取。</p>
+<p>一个典型的例子，就是分布式系统中的配置中心或者是服务注册管理中心。比如<code>SpringCloud</code>家族的<code>Eureka</code>，或者是<code>Alibaba</code>开源的<code>Nacos</code>。它们都有采用客户端本地缓存+服务端数据统一存储的方式，来保证整体的处理效率，降低客户端对于Server端的实时交互依赖。</p>
+<p>看一下<code>Nacos</code>的交互示意：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210012142276.png"></p>
+<p>从图中可以表直观的看到，Client将业务数据缓存到各自本地，这样业务逻辑进行处理的时候就可以直接从本地缓存中查询到相关的业务节点映射信息，而Server端只需要负责在数据有变更的事后推送到Client端更新到本地缓存中即可，避免了Server端去承载业务请求的流量压力。整体的可靠性也得到了保证，避免了Server端异常对业务正常处理造成影响。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="小结回顾"><a href="#小结回顾" class="headerlink" title="小结回顾"></a>小结回顾</h2><p>好啦，到这里呢，《<a target="_blank" rel="noopener" href="https://juejin.cn/column/7140852038258147358">深入理解缓存原理与实战设计</a>》系列专栏的内容就暂告一段落咯。本专栏围绕缓存这个宏大命题进行展开阐述，从缓存各种核心要素、到本地缓存的规范与标准介绍，从手写本地缓存框架、到各种优秀本地缓存框架的上手与剖析，从本地缓存到集中式缓存再到最后的多级缓存的构建，一步步全方位、系统性地做了介绍。希望通过本专栏的介绍，可以让大家对缓存有个更加深刻的理解，可以更好的在项目中去使用缓存，让缓存真正的成为我们项目中性能提升的<strong>神兵利器</strong>。</p>
+<p>看到这里，不知道各位小伙伴们对缓存的理解与使用，是否有了新的认识了呢？你觉得缓存还有哪些好的使用场景呢？欢迎评论区一起交流下，期待和各位小伙伴们一起切磋、共同成长。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312091.gif"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn/post/20230118065917.html">http://blog.codingcoder.cn/post/20230118065917.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://blog.codingcoder.cn" target="_blank">Veezean的技术探秘馆</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%AD%98/">缓存</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202210050807355.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20221028085417.html" title="聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-28</div><div class="title">聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活</div></div></a></div><div><a href="/post/20221102081617.html" title="聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-02</div><div class="title">聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性</div></div></a></div><div><a href="/post/20221107085417.html" title="手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-07</div><div class="title">手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架</div></div></a></div><div><a href="/post/20221107115817.html" title="手写本地缓存实战1——各个击破，按需应对实际使用场景"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-07</div><div class="title">手写本地缓存实战1——各个击破，按需应对实际使用场景</div></div></a></div><div><a href="/post/20221116065417.html" title="JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-16</div><div class="title">JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache</div></div></a></div><div><a href="/post/20221123080317.html" title="重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-23</div><div class="title">重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">这个是作者介绍</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E8%BF%87BitMap%E9%99%8D%E4%BD%8EReids%E5%AD%98%E5%82%A8%E5%AE%B9%E9%87%8F%E5%8E%8B%E5%8A%9B"><span class="toc-number">1.</span> <span class="toc-text">通过BitMap降低Reids存储容量压力</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8Epipeline%E7%AE%A1%E9%81%93%E6%89%B9%E5%A4%84%E7%90%86%E4%B8%8Emulti%E4%BA%8B%E5%8A%A1%E5%8E%9F%E5%AD%90%E6%80%A7"><span class="toc-number">2.</span> <span class="toc-text">关于pipeline管道批处理与multi事务原子性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8Pipeline%E9%99%8D%E4%BD%8E%E4%B8%8EReids%E7%9A%84IO%E4%BA%A4%E4%BA%92%E9%A2%91%E7%8E%87"><span class="toc-number">2.1.</span> <span class="toc-text">使用Pipeline降低与Reids的IO交互频率</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8multi%E5%AE%9E%E7%8E%B0%E8%AF%B7%E6%B1%82%E7%9A%84%E4%BA%8B%E5%8A%A1"><span class="toc-number">2.2.</span> <span class="toc-text">使用multi实现请求的事务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pipeline%E4%B8%8Emulti%E5%8C%BA%E5%88%AB"><span class="toc-number">2.3.</span> <span class="toc-text">pipeline与multi区别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6"><span class="toc-number">3.</span> <span class="toc-text">多级缓存机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0-%E8%BF%9C%E7%AB%AF%E7%9A%84%E4%BA%8C%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6"><span class="toc-number">3.1.</span> <span class="toc-text">本地+远端的二级缓存机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E7%BA%A7%E7%BC%93%E5%AD%98%E7%9A%84%E5%BA%94%E7%94%A8%E8%BA%AB%E5%BD%B1"><span class="toc-number">3.2.</span> <span class="toc-text">二级缓存的应用身影</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93%E5%9B%9E%E9%A1%BE"><span class="toc-number">4.</span> <span class="toc-text">小结回顾</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"/></a><div class="content"><a class="title" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式">面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式</a><time datetime="2023-01-12T23:13:17.000Z" title="发表于 2023-01-13 07:13:17">2023-01-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"/></a><div class="content"><a class="title" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制">Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制</a><time datetime="2023-01-12T01:02:17.000Z" title="发表于 2023-01-12 09:02:17">2023-01-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"/></a><div class="content"><a class="title" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点">Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点</a><time datetime="2023-01-09T23:29:17.000Z" title="发表于 2023-01-10 07:29:17">2023-01-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"/></a><div class="content"><a class="title" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板</a><time datetime="2023-01-06T23:04:17.000Z" title="发表于 2023-01-07 07:04:17">2023-01-07</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 By Veezean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

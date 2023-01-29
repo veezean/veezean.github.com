@@ -1,0 +1,618 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来2 —— Ehcache的各种项目集成与使用初体验 | Veezean的技术探秘馆</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本篇一起实践下Ehcache的各种不同使用方式，来感受Ehcache的强大与便利。比如独立集成使用，基于JCache方式使用，以及通过Springboot+JCache+Ehcache方式集成使用等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来2 —— Ehcache的各种项目集成与使用初体验">
+<meta property="og:url" content="http://blog.codingcoder.cn/post/20230106071817.html">
+<meta property="og:site_name" content="Veezean的技术探秘馆">
+<meta property="og:description" content="本篇一起实践下Ehcache的各种不同使用方式，来感受Ehcache的强大与便利。比如独立集成使用，基于JCache方式使用，以及通过Springboot+JCache+Ehcache方式集成使用等。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202210050807355.png">
+<meta property="article:published_time" content="2023-01-05T23:18:17.000Z">
+<meta property="article:modified_time" content="2023-01-05T23:18:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="缓存">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202210050807355.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://blog.codingcoder.cn/post/20230106071817.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的技术探秘馆","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来2 —— Ehcache的各种项目集成与使用初体验',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-01-06 07:18:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的技术探秘馆"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的技术探秘馆</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来2 —— Ehcache的各种项目集成与使用初体验</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-01-05T23:18:17.000Z" title="发表于 2023-01-06 07:18:17">2023-01-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-01-05T23:18:17.000Z" title="更新于 2023-01-06 07:18:17">2023-01-06</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%93%E5%AD%98%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E8%AE%BE%E8%AE%A1/">缓存原理与实战设计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>21分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来2 —— Ehcache的各种项目集成与使用初体验"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20230106071817.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20230106071817.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><blockquote>
+<p>本篇一起实践下Ehcache的各种不同使用方式，来感受下Ehcache的强大与便利。比如独立集成使用，基于JCache方式使用，以及通过Springboot+JCache+Ehcache方式集成使用等。</p>
+</blockquote>
+<hr>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png"></p>
+<p>大家好，又见面了。</p>
+<hr>
+<blockquote>
+<p>本文是笔者作为掘金技术社区签约作者的身份输出的缓存专栏系列内容，将会通过系列专题，讲清楚缓存的方方面面。如果感兴趣，欢迎关注以获取后续更新。</p>
+</blockquote>
+<hr>
+<p>在上一篇文章《<a target="_blank" rel="noopener" href="https://juejin.cn/post/7167259989826863112">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来 —— 感受来自Ehcache的强大实力</a>》中，介绍了Ehcache所具有的核心优秀特性，如数据持久化、多级缓存、集群能力等等。所谓<em>纸上得来终觉浅、绝知此事要躬行</em>，接下来我们就一起动手实践下，在项目中集成Ehcache并体验Ehcache的各种常见用法。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="Ehcache的依赖集成与配置"><a href="#Ehcache的依赖集成与配置" class="headerlink" title="Ehcache的依赖集成与配置"></a>Ehcache的依赖集成与配置</h2><h3 id="依赖引入"><a href="#依赖引入" class="headerlink" title="依赖引入"></a>依赖引入</h3><p>集成使用Ehcache的第一步，就是要引入对应的依赖包。对于Maven项目而言，可以在pom.xml中添加对应依赖：</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup">&lt;dependency&gt;
+  &lt;groupId&gt;org.ehcache&lt;&#x2F;groupId&gt;
+  &lt;artifactId&gt;ehcache&lt;&#x2F;artifactId&gt;
+  &lt;version&gt;3.10.0&lt;&#x2F;version&gt;
+&lt;&#x2F;dependency&gt;      </code></pre>
+
+<p>依赖添加完成后，还需要对缓存进行配置后方可使用。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="缓存的配置与创建"><a href="#缓存的配置与创建" class="headerlink" title="缓存的配置与创建"></a>缓存的配置与创建</h3><h4 id="使用代码配置与创建Ehcache"><a href="#使用代码配置与创建Ehcache" class="headerlink" title="使用代码配置与创建Ehcache"></a>使用代码配置与创建Ehcache</h4><p>Ehcache支持在代码中手动创建缓存对象，并指定对应缓存参数信息。在使用之前，需要先了解几个关键代码类：</p>
+<table>
+<thead>
+<tr>
+<th>类名</th>
+<th>具体说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CacheManagerBuilder</td>
+<td>CacheManager对象的构造器对象，可以方便的指定相关参数然后创建出符合条件的CacheManager对象。</td>
+</tr>
+<tr>
+<td>ResourcePoolsBuilder</td>
+<td>用于指定缓存的存储形式（ResourcePools）的配置构造器对象，可以指定缓存是<code>堆内</code>缓存、<code>堆外</code>缓存、<code>磁盘</code>缓存或者多者的组合，以及各个类型缓存的容量信息、是否持久化等信息。</td>
+</tr>
+<tr>
+<td>CacheConfiguration</td>
+<td>用于承载所有指定的关于缓存的配置属性值。</td>
+</tr>
+<tr>
+<td>CacheConfigurationBuilder</td>
+<td>用于生成最终缓存总体配置信息的构造器，可以指定缓存<code>存储形式</code>（ResourcePools）、<code>过期策略</code>（ExpiryPolicy）、<code>键值类型</code>等等各种属性值。</td>
+</tr>
+</tbody></table>
+<p>通过组合使用上述Builder构造器，我们便可以在代码中完成对缓存Cache属性的设置。比如下面这样：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) &#123;
+    CacheManager cacheManager &#x3D; CacheManagerBuilder.newCacheManagerBuilder()
+            .with(CacheManagerBuilder.persistence(&quot;d:\\myCache\\&quot;))
+            .build(true);
+    &#x2F;&#x2F; 指定缓存的存储形式，采用多级缓存，并开启缓存持久化操作
+    ResourcePools resourcePools &#x3D; ResourcePoolsBuilder.newResourcePoolsBuilder()
+            .heap(1, MemoryUnit.MB)
+            .disk(10, MemoryUnit.GB, true)
+            .build();
+    &#x2F;&#x2F; 封装缓存配置对象，指定了键值类型、指定了使用TTL与TTI联合的过期淘汰策略
+    CacheConfiguration&lt;Integer, String&gt; cacheConfiguration &#x3D;
+            CacheConfigurationBuilder.newCacheConfigurationBuilder(Integer.class, String.class, resourcePools)
+                    .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofSeconds(10)))
+                    .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(5)))
+                    .build();
+    &#x2F;&#x2F; 使用给定的配置参数，创建指定名称的缓存对象
+    Cache&lt;Integer, String&gt; myCache &#x3D; cacheManager.createCache(&quot;myCache&quot;, cacheConfiguration);
+&#125;</code></pre>
+
+<p>上面的示例中，我们创建了一个基于<code>heap + disk</code>的<strong>二级缓存</strong>对象，并开启了缓存的持久化，以及指定了持久化结果文件的存储路径。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h4 id="基于XML配置Ehcache"><a href="#基于XML配置Ehcache" class="headerlink" title="基于XML配置Ehcache"></a>基于XML配置Ehcache</h4><p>因为Ehcache在创建缓存的时候可以指定的参数较多，如果通过上面的代码方式指定配置，略显繁琐且不够清晰直观，并且当需要创建多个不同的缓存对象的时候比较麻烦。好在Ehcache还提供了一种通过<code>XML</code>来进行参数配置的途径，并且支持在一个xml中配置多个不同的缓存对象信息。</p>
+<p>在项目的resource目录下添加个Ehcache的配置文件，比如取名<code>ehcache.xml</code>，项目层级结构示意如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211192004320.png"></p>
+<p>然后我们在ehcache.xml中添加配置内容。内容示例如下：</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup">&lt;?xml version&#x3D;&quot;1.0&quot; encoding&#x3D;&quot;UTF-8&quot;?&gt;
+&lt;config xmlns:xsi&#x3D;&#39;http:&#x2F;&#x2F;www.w3.org&#x2F;2001&#x2F;XMLSchema-instance&#39; xmlns:jsr107&#x3D;&#39;http:&#x2F;&#x2F;www.ehcache.org&#x2F;v3&#x2F;jsr107&#39;
+        xmlns&#x3D;&#39;http:&#x2F;&#x2F;www.ehcache.org&#x2F;v3&#39;
+        xsi:schemaLocation&#x3D;&quot;http:&#x2F;&#x2F;www.ehcache.org&#x2F;v3 http:&#x2F;&#x2F;www.ehcache.org&#x2F;schema&#x2F;ehcache-core-3.1.xsd
+        http:&#x2F;&#x2F;www.ehcache.org&#x2F;v3&#x2F;jsr107 http:&#x2F;&#x2F;www.ehcache.org&#x2F;schema&#x2F;ehcache-107-ext-3.1.xsd&quot;&gt;
+
+    &lt;persistence directory&#x3D;&quot;D:\myCache&quot;&#x2F;&gt;
+
+    &lt;cache alias&#x3D;&quot;myCache&quot;&gt;
+        &lt;key-type&gt;java.lang.Integer&lt;&#x2F;key-type&gt;
+        &lt;value-type&gt;java.lang.String&lt;&#x2F;value-type&gt;
+        &lt;expiry&gt;
+            &lt;tti unit&#x3D;&quot;minutes&quot;&gt;5&lt;&#x2F;tti&gt;
+        &lt;&#x2F;expiry&gt;
+        &lt;resources&gt;
+            &lt;heap unit&#x3D;&quot;MB&quot;&gt;10&lt;&#x2F;heap&gt;
+            &lt;offheap unit&#x3D;&quot;MB&quot;&gt;50&lt;&#x2F;offheap&gt;
+            &lt;disk persistent&#x3D;&quot;true&quot; unit&#x3D;&quot;MB&quot;&gt;500&lt;&#x2F;disk&gt;
+        &lt;&#x2F;resources&gt;
+    &lt;&#x2F;cache&gt;
+&lt;&#x2F;config&gt;</code></pre>
+
+<p>上面演示的<code>Ehcache3.x</code>版本中的配置实现方式（配置文件与<em>Ehcache2.x</em>存在<strong>较大差异</strong>，不要混用，运行会报错），在xml中指定了<code>myCache</code>的key与value对应的类型，指定了基于TTI的5分钟过期淘汰策略，并规定了采用<code>heap + offheap + disk</code>的三级缓存机制，此外还开启了缓存持久化能力，并指定了持久化文件的存储路径。</p>
+<p>通过xml配置的方式，可以很直观的看出这个缓存对象的所有关键属性约束，也是相比于代码中直接配置的方式更有优势的一个地方。在xml配置文件中，也可以同时配置多个缓存对象信息。此外，为了简化配置，Ehcache还支持通过<code>&lt;cache-template&gt;</code>来将一些公用的配置信息抽取出来成为模板，然后各个Cache独立配置的时候只需要增量配置各自差异化的部分即可，当然也可以基于给定的模板进行个性化的修改覆写配置。</p>
+<p>比如下面这个配置文件，配置了两个Cache对象信息，复用了同一个配置模板，然后各自针对模板中不符合自己的配置进行了重新改写。</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup">&lt;?xml version&#x3D;&quot;1.0&quot; encoding&#x3D;&quot;UTF-8&quot;?&gt;
+&lt;config xmlns:xsi&#x3D;&#39;http:&#x2F;&#x2F;www.w3.org&#x2F;2001&#x2F;XMLSchema-instance&#39; xmlns:jsr107&#x3D;&#39;http:&#x2F;&#x2F;www.ehcache.org&#x2F;v3&#x2F;jsr107&#39;
+        xmlns&#x3D;&#39;http:&#x2F;&#x2F;www.ehcache.org&#x2F;v3&#39;
+        xsi:schemaLocation&#x3D;&quot;
+        http:&#x2F;&#x2F;www.ehcache.org&#x2F;v3 http:&#x2F;&#x2F;www.ehcache.org&#x2F;schema&#x2F;ehcache-core-3.1.xsd
+        http:&#x2F;&#x2F;www.ehcache.org&#x2F;v3&#x2F;jsr107 http:&#x2F;&#x2F;www.ehcache.org&#x2F;schema&#x2F;ehcache-107-ext-3.1.xsd&quot;&gt;
+
+    &lt;persistence directory&#x3D;&quot;D:\myCache&quot;&#x2F;&gt;
+
+    &lt;cache-template name&#x3D;&quot;myTemplate&quot;&gt;
+        &lt;key-type&gt;java.lang.String&lt;&#x2F;key-type&gt;
+        &lt;value-type&gt;java.lang.String&lt;&#x2F;value-type&gt;
+        &lt;expiry&gt;
+            &lt;ttl unit&#x3D;&quot;minutes&quot;&gt;30&lt;&#x2F;ttl&gt;
+        &lt;&#x2F;expiry&gt;
+        &lt;resources&gt;
+            &lt;heap unit&#x3D;&quot;MB&quot;&gt;10&lt;&#x2F;heap&gt;
+            &lt;disk unit&#x3D;&quot;GB&quot; persistent&#x3D;&quot;true&quot;&gt;2&lt;&#x2F;disk&gt;
+        &lt;&#x2F;resources&gt;
+    &lt;&#x2F;cache-template&gt;
+
+    &lt;cache alias&#x3D;&quot;myCache&quot; uses-template&#x3D;&quot;myTemplate&quot;&gt;
+        &lt;key-type&gt;java.lang.Integer&lt;&#x2F;key-type&gt;
+    &lt;&#x2F;cache&gt;
+    &lt;cache alias&#x3D;&quot;myCache2&quot; uses-template&#x3D;&quot;myTemplate&quot;&gt;
+        &lt;expiry&gt;
+            &lt;ttl unit&#x3D;&quot;minutes&quot;&gt;60&lt;&#x2F;ttl&gt;
+        &lt;&#x2F;expiry&gt;
+    &lt;&#x2F;cache&gt;
+&lt;&#x2F;config&gt;</code></pre>
+
+<p>配置完成之后，我们还需要在代码中指定使用此配置文件进行CacheManager创建与配置，并且完成CacheManager的<em>init初始化</em>操作。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public Cache&lt;Integer, String&gt; createCacheWithXml() &#123;
+    &#x2F;&#x2F; 获取配置文件
+    URL xmlConfigUrl &#x3D; this.getClass().getClassLoader().getResource(&quot;.&#x2F;ehcache.xml&quot;);
+    &#x2F;&#x2F; 解析对应的配置文件并创建CacheManager对象
+    XmlConfiguration xmlConfiguration &#x3D; new XmlConfiguration(xmlConfigUrl);
+    CacheManager cacheManager &#x3D; CacheManagerBuilder.newCacheManager(xmlConfiguration);
+    &#x2F;&#x2F; 执行初始化操作
+    cacheManager.init();
+    &#x2F;&#x2F; 直接从CacheManager中根据名称获取对应的缓存对象
+    return cacheManager.getCache(&quot;myCache&quot;, Integer.class, String.class);
+&#125;</code></pre>
+
+<p>这样，Ehcache的集成与配置就算完成了，接下来直接获取Cache对象并对其进行操作即可。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) &#123;
+    EhcacheService ehcacheService &#x3D; new EhcacheService();
+    Cache&lt;Integer, String&gt; cache &#x3D; ehcacheService.createCacheWithXml();
+    cache.put(1, &quot;value1&quot;);
+    System.out.println(cache.get(1));
+&#125;</code></pre>
+
+<p>当然，Ehcache3.x版本中使用xml方式配置的时候，有<strong>几个坑</strong>需要提防，避免踩坑。</p>
+<ol>
+<li>对于过期时间的设定<em>只允许选择ttl或者tti中的一者</em>，不允许两者同时存在——而通过代码配置的时候则没有这个问题。如果在xml中同时指定ttl与tti则运行的时候会抛异常。</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211192034355.png"></p>
+<ol start="2">
+<li><code>&lt;cache&gt;</code>节点下面配置的时候，<code>&lt;expire&gt;</code>节点需要放在<code>&lt;configuration&gt;</code>节点的前面，否则会报错<em>Schema校验失败</em>。</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211192037491.png"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="业务中使用"><a href="#业务中使用" class="headerlink" title="业务中使用"></a>业务中使用</h3><p>缓存设置并创建完成后，业务代码中便可以通过Ehcache提供的接口，进行缓存数据的相关操作。业务使用是通过对Cache对象的操作来进行的，Cache提供的API接口与JDK中的Map接口极其相似，所以在使用上毫无门槛，可以直接上手。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211182304748.png"></p>
+<p>实际编码中，根据业务的实际诉求，通过Cache提供的API接口来完成缓存数据的增删改查操作。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) &#123;
+    EhcacheService ehcacheService &#x3D; new EhcacheService();
+    Cache&lt;Integer, String&gt; cache &#x3D; ehcacheService.getCache();
+    &#x2F;&#x2F; 存入单条记录到缓存中
+    cache.put(1, &quot;value1&quot;);
+    Map&lt;Integer, String&gt; values &#x3D; new HashMap&lt;&gt;();
+    values.put(2, &quot;value2&quot;);
+    values.put(3, &quot;value3&quot;);
+    &#x2F;&#x2F; 批量向缓存中写入数据
+    cache.putAll(values);
+    &#x2F;&#x2F; 当缓存不存在的时候才写入缓存
+    cache.putIfAbsent(2, &quot;value2&quot;);
+    &#x2F;&#x2F; 查询单条记录
+    System.out.println(cache.get(2));
+    &#x2F;&#x2F; 批量查询操作
+    System.out.println(cache.getAll(Stream.of(1,2,3).collect(Collectors.toSet())));
+    &#x2F;&#x2F; 移除单条记录
+    cache.remove(1);
+    System.out.println(cache.get(1));
+    &#x2F;&#x2F; 清空缓存记录
+    cache.clear();
+    System.out.println(cache.get(1));
+&#125;</code></pre>
+
+<p>从上述代码可以看出，EhCache具体使用起来与普通Map操作无异。虽然使用简单，但是这样也存在个问题就是业务代码所有使用缓存的地方，都需要强依赖Ehcache的具体接口，导致业务代码与Ehcache的依赖耦合度太高，后续如果想要更换缓存组件时，难度会非常大。</p>
+<p>在前面的文章《<a target="_blank" rel="noopener" href="https://juejin.cn/post/7159328581611421726">聊一聊JAVA中的缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache</a>》中有介绍过JAVA业界的缓存标准规范，主要有<code>JSR107</code>标准与<code>Spring Cache</code>标准，如果可以通过标准的接口方式进行访问，这样就可以解决与EhCache深度耦合的问题了。令人欣慰的是，<em>Ehcache同时提供了对JSR107与Spring Cache规范的支持</em>！</p>
+<p>下面一起看下如何通过JSR107规范接口以及Spring Cache的标准来使用Ehcache。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="通过JCache-API来使用Ehcache"><a href="#通过JCache-API来使用Ehcache" class="headerlink" title="通过JCache API来使用Ehcache"></a>通过JCache API来使用Ehcache</h2><h3 id="依赖集成与配置"><a href="#依赖集成与配置" class="headerlink" title="依赖集成与配置"></a>依赖集成与配置</h3><p>如果要使用JCache标准方式来使用，需要额外引入JCache对应依赖包：</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup">&lt;dependency&gt;
+    &lt;groupId&gt;javax.cache&lt;&#x2F;groupId&gt;
+    &lt;artifactId&gt;cache-api&lt;&#x2F;artifactId&gt;
+    &lt;version&gt;1.1.1&lt;&#x2F;version&gt;
+&lt;&#x2F;dependency&gt;</code></pre>
+
+<p>按照JCache的规范，必须通过CacheManager才能获取到Cache对象（这一点与Ehcache相同），而CacheManager则又需要通过<code>CacheProvider</code>来获取。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210141512700.png"></p>
+<p>遵循这一原则，我们可以按照JCache的方式来得到Cache对象：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
+import javax.cache.expiry.CreatedExpiryPolicy;
+import javax.cache.expiry.Duration;
+import javax.cache.spi.CachingProvider;
+
+public class JsrCacheService &#123;
+    public Cache&lt;Integer, String&gt; getCache() &#123;
+        CachingProvider cachingProvider &#x3D; Caching.getCachingProvide();
+        CacheManager cacheManager &#x3D; cachingProvider.getCacheManager();
+        MutableConfiguration&lt;Integer, String&gt; configuration &#x3D;
+                new MutableConfiguration&lt;Integer, String&gt;()
+                        .setTypes(Integer.class, String.class)
+                        .setStoreByValue(false)
+                        .setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(Duration.ONE_MINUTE));
+        Cache&lt;Integer, String&gt; myCache &#x3D; cacheManager.createCach    (&quot;myCache&quot;, configuration);
+        System.out.println(myCache.getClass().getCanonicalName());
+        return myCache;
+    &#125;
+&#125;</code></pre>
+
+<p>从<code>import</code>的内容可以看出上述代码没有调用到任何Ehcache的类，调用上述代码执行并打印出构建出来的Cache对象具体类型如下，可以看出的的确确创建出来的是Ehcache提供的<code>Eh107Cache</code>类：</p>
+<pre class="line-numbers language-none"><code class="language-none">org.ehcache.jsr107.Eh107Cache</code></pre>
+
+<p>这是为什么呢？其实原理很简单，之前介绍JCache API的文章中也有解释过。JCache中的CacheProvider其实是一个<strong>SPI接口</strong>，Ehcache实现并向JVM中注册了这一接口，所以JVM可以直接加载使用了Ehcache提供的实际能力。翻看下Ehcache的源码，我们也可以找到其SPI注册对应的配置信息：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211192211897.png"></p>
+<p>这里还有一个需要注意的点，因为SPI接口有可能被多个组件实现，而且可能会有多个组件同时往JVM中注册了<em>javax.cache.spi.CachingProvider</em>这一SPI接口的实现类，这种情况下，上述代码执行的时候会报错，因为没有指定具体使用哪一个SPI，所以JVM出现了选择困难症，只能抛异常了：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211192229086.png"></p>
+<p>所以为了避免这种情况的发生，我们可以在获取CacheProvider的时候，指定加载使用Ehcache提供的具体实现类<code>org.ehcache.jsr107.EhcacheCachingProvider</code>即可。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">CachingProvider cachingProvider &#x3D; Caching.getCachingProvider(&quot;org.ehcache.jsr107.EhcacheCachingProvider&quot;);</code></pre>
+
+<p>上面代码中，使用了JCache的<code>MutableConfiguration</code>类来实现缓存配置的设定。作为通用规范，JCache仅定义了所有缓存实现者需要实现的功能的最小集，而Ehcache除了JCache提供的最低限度缓存功能外，还有很多其余缓存不具备的增强特性。如果需要使用这些特性，则需要使用Ehcache自己的缓存配置类来实现。</p>
+<p>举个例子，MutableConfiguration只能设定基于内存缓存的一些行为参数，而如果需要配置Ehcache提供的<code>heap+offheap+disk</code>三级缓存能力，或者是要开启Ehcache的持久化能力，则MutableConfiguration就有点爱莫能助，只能Ehcache亲自出马了。</p>
+<p>比如下面这样：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public Cache&lt;Integer, String&gt; getCache() &#123;
+    CacheConfiguration&lt;Integer, String&gt; cacheConfiguration &#x3D;
+            CacheConfigurationBuilder.newCacheConfigurationBuilder(Integer.class, String.class,
+                    ResourcePoolsBuilder.heap(10).offheap(20, MemoryUnit.MB)).build();
+    EhcacheCachingProvider cachingProvider &#x3D; (EhcacheCachingProvider) Caching.getCachingProvider();
+    CacheManager cacheManager &#x3D; cachingProvider.getCacheManager();
+    return cacheManager.createCache(&quot;myCache&quot;,
+            Eh107Configuration.fromEhcacheCacheConfiguration(cacheConfiguration));
+&#125;</code></pre>
+
+<p>当然，也可以在JCache中继续使用Ehcache的xml配置方式。如下示意：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public Cache&lt;Integer, String&gt; getCache3() throwsURISyntaxException &#123;
+    CachingProvider cachingProvider &#x3D; Caching.getCachingProvider();
+    CacheManager manager &#x3D; cachingProvider.getCacheManager(
+            getClass().getClassLoader().getResource(&quot;.&#x2F;ehcache.xml&quot;).toURI(),
+            getClass().getClassLoader());
+    return manager.getCache(&quot;myCache&quot;, Integer.class, String.class);
+&#125;</code></pre>
+
+<p>相比于使用纯粹的<code>JCache API</code>方式，上述两种使用Ehcache自己配置的方式可以享受到Ehcache提供的一些高级特性。但<strong>代价</strong>就是业务代码与Ehcache的解耦不是那么彻底，好在这些依赖仅在创建缓存的地方，对整体代码的耦合度影响不是很高，属于可接受的范围。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="业务中使用-1"><a href="#业务中使用-1" class="headerlink" title="业务中使用"></a>业务中使用</h3><p>完成了通过JCache API获取Cache对象，然后业务层代码中，便可以基于Cache对象提供的一系列方法，对缓存的具体内容进行操作了。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public static void main(String[] args) throws Exception &#123;
+    JsrCacheService service &#x3D; new JsrCacheService();
+    Cache&lt;Integer, String&gt; cache &#x3D; service.getCache();
+    cache.put(1,&quot;value1&quot;);
+    cache.put(2,&quot;value2&quot;);
+    System.out.println(cache.get(1));
+    cache.remove(1);
+    System.out.println(cache.containsKey(1));
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="在Spring中集成Ehcache"><a href="#在Spring中集成Ehcache" class="headerlink" title="在Spring中集成Ehcache"></a>在Spring中集成Ehcache</h2><p>作为JAVA领域霸主级别的存在，Spring凭借其优良的设计与出色的表现俘获了大批开发人员青睐，大部分项目都使用Spring作为基础框架来简化编码逻辑。Ehcache可以整合到Spring中，并搭配<code>Spring Cache</code>的标准化注解，让代码可以以一种更加优雅的方式来实现缓存的操作。</p>
+<h3 id="依赖集成与配置-1"><a href="#依赖集成与配置-1" class="headerlink" title="依赖集成与配置"></a>依赖集成与配置</h3><p>以SpringBoot项目为例进行说明，首先需要引入对应的依赖包。对于maven项目，在pom.xml中添加如下配置：</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-cache&lt;&#x2F;artifactId&gt;
+&lt;&#x2F;dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.ehcache&lt;&#x2F;groupId&gt;
+    &lt;artifactId&gt;ehcache&lt;&#x2F;artifactId&gt;
+&lt;&#x2F;dependency&gt;</code></pre>
+
+<p>依赖引入之后，我们需要在配置文件中指定使用Ehcache作为集成的缓存能力提供者，并且可以指定<code>ehcache.xml</code>独立的配置文件（ehcache.xml配置文件需要放置在resource目录下）：</p>
+<pre class="line-numbers language-properties" data-language="properties"><code class="language-properties">spring.cache.type&#x3D;ehcache
+spring.cache.ehcache.config&#x3D;.&#x2F;ehcache.xml</code></pre>
+
+<p>然后我们需要在项目启动类上添加上<code>@EnableCaching</code>来声明<strong>开启缓存</strong>能力：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@SpringBootApplication
+@EnableCaching
+public class CrawlerApplication &#123;
+    &#x2F;&#x2F; ...
+&#125;</code></pre>
+
+<p>到这里，对于<code>Ehcache2.x</code>版本而言，就已经完成集成预配置操作，可以直接在代码中进行操作与使用了。但是对于<code>Ehcache3.x</code>版本而言，由于<strong>Spring并未提供对应的CacheManager对其进行支持</strong>，如果这个时候我们直接启动程序，会在启动的时候就被无情的泼上一盆冷水：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211200835466.png"></p>
+<p>为了实现<em>Ehcache3.x</em>与<em>Spring</em>的集成，解决上述的问题，需要做一些额外的适配逻辑。根据报错信息，首先可以想到的就是手动实现cacheManager的创建与初始化。而由于Spring Cache提供了对JSR107规范的支持，且Ehcache3.x也全面符合JSR107规范，所以我们可以将三者结合起来，<strong>以JSR107规范作为桥梁</strong>，实现SpringBoot与Ehcache3.x的集成。</p>
+<p>这个方案也即目前比较常用的”<code>SpringBoot + JCache + Ehcache</code>“组合模式。首先需要在前面已有实现的基础上，额外增加对JCache的依赖：</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup">&lt;dependency&gt;
+    &lt;groupId&gt;javax.cache&lt;&#x2F;groupId&gt;
+    &lt;artifactId&gt;cache-api&lt;&#x2F;artifactId&gt;
+    &lt;version&gt;1.1.1&lt;&#x2F;version&gt;
+&lt;&#x2F;dependency&gt;</code></pre>
+
+<p>其次，需要修改下<code>application.properties</code>配置文件，将Spring Cache声明使用的缓存类型改为<strong>JCache</strong>。</p>
+<pre class="line-numbers language-properties" data-language="properties"><code class="language-properties">spring.cache.type&#x3D;jcache
+spring.cache.jcache.config&#x3D;.&#x2F;ehcache.xml</code></pre>
+
+<p>上面的配置看着<strong>略显魔幻</strong>，也是很多不清楚原有的小伙伴们会比较疑惑的地方（我曾经刚在项目中看到这种写法的时候，就一度怀疑是别人代码配置写错了）。但是经过上述的原因阐述，应该就明白其中的寓意了。</p>
+<p>接下来，需要在项目中手动指定使用ehcache.xml配置文件来构建cacheManager对象。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Configuration
+public class EhcacheConfig &#123;
+    @Bean
+    public JCacheManagerFactoryBean cacheManagerFactoryBean() throws Exception &#123;
+        JCacheManagerFactoryBean factoryBean &#x3D; new JCacheManagerFactoryBean();
+        factoryBean.setCacheManagerUri(getClass().getClassLoader().getResource(&quot;ehcache.xml&quot;).toURI());
+        return factoryBean;
+    &#125;
+    @Bean
+    public CacheManager cacheManager(javax.cache.CacheManager cacheManager) &#123;
+        JCacheCacheManager cacheCacheManager &#x3D; new JCacheCacheManager();
+        cacheCacheManager.setCacheManager(cacheManager);
+        return cacheCacheManager;
+    &#125;
+&#125;</code></pre>
+
+<p>这样，就完成了通过JCache桥接来实现Spring中使用Ehcache3.x版本的目的了。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="支持Spring-Cache注解操作"><a href="#支持Spring-Cache注解操作" class="headerlink" title="支持Spring Cache注解操作"></a>支持Spring Cache注解操作</h3><p>完成了Spring与Ehcache的整合之后，便可以使用Spring Cache提供的标准注解来实现对Ehcache缓存的操作。</p>
+<p>首先需了解Spring Cache几个常用的注解及其含义：</p>
+<table>
+<thead>
+<tr>
+<th>注解</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>@EnableCaching</td>
+<td>开启使用缓存能力</td>
+</tr>
+<tr>
+<td>@Cacheable</td>
+<td>添加相关内容到缓存中</td>
+</tr>
+<tr>
+<td>@CachePut</td>
+<td>更新相关缓存记录</td>
+</tr>
+<tr>
+<td>@CacheEvict</td>
+<td>删除指定的缓存记录，如果需要清空指定容器的全部缓存记录，可以指定<code>allEntities=true</code>来实现</td>
+</tr>
+</tbody></table>
+<p>通过注解的方式，可以轻松的实现将某个方法调用的入参与响应映射自动缓存起来，基于AOP机制，实现了对业务逻辑无侵入式的静默缓存处理。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Service
+@Slf4j
+public class TestService &#123;
+    @Cacheable(cacheNames &#x3D; &quot;myCache&quot;, key &#x3D; &quot;#id&quot;)
+    public String queryById(int id) &#123;
+        log.info(&quot;queryById方法被执行&quot;);
+        return &quot;value&quot; + id;
+    &#125;
+    @CachePut(cacheNames &#x3D; &quot;myCache&quot;, key &#x3D; &quot;#id&quot;)
+    public String updateIdValue(int id, String newValue) &#123;
+        log.info(&quot;updateIdValue方法被执行&quot;);
+        return newValue;
+    &#125;
+    @CacheEvict(cacheNames &#x3D; &quot;myCache&quot;, key &#x3D; &quot;#id&quot;)
+    public void deleteById(int id) &#123;
+        log.info(&quot;deleteById方法被执行&quot;);
+    &#125;
+&#125;</code></pre>
+
+<p>通过注解的方式指定了各个方法需要配套执行的缓存操作，具体业务代码里面则聚焦于自身逻辑，无需操心缓存的具体实现。可以通过下面的代码测试下集成后的效果：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@GetMapping(&quot;&#x2F;test&quot;)
+public String test() &#123;
+    String value &#x3D; testService.queryById(123);
+    System.out.println(&quot;第一次查询，结果：&quot; + value);
+    value &#x3D; testService.queryById(123);
+    System.out.println(&quot;第二次查询，结果：&quot; +value);
+    testService.updateIdValue(123, &quot;newValue123&quot;);
+    value &#x3D; testService.queryById(123);
+    System.out.println(&quot;更新后重新查询，结果：&quot; + value);
+    testService.deleteById(123);
+    value &#x3D; testService.queryById(123);
+    System.out.println(&quot;删除后重新查询，结果：&quot; + value);
+    return &quot;OK&quot;;
+&#125;</code></pre>
+
+<p>执行结果如下：</p>
+<pre class="line-numbers language-none"><code class="language-none">queryById方法被执行
+第一次查询，结果：value123
+第二次查询，结果：value123
+updateIdValue方法被执行
+更新后重新查询，结果：newValue123
+deleteById方法被执行
+queryById方法被执行
+删除后重新查询，结果：newValue123</code></pre>
+
+<p>从测试结果可以看出，查询之后方法的入参与返回值被做了缓存，再次去查询的时候并没有真正的执行具体的查询操作方法，而调用删除方法之后再次查询，又会触发了真正的查询方法的执行。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="小结回顾"><a href="#小结回顾" class="headerlink" title="小结回顾"></a>小结回顾</h2><p>好啦，关于<code>Ehcache</code>的各种配置、以及通过JSR107或者Spring Cache规范集成到项目中使用的相关内容，就介绍到这里了。不知道小伙伴们是否对Ehcache的使用有了进一步的了解呢？而关于Ehcache，你是否有自己的一些想法与见解呢？欢迎评论区一起交流下，期待和各位小伙伴们一起切磋、共同成长。</p>
+<p>📣 <strong>补充说明1</strong> ：</p>
+<blockquote>
+<p>本文属于《<a target="_blank" rel="noopener" href="https://juejin.cn/column/7140852038258147358">深入理解缓存原理与实战设计</a>》系列专栏的内容之一。该专栏围绕缓存这个宏大命题进行展开阐述，全方位、系统性地深度剖析各种缓存实现策略与原理、以及缓存的各种用法、各种问题应对策略，并一起探讨下缓存设计的哲学。</p>
+<p>如果有兴趣，也欢迎关注此专栏。</p>
+</blockquote>
+<p>📣 <strong>补充说明2</strong> ：</p>
+<ul>
+<li>关于本文中涉及的<strong>演示代码</strong>的完整示例，我已经整理并提交到github中，如果您有需要，可以自取：<a target="_blank" rel="noopener" href="https://github.com/veezean/JavaBasicSkills">https://github.com/veezean/JavaBasicSkills</a></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312091.gif"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn/post/20230106071817.html">http://blog.codingcoder.cn/post/20230106071817.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://blog.codingcoder.cn" target="_blank">Veezean的技术探秘馆</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%AD%98/">缓存</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202210050807355.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板</div></div></a></div><div class="next-post pull-right"><a href="/post/20230105155417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来 —— 感受来自Ehcache的强大实力"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来 —— 感受来自Ehcache的强大实力</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20221028085417.html" title="聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-28</div><div class="title">聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活</div></div></a></div><div><a href="/post/20221102081617.html" title="聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-02</div><div class="title">聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性</div></div></a></div><div><a href="/post/20221107085417.html" title="手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-07</div><div class="title">手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架</div></div></a></div><div><a href="/post/20221107115817.html" title="手写本地缓存实战1——各个击破，按需应对实际使用场景"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-07</div><div class="title">手写本地缓存实战1——各个击破，按需应对实际使用场景</div></div></a></div><div><a href="/post/20221116065417.html" title="JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-16</div><div class="title">JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache</div></div></a></div><div><a href="/post/20221123080317.html" title="重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-23</div><div class="title">重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">这个是作者介绍</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Ehcache%E7%9A%84%E4%BE%9D%E8%B5%96%E9%9B%86%E6%88%90%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">Ehcache的依赖集成与配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E5%BC%95%E5%85%A5"><span class="toc-number">1.1.</span> <span class="toc-text">依赖引入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E7%9A%84%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%88%9B%E5%BB%BA"><span class="toc-number">1.2.</span> <span class="toc-text">缓存的配置与创建</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E4%BB%A3%E7%A0%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%88%9B%E5%BB%BAEhcache"><span class="toc-number">1.2.1.</span> <span class="toc-text">使用代码配置与创建Ehcache</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8EXML%E9%85%8D%E7%BD%AEEhcache"><span class="toc-number">1.2.2.</span> <span class="toc-text">基于XML配置Ehcache</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E4%B8%AD%E4%BD%BF%E7%94%A8"><span class="toc-number">1.3.</span> <span class="toc-text">业务中使用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E8%BF%87JCache-API%E6%9D%A5%E4%BD%BF%E7%94%A8Ehcache"><span class="toc-number">2.</span> <span class="toc-text">通过JCache API来使用Ehcache</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E9%9B%86%E6%88%90%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">依赖集成与配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E4%B8%AD%E4%BD%BF%E7%94%A8-1"><span class="toc-number">2.2.</span> <span class="toc-text">业务中使用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8Spring%E4%B8%AD%E9%9B%86%E6%88%90Ehcache"><span class="toc-number">3.</span> <span class="toc-text">在Spring中集成Ehcache</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E9%9B%86%E6%88%90%E4%B8%8E%E9%85%8D%E7%BD%AE-1"><span class="toc-number">3.1.</span> <span class="toc-text">依赖集成与配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%AF%E6%8C%81Spring-Cache%E6%B3%A8%E8%A7%A3%E6%93%8D%E4%BD%9C"><span class="toc-number">3.2.</span> <span class="toc-text">支持Spring Cache注解操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93%E5%9B%9E%E9%A1%BE"><span class="toc-number">4.</span> <span class="toc-text">小结回顾</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"/></a><div class="content"><a class="title" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式">面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式</a><time datetime="2023-01-12T23:13:17.000Z" title="发表于 2023-01-13 07:13:17">2023-01-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"/></a><div class="content"><a class="title" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制">Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制</a><time datetime="2023-01-12T01:02:17.000Z" title="发表于 2023-01-12 09:02:17">2023-01-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"/></a><div class="content"><a class="title" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点">Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点</a><time datetime="2023-01-09T23:29:17.000Z" title="发表于 2023-01-10 07:29:17">2023-01-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"/></a><div class="content"><a class="title" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板</a><time datetime="2023-01-06T23:04:17.000Z" title="发表于 2023-01-07 07:04:17">2023-01-07</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 By Veezean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式 | Veezean的技术探秘馆</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="对于一个集中式缓存的分布式能力构建，必须要额外提供一些机制，来保障数据在各个节点上的安全与一致性。本文以Redis为代表，看下集Redis面对上述问题交出的是怎样一份答卷。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式">
+<meta property="og:url" content="http://blog.codingcoder.cn/post/20230113071317.html">
+<meta property="og:site_name" content="Veezean的技术探秘馆">
+<meta property="og:description" content="对于一个集中式缓存的分布式能力构建，必须要额外提供一些机制，来保障数据在各个节点上的安全与一致性。本文以Redis为代表，看下集Redis面对上述问题交出的是怎样一份答卷。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202210050807355.png">
+<meta property="article:published_time" content="2023-01-12T23:13:17.000Z">
+<meta property="article:modified_time" content="2023-01-12T23:13:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="缓存">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202210050807355.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://blog.codingcoder.cn/post/20230113071317.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的技术探秘馆","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-01-13 07:13:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的技术探秘馆"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的技术探秘馆</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-01-12T23:13:17.000Z" title="发表于 2023-01-13 07:13:17">2023-01-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-01-12T23:13:17.000Z" title="更新于 2023-01-13 07:13:17">2023-01-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%93%E5%AD%98%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E8%AE%BE%E8%AE%A1/">缓存原理与实战设计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20230113071317.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20230113071317.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><blockquote>
+<p>对于一个集中式缓存的分布式能力构建，必须要额外提供一些机制，来保障数据在各个节点上的安全与一致性。本文以Redis为代表，看下集Redis面对上述问题交出的是怎样一份答卷。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png"></p>
+<p>大家好，又见面了。</p>
+<hr>
+<blockquote>
+<p>本文是笔者作为掘金技术社区签约作者的身份输出的缓存专栏系列内容，将会通过系列专题，讲清楚缓存的方方面面。如果感兴趣，欢迎关注以获取后续更新。</p>
+</blockquote>
+<hr>
+<p>在本专栏前面的文章中，我们介绍了各种本地缓存框架，也知晓了本地缓存的常见特性与设计理念。在前两篇文章中，我们介绍了<strong>集中式缓存</strong> Redis的一些主流特性与典型使用场景。现在我们来对比一下，分布式缓存相比于本地缓存，在实现层面需要关注的点有哪些不同。梳理如下：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>本地缓存</th>
+<th>集中式缓存</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>缓存量</td>
+<td>受限于单机内存大小，存储数据有限</td>
+<td>需要提供给分布式系统里面所有节点共同使用，对于大型系统而言，对集中式缓存的容量诉求非常的大，远超单机内存的容量大小。</td>
+</tr>
+<tr>
+<td>可靠性</td>
+<td>影响有限，只有本进程使用，不会影响其他进程的可靠性。</td>
+<td>作为整个系统扛压屏障，系统内所有节点共同依赖的通用服务，一旦集中式缓存出问题，会影响与其对接的所有业务节点，对系统的影响是<em>致命性</em>的。</td>
+</tr>
+<tr>
+<td>承压性</td>
+<td>承载单机节点的压力，请求量有限</td>
+<td>承载整个分布式集群所有节点的流量，系统内业务分布式节点部署数量越多、业务体量越大，会导致集中缓存要承载的压力就越大，甚至是上不封顶的。</td>
+</tr>
+</tbody></table>
+<p>从上述几个维度的对比可以发现，同样是缓存，但<strong>集中式缓存</strong>所承担的使命是完全不一样的，业务对集中式缓存的<code>存储容量</code>、<code>可靠性</code>、<code>承压性</code>等方面的诉求也是天壤之别，不可等同视之。以<strong>Redis</strong>为例：</p>
+<ul>
+<li>如何打破redis缓存容量受限于机器单机内存大小的问题？</li>
+<li>如何使得redis能够扛住多方过来的请求压力？</li>
+<li>如何保证redis不会成为单点故障源？</li>
+</ul>
+<p>其实答案很简单，加机器！通过多台机器的叠加使用，达到比单机更优的效果 —— 现在业务系统的集群化部署，也都是采用的这个思路。Redis的分布式之路亦是如此，但相比于常规的业务系统分布式集群化构建更加复杂：</p>
+<ol>
+<li>很多业务实现集群化部署会很简单，因为每个业务进程节点都是<em>无状态</em>的，只需要部署下然后通过负载均衡的方式对外提供请求应答即可。</li>
+<li>Redis作为一个集中式缓存数据库，它是<em>有状态</em>的，不仅需要将进程分别部署在多个节点上，还需要将数据也分散存储在各个节点上，同时还得保证整个Redis集群对外是一个统一整体。</li>
+</ol>
+<p>所以对于一个集中式缓存的分布式能力构建，必须要额外提供一些机制，来保障数据在各个节点上的安全与<strong>一致性</strong>，还需要将分散在各个节点上的数据都组成一个逻辑上的整体。</p>
+<p>下面，我们以Redis作为集中式缓存的代表，来看下集Redis面对上述各种难题，交出的是怎样的答卷。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="Reids部署方式的演进史"><a href="#Reids部署方式的演进史" class="headerlink" title="Reids部署方式的演进史"></a>Reids部署方式的演进史</h2><h3 id="单机部署-——-原始形态，最简单"><a href="#单机部署-——-原始形态，最简单" class="headerlink" title="单机部署 —— 原始形态，最简单"></a>单机部署 —— 原始形态，最简单</h3><p><strong>单机部署</strong>只能算是一个开发或测试场景去小范围使用的场景，它与普通本地缓存无二，在可靠性与承压性上无法得到保证。</p>
+<p>虽说Redis的性能很高，但俗话也说双拳难敌四手，单机性能再高，也无法抗住大规模集群中所有节点过来的并发请求。此外，单机部署还有个致命点在于其不具备高可用性，系统容易出现<em>单点故障</em>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211252257064.png"></p>
+<p>所以说，稍微正规点的项目，几乎不会有人天真到会用单机模式去部署线上使用。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="主从（master-replica）"><a href="#主从（master-replica）" class="headerlink" title="主从（master-replica）"></a>主从（master-replica）</h3><p>前面说过单机节点存在诸多问题，很少在生产环境上使用。在实际项目中，有些项目的存储容量要求其实并不是特别的高（比如常规的16G或者32G就已经足够使用），但是需要保证数据的可靠、并且支持大并发量请求，这种情况下，就可以选择<strong>主从部署</strong>的方式。</p>
+<p>对于redis来说，<code>一主两从</code>是比较常见的搭配，如下所示：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211260950451.png"></p>
+<p>主从模式按照读写分离的策略来提升整体的请求处理能力：</p>
+<ol>
+<li><p>主节点(Master)同时对外提供<em>读和写</em>操作</p>
+</li>
+<li><p>从节点(Slave)通过<code>replicate</code>同步的方式，从主节点复制数据，保持自身数据与主节点一致</p>
+</li>
+<li><p>从节点只能对外提供<em>读操作</em></p>
+</li>
+</ol>
+<p>当然，对于读多写少类的操作，为了提升整体读请求的处理能力，可以采用<code>一主多从</code>的方式：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211260951823.png"></p>
+<p>所有的从节点都从主节点进行数据同步，这样会导致主节点的同步处理压力过大而成为瓶颈。为了解决这个问题，redis还支持了从slave节点分发的能力：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211260950417.png"></p>
+<p>Redis的主从模式重点在于解决整体的承压能力，利用从节点分担读取操作的压力。但是其在<em>容错恢复</em>等可靠性层面欠缺明显，<strong>不具备</strong>自动的故障转移与恢复能力：</p>
+<ul>
+<li>如果slave从节点宕机，整个redis依旧可以正常提供服务，待slave节点重新启动后，可以恢复从master节点的数据同步、然后继续提供服务。</li>
+<li>如果master主节点宕机，则redis功能受损，无法继续提供写服务，直到手动修复master节点方可恢复。</li>
+</ul>
+<p>当然，master节点故障后，也可以手动将其中一个从节点切换为新的master节点来恢复故障。而原先的master节点恢复后，需要手动将其降级为slave节点，对外提供只读服务。</p>
+<p>实际使用的时候，手动故障恢复的时效无法得到保证，为了支持自动的故障转移与恢复能力，Redis在主从模式的基础上进行优化增强，提供了哨兵（Sentinel）架构模式。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="哨兵（sentinel）"><a href="#哨兵（sentinel）" class="headerlink" title="哨兵（sentinel）"></a>哨兵（sentinel）</h3><p><strong>哨兵模式</strong>是在现代自动化系统里面常见的一种模式。比如特斯拉汽车就配置了哨兵模式，当车辆停车锁定并启动哨兵模式时，会通过车辆四周的摄像头持续的监控车辆四周的环境，如果发现异常则启动报警系统。</p>
+<p>同样地，在软件架构领域，也可以通过设定一些主进程之外的辅助进程，充当“哨兵”的角色时刻监控着主服务，一旦主服务出现异常则进行报警或者自动介入辅助故障转移，以最大限度的保证系统功能的持续性。</p>
+<p>Redis的哨兵模式，就是在主从模式的基础上，额外部署若干独立的哨兵进程，通过哨兵进程去监视者Redis主从节点的状态，一旦发现主节点宕机，则哨兵可以重新从剩余slave节点中推选一个新的节点并将其升级为master节点，以此保证整个系统功能可以正常使用。</p>
+<p>比较典型的一个<code>Redis sentinel</code>部署场景是“<em>一主二从三哨兵</em>”的组合，如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211261040406.png"></p>
+<p>哨兵可以准实时的监控着组网内所有的节点的状态信息，如果判定master节点宕机之后，所有的sentinel节点会一起推选出一个新的master节点。由于sentinel哨兵节点需要承担着master节点推选的责任，所以实施的时候要去sentinel节点个数必须为<em>基数</em>（比如3个、5个等），这是为了保证投票的时候不会出现平局的情况。</p>
+<p>在哨兵模式下：</p>
+<ol>
+<li>如果Redis的master节点宕机之后，Sentinel监控到之后，需要先判定确认master节点已经宕机，然后会从剩余存活的slave节点中投票选出一个新的节点作为master节点。</li>
+<li>Sentinel监控到此前宕机的master节点重新恢复之后，会将其作为slave节点，挂到现有的新的master节点下面。</li>
+</ol>
+<p>哨兵模式有效的解决了高可用的问题，保证了主节点的自动切换操作，进一步保障了Redis缓存节点的可靠性。但是，不管是哨兵模式还是主从模式，其增加的多台部署机器，都仅仅是扩展其承压能力与可靠性，并没有解决分布式场景下对于集中缓存容量的焦虑 —— 只能适用于数据量有限的场景。</p>
+<p>成年人的世界总是贪婪的。如果我们既想要保证Redis的可靠性与承压性，还想要突破容量上的限制，就需要Redis的集群模式登场了。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="集群（cluster）"><a href="#集群（cluster）" class="headerlink" title="集群（cluster）"></a>集群（cluster）</h3><p>Redis提供了去中心化的<strong>集群部署</strong>模式，集群内所有Redis节点之间两两连接，而很多的客户端工具会根据key将请求分发到对应的分片下的某一个节点上进行处理。</p>
+<p>一个典型的Redis集群部署场景如下图所示：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211261555542.png"></p>
+<p>在Redis集群里面，又会划分出<code>分区</code>的概念，一个集群中可有多个分区。分区有几个特点：</p>
+<ol>
+<li>同一个分区内的Redis节点之间的数据完全一样，多个节点保证了数据有多份副本冗余保存，且可以提供高可用保障。</li>
+<li>不同分片之间的数据不相同。</li>
+<li>通过水平增加多个分片的方式，可以实现整体集群的容量的扩展。</li>
+</ol>
+<p>按照Cluster模式进行部署的时候，要求最少需要部署<code>6个</code>Redis节点（3个分片，每个分片中1主1从），其中集群中每个分片的master节点负责对外提供读写操作，slave节点则作为故障转移使用（master出现故障的时候充当新的master）、对外提供只读请求处理。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="集群数据分布策略"><a href="#集群数据分布策略" class="headerlink" title="集群数据分布策略"></a>集群数据分布策略</h2><h3 id="Redis-Sharding（数据分片）"><a href="#Redis-Sharding（数据分片）" class="headerlink" title="Redis Sharding（数据分片）"></a>Redis Sharding（数据分片）</h3><p>在<code>Redis Cluster</code>前，为了解决数据分发到各个分区的问题，普遍采用的是<code>Redis Sharding</code>（数据分片）方案。所谓的Sharding，其实就是一种数据分发的策略。根据key的hash值进行取模，确定最终归属的节点。</p>
+<p>使用Redis Sharding方式进行数据分片的时候，当集群内数据分区个数出现变化的时候，比如集群扩容的时候，会导致请求被分发到错误节点上，导致缓存<em>命中率降低</em>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211261611685.png"></p>
+<p>如果需要解决这个问题，就需要对原先扩容前已经存储的数据重新进行一次hash计算和取模操作，将全部的数据重新分发到新的正确节点上进行存储。这个操作被称为<code>重新Sharding</code>，重新sharding期间服务不可用，可能会对业务造成影响。</p>
+<h3 id="一致性Hash"><a href="#一致性Hash" class="headerlink" title="一致性Hash"></a>一致性Hash</h3><p>为了降低节点的增加或者移除对于整体已有缓存数据访问的影响，最大限度的保证缓存命中率，改良后的<code>一致性Hash</code>算法浮出水面。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211261704124.png"></p>
+<p>通过一致性Hash算法，将所有的存储节点排列在首尾相接的Hash环上，每个key在计算Hash后会顺时针找到最近的存储节点存放。而当有新的分区节点加入或退出时，仅影响该节点在Hash环上顺时针相邻的后续一个节点。</p>
+<p>当然咯，如果Hash圆环上的分区节点数太少，可能会出现数据在各个分片中分布不均衡的情况，也即出现<strong>数据倾斜</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211261659989.png"></p>
+<p>为了解决这个问题，引入了<code>虚拟节点</code>的机制，通过增加虚拟节点，来实现数据尽可能的均匀分布在各个节点上。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211261702759.png"></p>
+<p>上图中，A1、A2实际上都对应真实的A分区节点，而B1、B2则对应真实的B分区节点。通过虚拟节点的方式，尽可能让节点在Hash环上保持均分，实现数据在分区内的均分。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="Hash槽"><a href="#Hash槽" class="headerlink" title="Hash槽"></a>Hash槽</h3><p>不管是原本的Hash取模，还是经过改良后的一致性Hash，在节点的新增或者删减的时候，始终都会出现部分缓存数据丢失的问题 —— 只是丢失的数据量的多少区别。如何才能实现扩展或者收缩节点的时候，保持已有数据不丢失呢？</p>
+<p>既然动态变更调整的方式行不通，那就手动指定咯！Hash槽的实现策略因此产生。何为Hash槽？Hash槽的原理与HashMap有点相似，共有16384个槽位，每个槽位对应一个数据桶，然后每个Redis的分区都可以负责这些hash槽中的部分区间。存储数据的时候，数据key经过Hash计算后会匹配到一个对应的槽位，然后数据存储在该槽位对应的分片中。然后各个分区节点会与Hash槽之间有个映射绑定关系，由指定的Redis分区节点负责存储对应的Has槽对应的具体分片文件。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202211280952704.png"></p>
+<p>数据查询的时候，先根据key的Hash值进行计算，确定应该落入哪个Hash槽，进而根据映射关系，确定负责此Hash槽数据存储的redis分区节点是哪个，然后就可以去做对应的查询操作。</p>
+<p>执行数据节点增加的时候，需要手动执行下处理：</p>
+<ul>
+<li>为新的节点分配新其负责的Hash槽位区间段；</li>
+<li>调整已有的节点的Hash槽位负责区间段；</li>
+<li>将调整到新节点上的hash槽位区间段对应的数据分片文件拷贝到新的节点上。</li>
+</ul>
+<p>这样，就不会出现已有数据无法使用的情况了。鉴于Hash槽的自主可控性以及节点伸缩场景下的优势，其也成为了Redis Cluster中使用的方案。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="小结回顾"><a href="#小结回顾" class="headerlink" title="小结回顾"></a>小结回顾</h2><p>好啦，关于Redis部署模式的演进探讨，就聊到这里了。通过本篇文章，我们也可以感受出集中式缓存相对本地而言，在实现与设计机制上要更加的复杂，因为需要考虑与解决多方面的问题，比如可靠性、承压性、容量以及后期的水平扩容能力等等，而这些也都是一个合格的集中式缓存所必须要具备的基本品格。</p>
+<p>那么，了解Redis对于集中式缓存在节点安全性与扩展性上的实现后，如果让你来设计一个集中缓存的话，你会采用何种方式来保证其可靠性与后续的扩展性呢？欢迎评论区一起交流下，期待和各位小伙伴们一起切磋、共同成长。</p>
+<p>📣 <strong>补充说明</strong> ：</p>
+<blockquote>
+<p>本文属于《<a target="_blank" rel="noopener" href="https://juejin.cn/column/7140852038258147358">深入理解缓存原理与实战设计</a>》系列专栏的内容之一。该专栏围绕缓存这个宏大命题进行展开阐述，全方位、系统性地深度剖析各种缓存实现策略与原理、以及缓存的各种用法、各种问题应对策略，并一起探讨下缓存设计的哲学。</p>
+<p>如果有兴趣，也欢迎关注此专栏。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312091.gif"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://blog.codingcoder.cn/post/20230113071317.html">http://blog.codingcoder.cn/post/20230113071317.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://blog.codingcoder.cn" target="_blank">Veezean的技术探秘馆</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%AD%98/">缓存</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202210050807355.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</div></div></a></div><div class="next-post pull-right"><a href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20221028085417.html" title="聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-28</div><div class="title">聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活</div></div></a></div><div><a href="/post/20221102081617.html" title="聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-02</div><div class="title">聊一聊安全且正确使用缓存的那些事 —— 关于缓存可靠性、关乎数据一致性</div></div></a></div><div><a href="/post/20221107085417.html" title="手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-07</div><div class="title">手写本地缓存实战2—— 打造正规军，构建通用本地缓存框架</div></div></a></div><div><a href="/post/20221107115817.html" title="手写本地缓存实战1——各个击破，按需应对实际使用场景"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-07</div><div class="title">手写本地缓存实战1——各个击破，按需应对实际使用场景</div></div></a></div><div><a href="/post/20221116065417.html" title="JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-16</div><div class="title">JAVA缓存规范 —— 虽迟但到的JCache API与天生不俗的Spring Cache</div></div></a></div><div><a href="/post/20221123080317.html" title="重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-23</div><div class="title">重新认识下JVM级别的本地缓存框架Guava Cache——优秀从何而来</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">这个是作者介绍</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Reids%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F%E7%9A%84%E6%BC%94%E8%BF%9B%E5%8F%B2"><span class="toc-number">1.</span> <span class="toc-text">Reids部署方式的演进史</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2-%E2%80%94%E2%80%94-%E5%8E%9F%E5%A7%8B%E5%BD%A2%E6%80%81%EF%BC%8C%E6%9C%80%E7%AE%80%E5%8D%95"><span class="toc-number">1.1.</span> <span class="toc-text">单机部署 —— 原始形态，最简单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%EF%BC%88master-replica%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">主从（master-replica）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%93%A8%E5%85%B5%EF%BC%88sentinel%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">哨兵（sentinel）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%EF%BC%88cluster%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">集群（cluster）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E6%95%B0%E6%8D%AE%E5%88%86%E5%B8%83%E7%AD%96%E7%95%A5"><span class="toc-number">2.</span> <span class="toc-text">集群数据分布策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Redis-Sharding%EF%BC%88%E6%95%B0%E6%8D%AE%E5%88%86%E7%89%87%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">Redis Sharding（数据分片）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7Hash"><span class="toc-number">2.2.</span> <span class="toc-text">一致性Hash</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash%E6%A7%BD"><span class="toc-number">2.3.</span> <span class="toc-text">Hash槽</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93%E5%9B%9E%E9%A1%BE"><span class="toc-number">3.</span> <span class="toc-text">小结回顾</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式"/></a><div class="content"><a class="title" href="/post/20230113071317.html" title="面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式">面对集中式缓存实现上的挑战，Redis交出的是何种答卷？聊聊Redis的主从、哨兵与集群部署模式</a><time datetime="2023-01-12T23:13:17.000Z" title="发表于 2023-01-13 07:13:17">2023-01-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制"/></a><div class="content"><a class="title" href="/post/20230112090217.html" title="Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制">Redis缓存何以一枝独秀？(2) —— 聊聊Redis的数据过期、数据淘汰以及数据持久化的实现机制</a><time datetime="2023-01-12T01:02:17.000Z" title="发表于 2023-01-12 09:02:17">2023-01-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点"/></a><div class="content"><a class="title" href="/post/20230110072917.html" title="Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点">Redis缓存何以一枝独秀？——从百变应用场景与热门面试题中感受下Redis的核心特性与使用注意点</a><time datetime="2023-01-09T23:29:17.000Z" title="发表于 2023-01-10 07:29:17">2023-01-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板"/></a><div class="content"><a class="title" href="/post/20230107070417.html" title="JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板">JAVA中使用最广泛的本地缓存？Ehcache的自信从何而来3 —— 本地缓存变身分布式集群缓存，打破本地缓存天花板</a><time datetime="2023-01-06T23:04:17.000Z" title="发表于 2023-01-07 07:04:17">2023-01-07</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 By Veezean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
