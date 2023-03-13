@@ -4,6 +4,122 @@
   
     
     <entry>
+      <title>CodeReview IDEA插件使用教程</title>
+      <link href="//post/codereviewhelperdoc.html"/>
+      <url>//post/codereviewhelperdoc.html</url>
+      
+        <content type="html"><![CDATA[<p><img src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p><p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p><p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p><p>期待与你一起探讨，一起成长为更好的自己。</p><p><img src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> CodeReview插件帮助文档 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> CodeReview插件 </tag>
+            
+            <tag> IDEA插件 </tag>
+            
+            <tag> 帮助文档 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>CodeReview IDEA插件版本更新记录</title>
+      <link href="//post/codereviewversions.html"/>
+      <url>//post/codereviewversions.html</url>
+      
+        <content type="html"><![CDATA[<hr><blockquote><p>当前最新版本：  <code>V3.0</code></p><p>您可以通过 <code>IDEA Plugin Market</code> 搜索 <strong>Code Review Helper</strong> 并升级或者新安装即可。</p><p>获取源码进行二次定制，请点击访问：</p><ul><li><p><a href="https://gitee.com/veezean/IntellijIDEA-CodeReview-Plugin">Gitee仓库</a></p></li><li><p><a href="https://github.com/veezean/IntellijIDEA-CodeReview-Plugin">Github仓库</a></p></li></ul></blockquote><hr><ul><li><p><strong>2023-03-12</strong>: <code>V3.0</code><br>  重构整个插件实现，并且提供全新的配套服务端（含管理界面），此版本支持自行定制需要的评审字段</p></li><li><p>** 2022-04-14**: <code>V2.6</code><br>  解决部分已知问题</p></li><li><p><strong>2021-06-14</strong>: <code>V2.5</code><br>  代码重构</p></li><li><p><strong>2021-06-12</strong>: <code>V2.4</code><br>  网络版本支持使用gitee作为服务端，支持直接将评审意见创建为GITEE的issue。</p></li><li><p><strong>2021-05-01</strong>: <code>V2.3</code><br>  提交IDEA plugin市场，要求必须英文界面，所有更改下语言界面显示。</p></li><li><p><strong>2021-05-01</strong>: <code>V2.2</code><br>  优化界面耗时操作逻辑，在子线程中操作，避免界面卡顿。</p></li><li><p><strong>2021-05-01</strong>: <code>V2.1</code><br>  优化部分lib依赖，大幅降低插件大小。</p></li><li><p><strong>2021-04-27</strong>: <code>V2.0</code><br>  增加网络版本的能力，支持提交评审意见、支持从服务端获取评审意见；优化了使用体验，支持对评审意见进行确认答复。</p></li><li><p><strong>2021-04-24</strong>: <code>V1.3</code><br>  功能优化，小bug修复，代码优化，评审字段中新增了关联需求、处理人之类的字段</p></li><li><p><strong>2020-12-07</strong>: <code>V1.2</code><br>  功能优化，删除与清空操作增加确认窗口，优化左侧行标显示精准度</p></li><li><p><strong>2019-10-08</strong>: <code>V1.1</code><br>  功能优化，支持同时打开多个IDEA窗口的情况下，相互之间review内容独立</p></li><li><p><strong>2019-10-04</strong>: <code>V1.0</code><br>  首个版本，提供代码标记、本地窗口查看，导出Excel、导入Excel等基本功能</p></li></ul><p><img src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p><p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p><p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p><p>期待与你一起探讨，一起成长为更好的自己。</p><p><img src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> CodeReview插件帮助文档 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> CodeReview插件 </tag>
+            
+            <tag> IDEA插件 </tag>
+            
+            <tag> 帮助文档 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>CodeReview IDEA插件配套服务端使用教程</title>
+      <link href="//post/codereviewserverdeploydoc.html"/>
+      <url>//post/codereviewserverdeploydoc.html</url>
+      
+        <content type="html"><![CDATA[<p><img src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p><p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p><p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p><p>期待与你一起探讨，一起成长为更好的自己。</p><p><img src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> CodeReview插件帮助文档 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> CodeReview插件 </tag>
+            
+            <tag> IDEA插件 </tag>
+            
+            <tag> 帮助文档 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>自定义CodeReview的检视字段属性详情</title>
+      <link href="//post/codereviewfieldmodifyhelper.html"/>
+      <url>//post/codereviewfieldmodifyhelper.html</url>
+      
+        <content type="html"><![CDATA[<h2 id="字段定制参数说明"><a href="#字段定制参数说明" class="headerlink" title="字段定制参数说明"></a>字段定制参数说明</h2><p>配置字段的含义描述如下：</p><table><thead><tr><th>字段</th><th>取值约束</th><th>含义说明</th></tr></thead><tbody><tr><td>columnCode</td><td>字符串，不能重复</td><td>字段在代码层面处理时的唯一编码</td></tr><tr><td>showName</td><td>字符串</td><td>此字段在界面或者表格中显示的名称</td></tr><tr><td>systemInitialization</td><td>boolean</td><td>是否为系统内置字段，为true表示系统预置字段，此类字段不可修改其columnCode值</td></tr><tr><td>sortIndex</td><td>int</td><td>排序权重，编码越大排序越后</td></tr><tr><td>supportInExcel</td><td>boolean</td><td>是否支持导出到Excel中</td></tr><tr><td>excelColumnWidth</td><td>int</td><td>导出到Excel中时此字段宽度</td></tr><tr><td>editable</td><td>boolean</td><td>字段是否支持编辑</td></tr><tr><td>required</td><td>boolean</td><td>字段是否必填</td></tr><tr><td>showInAddPage</td><td>boolean</td><td>字段是否需要在添加评审意见界面呈现</td></tr><tr><td>showInComfirmPage</td><td>boolean</td><td>字段是否需要在确认评审意见界面呈现</td></tr><tr><td>showInTable</td><td>boolean</td><td>字段是否需要在IDEA表格界面显示</td></tr><tr><td>editableInConfirmPage</td><td>boolean</td><td>在编辑界面中是否支持编辑此字段</td></tr><tr><td>inputType</td><td>String枚举值</td><td>支持三个值：<code>TEXT</code>、<code>TEXTAREA</code>、<code>COMBO_BOX</code></td></tr><tr><td>enumValues</td><td>inputType为下拉框类型时的候选值（仅单机模式的时候支持）</td><td></td></tr><tr><td>confirmProp</td><td>boolean</td><td>此字段是否为确认界面独有</td></tr></tbody></table><p>配置文件示例如下：</p><pre class="line-numbers language-json" data-language="json"><code class="language-json">&#123;  &quot;columns&quot;: [    &#123;      &quot;columnCode&quot;: &quot;identifier&quot;,      &quot;showName&quot;: &quot;ID&quot;,      &quot;systemInitialization&quot;: true,      &quot;sortIndex&quot;: 0,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 15,      &quot;inputType&quot;: &quot;TEXT&quot;,      &quot;editable&quot;: false,      &quot;required&quot;: true,      &quot;showInAddPage&quot;: false,      &quot;showInComfirmPage&quot;: false,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;filePath&quot;,      &quot;showName&quot;: &quot;文件路径&quot;,      &quot;systemInitialization&quot;: true,      &quot;sortIndex&quot;: 1,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 50,      &quot;inputType&quot;: &quot;TEXT&quot;,      &quot;editable&quot;: false,      &quot;required&quot;: true,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;content&quot;,      &quot;showName&quot;: &quot;代码片段&quot;,      &quot;systemInitialization&quot;: true,      &quot;sortIndex&quot;: 2,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 50,      &quot;inputType&quot;: &quot;TEXTAREA&quot;,      &quot;editable&quot;: false,      &quot;required&quot;: true,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;lineRange&quot;,      &quot;showName&quot;: &quot;代码行号&quot;,      &quot;systemInitialization&quot;: true,      &quot;sortIndex&quot;: 3,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 15,      &quot;inputType&quot;: &quot;TEXT&quot;,      &quot;editable&quot;: false,      &quot;required&quot;: true,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;comment&quot;,      &quot;showName&quot;: &quot;检视意见&quot;,      &quot;systemInitialization&quot;: true,      &quot;sortIndex&quot;: 4,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 50,      &quot;inputType&quot;: &quot;TEXTAREA&quot;,      &quot;editable&quot;: true,      &quot;required&quot;: true,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;type&quot;,      &quot;showName&quot;: &quot;意见类型&quot;,      &quot;systemInitialization&quot;: false,      &quot;sortIndex&quot;: 5,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 15,      &quot;inputType&quot;: &quot;COMBO_BOX&quot;,      &quot;enumValues&quot;: [        &quot;问题&quot;,        &quot;建议&quot;,        &quot;疑问&quot;      ],      &quot;editable&quot;: true,      &quot;required&quot;: false,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;level&quot;,      &quot;showName&quot;: &quot;严重级别&quot;,      &quot;systemInitialization&quot;: false,      &quot;sortIndex&quot;: 6,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 15,      &quot;inputType&quot;: &quot;COMBO_BOX&quot;,      &quot;enumValues&quot;: [        &quot;提示&quot;,        &quot;一般&quot;,        &quot;严重&quot;      ],      &quot;editable&quot;: true,      &quot;required&quot;: false,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;belongingTo&quot;,      &quot;showName&quot;: &quot;问题归类&quot;,      &quot;systemInitialization&quot;: false,      &quot;sortIndex&quot;: 7,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 20,      &quot;inputType&quot;: &quot;COMBO_BOX&quot;,      &quot;enumValues&quot;: [        &quot;编码基础类&quot;,        &quot;业务功能类&quot;,        &quot;安全可靠类&quot;,        &quot;其它&quot;      ],      &quot;editable&quot;: true,      &quot;required&quot;: false,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;reviewDate&quot;,      &quot;showName&quot;: &quot;检视时间&quot;,      &quot;systemInitialization&quot;: true,      &quot;sortIndex&quot;: 8,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 20,      &quot;inputType&quot;: &quot;TEXT&quot;,      &quot;editable&quot;: false,      &quot;required&quot;: true,      &quot;showInAddPage&quot;: false,      &quot;showInComfirmPage&quot;: false,      &quot;showInTable&quot;: false,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;reviewer&quot;,      &quot;showName&quot;: &quot;检视人员&quot;,      &quot;systemInitialization&quot;: false,      &quot;sortIndex&quot;: 9,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 20,      &quot;inputType&quot;: &quot;TEXT&quot;,      &quot;editable&quot;: true,      &quot;required&quot;: true,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: false    &#125;,    &#123;      &quot;columnCode&quot;: &quot;confirmResult&quot;,      &quot;showName&quot;: &quot;确认结果&quot;,      &quot;systemInitialization&quot;: false,      &quot;sortIndex&quot;: 10,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 20,      &quot;inputType&quot;: &quot;COMBO_BOX&quot;,      &quot;enumValues&quot;: [        &quot;未确认&quot;,        &quot;已修改&quot;,        &quot;待修改&quot;,        &quot;拒绝&quot;      ],      &quot;editable&quot;: true,      &quot;required&quot;: false,      &quot;showInAddPage&quot;: false,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: true,      &quot;confirmProp&quot;: true    &#125;,    &#123;      &quot;columnCode&quot;: &quot;confirmNotes&quot;,      &quot;showName&quot;: &quot;确认说明&quot;,      &quot;systemInitialization&quot;: false,      &quot;sortIndex&quot;: 11,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 50,      &quot;inputType&quot;: &quot;TEXTAREA&quot;,      &quot;editable&quot;: true,      &quot;required&quot;: false,      &quot;showInAddPage&quot;: false,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: true,      &quot;confirmProp&quot;: true    &#125;,    &#123;      &quot;columnCode&quot;: &quot;projectVersion&quot;,      &quot;showName&quot;: &quot;项目版本&quot;,      &quot;systemInitialization&quot;: false,      &quot;sortIndex&quot;: 12,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 30,      &quot;inputType&quot;: &quot;TEXT&quot;,      &quot;editable&quot;: true,      &quot;required&quot;: false,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: true    &#125;,    &#123;      &quot;columnCode&quot;: &quot;blongingIssue&quot;,      &quot;showName&quot;: &quot;问题归属&quot;,      &quot;systemInitialization&quot;: false,      &quot;sortIndex&quot;: 13,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 30,      &quot;inputType&quot;: &quot;TEXT&quot;,      &quot;editable&quot;: true,      &quot;required&quot;: false,      &quot;showInAddPage&quot;: true,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: true,      &quot;confirmProp&quot;: true    &#125;,    &#123;      &quot;columnCode&quot;: &quot;confirmer&quot;,      &quot;showName&quot;: &quot;确认人员&quot;,      &quot;systemInitialization&quot;: false,      &quot;sortIndex&quot;: 14,      &quot;supportInExcel&quot;: true,      &quot;excelColumnWidth&quot;: 20,      &quot;inputType&quot;: &quot;TEXT&quot;,      &quot;editable&quot;: true,      &quot;required&quot;: false,      &quot;showInAddPage&quot;: false,      &quot;showInComfirmPage&quot;: true,      &quot;showInTable&quot;: true,      &quot;editableInConfirmPage&quot;: true,      &quot;confirmProp&quot;: true    &#125;  ]&#125;</code></pre><h2 id="单机版本自定义配置"><a href="#单机版本自定义配置" class="headerlink" title="单机版本自定义配置"></a>单机版本自定义配置</h2><p><img src="https://pics.codingcoder.cn/pics/202303132224837.png"></p><p><img src="https://pics.codingcoder.cn/pics/202303132227483.png"></p><h2 id="网络版本字段统一配置"><a href="#网络版本字段统一配置" class="headerlink" title="网络版本字段统一配置"></a>网络版本字段统一配置</h2><h3 id="客户端同步配置信息"><a href="#客户端同步配置信息" class="headerlink" title="客户端同步配置信息"></a>客户端同步配置信息</h3><p><img src="https://pics.codingcoder.cn/pics/202303132234350.png"></p><p><img src="https://pics.codingcoder.cn/pics/202303132235015.png"></p><h3 id="服务端配置字段数据"><a href="#服务端配置字段数据" class="headerlink" title="服务端配置字段数据"></a>服务端配置字段数据</h3><p><img src="https://pics.codingcoder.cn/pics/202303132238534.png"></p><p><img src="https://pics.codingcoder.cn/pics/202303132241675.png"></p><p><img src="https://pics.codingcoder.cn/pics/202303132242473.png"></p><h4 id="固定下拉框值内容设置"><a href="#固定下拉框值内容设置" class="headerlink" title="固定下拉框值内容设置"></a>固定下拉框值内容设置</h4><p><img src="https://pics.codingcoder.cn/pics/202303132244152.png"></p><p><img src="https://pics.codingcoder.cn/pics/202303132245290.png"></p><h4 id="动态定制下拉框内容"><a href="#动态定制下拉框内容" class="headerlink" title="动态定制下拉框内容"></a>动态定制下拉框内容</h4><p><img src="https://pics.codingcoder.cn/pics/202303132246275.png"></p><p>当前支持的动态下拉内容如下：</p><table><thead><tr><th>字典值</th><th>代码中动态收集器名</th><th>含义说明</th></tr></thead><tbody><tr><td>ServerDynamic_UserList</td><td>UserList</td><td>获取系统中的用户信息列表，用于下拉框中选择使用。</td></tr></tbody></table><p>如果需要定制其余动态下拉框内容，需要提供一个<code>IEnumDynamicCollector</code>实现类，并指定该收集器实现类的<code>name()</code>信息，然后通过界面上添加字典code即可（字典code规则： <code>ServerDynamic_ + name</code>）。</p><p>可以参考如下内容：</p><pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;** * 用户列表信息下拉框内容生成器 * * @author Veezean, 公众号 @架构悟道 * @since 2023&#x2F;3&#x2F;12 *&#x2F;@Componentpublic class UserEnumDynamicCollector implements IEnumDynamicCollector &#123;    private static final String SERVER_DYNAMIC_USERLIST &#x3D; &quot;UserList&quot;;    @Autowired    private UserService userService;    @Override    public String name() &#123;        return SERVER_DYNAMIC_USERLIST;    &#125;    @Override    public List&lt;String&gt; doCollect() &#123;        return userService.getUserShortInfoList()                .stream()                .map(userShortInfo -&gt; userShortInfo.getUserName() + &quot;|&quot; + userShortInfo.getAccount())                .collect(Collectors.toList());    &#125;&#125;</code></pre><p><img src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p><p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p><p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p><p>期待与你一起探讨，一起成长为更好的自己。</p><p><img src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> CodeReview插件帮助文档 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> CodeReview插件 </tag>
+            
+            <tag> IDEA插件 </tag>
+            
+            <tag> 帮助文档 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</title>
       <link href="//post/20230118065917.html"/>
       <url>//post/20230118065917.html</url>
