@@ -592,7 +592,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (copyFont.length > copyright.limitCount) {
         textFont = copyFont + '\n' + '\n' + '\n' +
         copyright.languages.author + '\n' +
-        copyright.languages.link + window.location.href + '\n' +
+        copyright.languages.link + window.location.href.split('#')[0] + '\n' +
         copyright.languages.source + '\n' +
         copyright.languages.info
       } else {
