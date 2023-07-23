@@ -1,0 +1,709 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>不堆概念、换个角度聊多线程并发编程 | Veezean的小世界</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="大家好，又见面了。 在上一篇文档《JAVA基于CompletableFuture的流水线并行处理深度实践，满满干货》中，我们一起探讨了JAVA中并行编码的相关内容，在文中也一起比较了并行与并发的区别。作为姊妹篇，这里我们就再展开聊一聊关于并发相关的内容。  俗话说，双拳难敌四手。俗话还说，人多力量大。 在现实生活中，我们通过团队化的方式来获得比单兵作战更高的单位时间内整体产出速度。同样，在编码世界">
+<meta property="og:type" content="article">
+<meta property="og:title" content="不堆概念、换个角度聊多线程并发编程">
+<meta property="og:url" content="https://blog.codingcoder.cn/post/20220728085417.html">
+<meta property="og:site_name" content="Veezean的小世界">
+<meta property="og:description" content="大家好，又见面了。 在上一篇文档《JAVA基于CompletableFuture的流水线并行处理深度实践，满满干货》中，我们一起探讨了JAVA中并行编码的相关内容，在文中也一起比较了并行与并发的区别。作为姊妹篇，这里我们就再展开聊一聊关于并发相关的内容。  俗话说，双拳难敌四手。俗话还说，人多力量大。 在现实生活中，我们通过团队化的方式来获得比单兵作战更高的单位时间内整体产出速度。同样，在编码世界">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg">
+<meta property="article:published_time" content="2022-07-28T00:54:17.000Z">
+<meta property="article:modified_time" content="2022-07-28T00:54:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="并发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.codingcoder.cn/post/20220728085417.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的小世界","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '不堆概念、换个角度聊多线程并发编程',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-28 08:54:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的小世界"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的小世界</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">不堆概念、换个角度聊多线程并发编程</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-28T00:54:17.000Z" title="发表于 2022-07-28 08:54:17">2022-07-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-28T00:54:17.000Z" title="更新于 2022-07-28 08:54:17">2022-07-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%9C%BA%E6%99%AF%E5%8C%96JAVA%E5%85%A8%E9%9D%A2%E6%95%99%E7%A8%8B/">场景化JAVA全面教程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">8.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>29分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="不堆概念、换个角度聊多线程并发编程"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20220728085417.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20220728085417.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><p>大家好，又见面了。</p>
+<p>在上一篇文档《<a target="_blank" rel="noopener" href="https://juejin.cn/post/7124124854747398175">JAVA基于CompletableFuture的流水线并行处理深度实践，满满干货</a>》中，我们一起探讨了JAVA中并行编码的相关内容，在文中也一起比较了并行与并发的区别。作为姊妹篇，这里我们就再展开聊一聊关于并发相关的内容。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924662276886313341.png"></p>
+<p>俗话说，<strong>双拳难敌四手</strong>。<br>俗话还说，<strong>人多力量大</strong>。</p>
+<p>在现实生活中，我们通过团队化的方式来获得比单兵作战更高的单位时间内整体产出速度。同样，在编码世界中，为了提升处理效率，<strong>并发</strong>一直以来都是软件开发设计场景中无法绕过的话题。不管是微观层面的<code>单个进程</code>内多线程处理模式，还是宏观层面整个系统集群化<code>多节点</code>部署策略，为了提升系统的整体<strong>并发吞吐量</strong>，程序员们可谓是煞费苦心。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924664186951820159.png"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>当然，俗话也说，<strong>人多眼杂</strong>、<strong>林子大了什么鸟都有</strong>。在现实中，团队中多人一起配合工作的时候，一系列的问题又会显现：</p>
+<blockquote>
+<ul>
+<li>同一个事情，老王和小张都以为还没处理，结果都去处理了，最后造成了成员工作量的浪费、甚至因为重复处理了一遍导致数据错误</li>
+<li>两个有关联的事情分别给了老王和翠花，结果老王在等待翠花先给出结果再开始处理自己的事情，翠花也在等待老王先给出结果然后再处理自己的事情，结果两个人就这么一致等下去，事情一直没完成</li>
+<li>同一个文档，小张和翠花各自更新的时候，出现相互覆盖的情况</li>
+<li>…</li>
+</ul>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924665858184431167.png"></p>
+<p>编码源于生活、代码世界其实也处处体现着生活中的朴素哲学思维。纵然并发场景存在一些可能的隐患问题，但我们也<strong>不必因噎废食</strong>，正所谓先了解它、再掌控它。</p>
+<p>作为提升吞吐性能的<strong>不二良方</strong>，下面我们就一起来尝试按照问题解决型的思路一步步推进，换个角度探讨下多线程并发相关的内容，全面了解下多线程并发世界的各种关联，进而更从容优雅的让并发为我们所用，成为我们提升系统性能的神兵利器。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="多线程——并发第一步"><a href="#多线程——并发第一步" class="headerlink" title="多线程——并发第一步"></a>多线程——并发第一步</h2><p>并发探险的第一关，就是如何支持并发。下面大概列举下常见的几种方式：</p>
+<p>⭐️<strong>子线程</strong>⭐️</p>
+<p>一些简单的场景中，我们为了提升主线程的处理性能，会将过程中一些耗时操作放到一个单独的子线程中进行同步处理。在代码中可以通过<strong>创建临时子线程</strong>的方式来执行即可：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void buyProduct() &#123;
+    int price &#x3D; getPrice();
+    &#x2F;&#x2F; 子线程同步处理部分操作
+    new Thread(this::printTicket).start();
+    &#x2F;&#x2F; 主线程继续处理其它逻辑
+    doOtherOperations(price);
+&#125;</code></pre>
+
+<p>⭐️<strong>线程池</strong>⭐️</p>
+<p>频繁创建线程、销毁线程的操作属于一种消耗性能的操作，而且创建线程的数量不可控。所以对于一些固定需要在子线程中并行处理的任务场景，我们可以通过<strong>创建线程池</strong>的方式，固定维护着一批可用线程，循环利用，去处理任务，以实现提升效率与便于管控的诉求：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">private ExecutorService threadPool &#x3D; Executors.newFixedThreadPool(3);
+
+public void testReleaseThreadLocalSafely() &#123;
+    &#x2F;&#x2F; 任务直接放到线程池中进行处理
+    threadPool.submit(this::mockServiceOperations);
+&#125;</code></pre>
+
+<p>⭐️<strong>定时器</strong>⭐️</p>
+<p><strong>定时器</strong>是一种比较特殊的多线程并发场景，也是经常可能会被忽视掉的一种情况。定时器也是在子线程中执行的，多个定时器之间、定时器线程与主线程之间、定时器线程与业务子线程之间都会以多线程的形式并发处理。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Scheduled(cron &#x3D; &quot;0 0&#x2F;10 * * * ?&quot;)
+public void syncBusinessInfo() &#123;
+    &#x2F;&#x2F; do something here...
+&#125;</code></pre>
+
+<p>⭐️<strong>Tomcat等容器</strong>⭐️</p>
+<p>常见的服务运行容器，比如<code>Tomcat</code>等，都是支持并发请求执行的。而常见的基于<code>SpringBoot</code>实现的服务，其<code>service</code>类都是由<code>Spring</code>进行<strong>托管</strong>的<strong>单例对象</strong>。这种场景是比较常见的多线程场景。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>改为多线程并发执行，虽然效率是提升了，但是问题也来了——<strong>数据执行结果不准确</strong>。</p>
+<p>结果不对，显然是我们无法接受的。所以摆在我们面前的下一难题，就是要保证执行结果数据的准确。</p>
+<h2 id="synchronized与lock"><a href="#synchronized与lock" class="headerlink" title="synchronized与lock"></a>synchronized与lock</h2><p>在JAVA中提到线程同步，使用最简单、应用频率最高的非<code>synchronized</code>关键字莫属了。它是 Java 内建的一种同步机制，代表了某种内在锁定的概念，当一个线程对某个共享资源加锁后，其他想要获取共享资源的线程必须进行等待，<code>synchronized</code> 也具有<strong>互斥</strong>和<strong>排他</strong>的语义。具体用法如下：</p>
+<ul>
+<li><code>synchronized </code>修饰<strong>实例方法</strong>，相当于是对类的实例(<code>this</code>)进行加锁，进入同步代码前需要获得当前实例的锁</li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public synchronized void test() &#123;
+    &#x2F;&#x2F;...
+&#125;</code></pre>
+
+<ul>
+<li><code>synchronized </code>修饰<strong>代码块</strong>，相当于是给<strong>对象</strong>(<code>syncObject</code>)进行加锁，在进入代码块前需要先获得对象的锁</li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void test() &#123;
+    synchronized(syncObject) &#123;
+        &#x2F;&#x2F;允许访问控制的代码   
+    &#125;
+    &#x2F;&#x2F; 其它操作
+&#125;</code></pre>
+
+<ul>
+<li><code>synchronized </code>修饰<strong>静态方法</strong>，相当于是对<strong>类</strong>（<code>LockTest.class</code>）进行加锁</li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public class LockTest &#123;
+    public synchronized static void test() &#123;
+        &#x2F;&#x2F;...
+    &#125;
+&#125;</code></pre>
+
+<p>对于被锁的目标对象而言，锁是具有排他性的，也就是同一个对象上的多个带锁方法，同一时刻只有1个线程可以抢到锁，其余都会被阻塞住。比如下面的代码，线程A和线程B分别同时请求<code>method1</code>和<code>method2</code>，虽然调用的是不同的方法，但是两个线程其实是在<strong>争夺同一把锁</strong>：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public class LockTest &#123;
+    public synchronized void method1() &#123;
+        &#x2F;&#x2F; ...   
+    &#125;
+    public synchronized void method2() &#123;
+        &#x2F;&#x2F; ...
+    &#125;
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924668102427077801.png"></p>
+<p>由于<strong>synchronized</strong>属于<strong>JVM</strong>关键字，属于一种比较<strong>重量级</strong>的锁。在JDK中还提供了个<code>Lock</code>类，提供了众多不同类型的锁，供各种不同场景诉求使用。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void test() &#123;
+    Lock lock &#x3D; ...;
+    lock.lock();
+    try&#123;
+         &#x2F;&#x2F; ...
+    &#125;catch(Exception ex)&#123;
+         &#x2F;&#x2F; ...
+    &#125;finally&#123;
+        &#x2F;&#x2F; ...
+        lock.unlock(); 
+    &#125;
+&#125;</code></pre>
+
+<p>与<code>synchronized</code>不同，使用<code>Lock</code>的时候需要特别注意最后一定要可靠的<strong>释放掉占用的锁</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>到这里，再测试会发现，多线程并发执行，数据结果也对，似乎是没什么问题——但是这样真的就结束了吗？</p>
+<p>如果并发编程仅仅就这么点内容，那显然对不上它在编码界的地位。我们接着往下看。</p>
+<h2 id="死锁——不期而遇的小惊吓"><a href="#死锁——不期而遇的小惊吓" class="headerlink" title="死锁——不期而遇的小惊吓"></a>死锁——不期而遇的小惊吓</h2><p>经过前面的内容，我们知道了使用多线程的方式来实现并发处理，也知晓了可以通过加锁的方式来保证对共享数据编辑的顺序性与准确性。而加了锁之后稍不留神间，也许就会出现<strong>死锁</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924670581546433105.png"></p>
+<p>一个<code>线程A</code>已经持有一个锁的情况下同时又去请求调用另一个加锁的对象或者代码块，而这个被请求的对象又被另一个<code>线程B</code>所持有，而这个<code>线程B</code>，又恰好在等待此时被<code>线程A</code>所持有的加锁资源或代码块，于是两个线程都在沉默中无限等待下去，便会出现<strong>死锁</strong>。</p>
+<p>看一个实际业务场景：</p>
+<blockquote>
+<p>一个运维管理系统，用于维护虚拟机资源以及部署的业务进程信息，且支持按照虚拟机维度和业务进程维度进行分别查看相关信息。即：</p>
+<ol>
+<li>查看虚拟机VM信息，需要一并获取到上面部署的Process信息</li>
+<li>查看Process信息，需要一并获取其所位于的虚拟机的信息。</li>
+</ol>
+</blockquote>
+<p>假定基于<code>SpringBoot</code>框架进行代码实现，<code>DeployedProcessService</code>与<code>VmService</code>实例由Spring框架进行托管，为单例对象，然后彼此自动注入对方实例。假定由于业务逻辑需要，对两个服务类的执行方法进行了加锁处理。部署进程管理服务DEMO代码如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Service
+public class DeployedProcessService &#123;
+    @Autowired
+    VmService vmService;
+    
+    public synchronized void manageDeployedProcessInfo() &#123;
+        &#x2F;&#x2F; 获取进程信息
+        collectProcessInfo();
+        &#x2F;&#x2F; 获取进程所在VM信息
+        vmService.manageVmInfo(this);
+    &#125;    
+&#125;</code></pre>
+
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Service
+public class VmService &#123;
+    @Autowired
+    DeployedProcessService deployedProcessService;
+
+    public synchronized void manageVmInfo() &#123;
+        &#x2F;&#x2F; 获取此VM基础信息
+        collectVmBasicInfo();
+        &#x2F;&#x2F; 获取此VM上已部署的进程信息
+        deployedProcessService.manageDeployedProcessInfo(this);
+    &#125;
+&#125;</code></pre>
+
+<p>我们使用两个独立进程同时分别去查询VM信息以及Process信息，模拟并发操作的场景，会发现永远等不到结果。为啥呀？因为死锁了！</p>
+<p>我们可以通过jstack命令来看下此时的JVM内线程堆栈情况，会发现有提示<code>Found one Java-level deadlock</code>，然后可以看到死锁的堆栈：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">Found one Java-level deadlock:
+&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;
+&quot;ForkJoinPool.commonPool-worker-2&quot;:
+  waiting to lock monitor 0x000000001cf532b8 (object 0x000000076c29bf28, a com.veezean.skills.lock.VmService),
+  which is held by &quot;ForkJoinPool.commonPool-worker-1&quot;
+&quot;ForkJoinPool.commonPool-worker-1&quot;:
+  waiting to lock monitor 0x000000001fce9f88 (object 0x000000076c29f460, a com.veezean.skills.lock.DeployedProcessService),
+  which is held by &quot;ForkJoinPool.commonPool-worker-2&quot;
+
+Java stack information for the threads listed above:
+&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;
+&quot;ForkJoinPool.commonPool-worker-2&quot;:
+        at com.veezean.skills.lock.VmService.manageVmInfo(VmService.java:14)
+        - waiting to lock &lt;0x000000076c29bf28&gt; (a com.veezean.skills.lock.VmService)
+        at com.veezean.skills.lock.DeployedProcessService.manageDeployedProcessInfo(DeployedProcessService.java:19)
+        - locked &lt;0x000000076c29f460&gt; (a com.veezean.skills.lock.DeployedProcessService)
+        at com.veezean.skills.lock.Main.lambda$main$1(Main.java:19)
+&quot;ForkJoinPool.commonPool-worker-1&quot;:
+        at com.veezean.skills.lock.DeployedProcessService.manageDeployedProcessInfo(DeployedProcessService.java:15)
+        - waiting to lock &lt;0x000000076c29f460&gt; (a com.veezean.skills.lock.DeployedProcessService)
+        at com.veezean.skills.lock.VmService.manageVmInfo(VmService.java:18)
+        - locked &lt;0x000000076c29bf28&gt; (a com.veezean.skills.lock.VmService)
+        at com.veezean.skills.lock.Main.lambda$main$0(Main.java:18)
+
+Found 1 deadlock.</code></pre>
+
+<p>关于死锁的产生原因，网上或者书中给出的答案无外乎就是说如下四个原因要同时成立，就会死锁：</p>
+<blockquote>
+<ol>
+<li>互斥</li>
+<li>占有并等待</li>
+<li>非抢占</li>
+<li>循环等待</li>
+</ol>
+</blockquote>
+<p>不知道大家看到上面这个解释是啥感觉？懂还是不懂？反正我的经历是：在我懂之后，看这4点中的每一点都很在理；而我不懂时，我依旧不知道啥原因导致的死锁。其实，用白话解释死锁的产生原因，就是两个或者多个线程各自拿到了一个锁，然后自己依赖别人的锁，别人依赖自己的锁，然后<strong>彼此都在相互等待</strong>，永远没有办法等到。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>那么应该如何解决呢？</p>
+<p>还是以上面代码为例，一个最简单的方式，就是两个<code>Service</code>类的加锁方法不要相互调用，各自<code>Service</code>类中独立实现所有逻辑即可。</p>
+<p><strong>小提示：</strong></p>
+<blockquote>
+<p>一个好的经验，就是加锁的方法嵌套调用另一个加锁的方法时，多留个心眼，看看会不会出现相互依赖或者循环依赖的情况。</p>
+</blockquote>
+<h2 id="锁优化思想——降低锁的影响"><a href="#锁优化思想——降低锁的影响" class="headerlink" title="锁优化思想——降低锁的影响"></a>锁优化思想——降低锁的影响</h2><p>规避了可能存在的死锁问题之后，另一个问题又出现在我们面前——<strong>性能</strong>。我们采用多线程并发编程的初衷，是为了尽可能的提升整体的处理性能，但是加锁之后，加锁的地方反而成为了整个并发处理的一个<strong>堵点</strong>，导致整个多线程并发的效果大打折扣。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924672733165639552.png"></p>
+<p>所以，如何降低锁对多线程并发处理的影响，成为飘在程序员面前的一团新的乌云。为此也衍生出了多种处理与应对策略，比如_降低锁的范围以减少锁持有时间_、_缩小锁粒度以降低夺锁竞争_、_利用读写锁减少加锁场景_等等。</p>
+<h3 id="降低锁范围"><a href="#降低锁范围" class="headerlink" title="降低锁范围"></a>降低锁范围</h3><p>这个其实很好理解，因为<strong>加锁范围越大，意味着持锁执行的时间就会越久</strong>，那么其他线程阻塞等待的时间就会越久，这样整个系统的堵点就会越发明显。而如果能够将一些并不需要放到同步锁内执行的逻辑放到外部去并行执行，这样就会降低锁内逻辑的处理时长，其余线程阻塞等待时间也就会缩短。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924681657774361669.png"></p>
+<p>举个例子。假如现在有个更新文章内容的需求，其处理逻辑如下：</p>
+<blockquote>
+<ol>
+<li>校验当前用户是否有权更新</li>
+<li>校验文章内容重复度</li>
+<li>检查文章中是否有违禁词</li>
+<li>更新到数据库中</li>
+<li>加载到ES中</li>
+</ol>
+</blockquote>
+<p>为了保证并发更新操作的准确性，对方法添加<code>synchronized</code>同步锁，保证多线程顺序执行：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public synchronized void updateArticle() &#123;
+    verifyAuthorInfo();
+    checkArticleDuplication();
+    checkBlackWords();
+    saveToDb();
+    loadToEs();
+&#125;</code></pre>
+
+<p>但是实际分析下，其实几个操作其实只有一个环节需要做同步锁处理，其余的操作其实并不会有任何的同步问题，因此我们按照缩小锁范围的优化策略，可以将<code>synchronized</code>锁范围缩小：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void updateArticle() &#123;
+    verifyAuthorInfo();
+    checkArticleDuplication();
+    checkBlackWords();
+    saveToDb();
+    loadToEs();
+&#125;
+
+private synchronized void saveToDb() &#123;
+    &#x2F;&#x2F; ...
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="缩小锁粒度"><a href="#缩小锁粒度" class="headerlink" title="缩小锁粒度"></a>缩小锁粒度</h3><p>锁的粒度越大，多线程请求的时候对锁的竞争压力越大，对性能的影响越大。如果将锁的粒度拆分小一些，这样<strong>同时请求到同一把锁的概率就会降低</strong>，这样线程间争夺锁的竞争压力就会降低。</p>
+<p>可以看下下面的示意图，4个线程请求同一锁时，其中1个线程可以抢到锁，其余三个线程将处于等待；而将锁拆分为3个子锁的时候，这样4个线程中只有1个线程处于等待：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924683167139344194.png"></p>
+<p>上面演示的就是<strong>分段锁</strong>的概念。在<strong>JAVA7</strong>之前，面试的时候经常会遇到的一个问题就是<code>ConcurrentHashMap</code>与<code>HashTable</code>都是线程安全的，为啥<code>ConcurrentHashMap</code>的性能上会更好些呢？其实就是因为<code>ConcurrentHashMap</code>使用了<strong>分段锁</strong>（<code>Segment</code>）的方式实现的：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924684317551010494.png"></p>
+<p>⭐️<strong>补充一下</strong>⭐️</p>
+<blockquote>
+<p>上面为啥要强调是JAVA7之前呢？<strong>因为JAVA7开始，ConcurrentHashMap的线程安全策略变了，改为了基于CAS的策略了</strong>。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="细化锁场景"><a href="#细化锁场景" class="headerlink" title="细化锁场景"></a>细化锁场景</h3><p>对于同一个共享数据的各种操作，很多时候并不是所有多线程操作都会出数据错乱问题，一般情况下<strong>只有写操作才会改变数据的内容</strong>，而多个线程同时执行读取操作的时候并不会对数据产生影响，所以这个_读取的场景其实无需和写操作使用相同的同步锁逻辑_。所以为了满足此场景，出现了<strong>读写锁</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924685773491829343.png"></p>
+<p>读写锁的特点就是，针对读操作和写操作，提供了<strong>不同的加锁同步策略</strong>，具体而言：</p>
+<ol>
+<li>读读不互斥</li>
+<li>读写互斥</li>
+<li>写写互斥</li>
+</ol>
+<p>在 Java 中，读写锁是使用 <code>ReentrantReadWriteLock</code> 类来实现的，其中：</p>
+<ul>
+<li>**ReentrantReadWriteLock.ReadLock **表示读锁，它提供了 lock 方法进行加锁、unlock 方法进行解锁。</li>
+<li>**ReentrantReadWriteLock.WriteLock **表示写锁，它提供了 lock 方法进行加锁、unlock 方法进行解锁。</li>
+</ul>
+<p>代码示例如下。 创建读写锁，然后通过readLock和writeLock方法，可以分别获取到读锁和写锁：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;&#x2F; 创建读写锁
+final ReentrantReadWriteLock readWriteLock &#x3D; new ReentrantReadWriteLock();
+&#x2F;&#x2F; 获得读锁
+final ReentrantReadWriteLock.ReadLock readLock &#x3D; readWriteLock.readLock();
+&#x2F;&#x2F; 获得写锁
+final ReentrantReadWriteLock.WriteLock writeLock &#x3D; readWriteLock.writeLock();</code></pre>
+
+<p>在读取操作的场景，直接使用读锁，使用完成后需要可靠释放锁：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public String readObject() &#123;
+    &#x2F;&#x2F; 读锁使用
+    readLock.lock();
+    try &#123;
+        &#x2F;&#x2F; 业务代码...
+    &#125; finally &#123;
+        readLock.unlock();
+    &#125;
+&#125;</code></pre>
+
+<p>在写操作的场景使用写锁，使用完成后同样需要可靠释放锁：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void writeObject() &#123;
+    &#x2F;&#x2F; 写锁使用
+    writeLock.lock();
+    try &#123;
+        &#x2F;&#x2F; 业务代码...
+    &#125; finally &#123;
+        writeLock.unlock();
+    &#125;
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="其它策略"><a href="#其它策略" class="headerlink" title="其它策略"></a>其它策略</h3><p>除了上述介绍的各种锁优化策略，还有很多不同类型的锁，整体思路大体相同，此处不再展开描述，具体可以参见这篇文章：《<a target="_blank" rel="noopener" href="https://tech.meituan.com/2018/11/15/java-lock.html">不可不说的JAVA“锁”事</a>》：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924688187098081102.png"></p>
+<h2 id="无锁胜有锁——就是要站着还把钱挣了"><a href="#无锁胜有锁——就是要站着还把钱挣了" class="headerlink" title="无锁胜有锁——就是要站着还把钱挣了"></a>无锁胜有锁——就是要站着还把钱挣了</h2><p>为了保证多线程的数据安全，我们引入了同步锁；为了降低同步锁的影响，我们绞尽脑汁去降低锁竞争几率。但是勤劳的程序员永远不会满足眼前的结果、不然头顶也不会这么早的锃光瓦亮。于是，一个灵魂拷问又飘了出来：<strong>能不能既使用多线程并发处理、又不用加同步锁？</strong></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924689140361052697.png"></p>
+<p>于是乎，一些<strong>无锁解决方案</strong>开始在某些特定的并发场景内崭露头角。</p>
+<h3 id="ThreadLocal空间换时间"><a href="#ThreadLocal空间换时间" class="headerlink" title="ThreadLocal空间换时间"></a>ThreadLocal空间换时间</h3><p>很多时候，编码世界汇总对程序性能的优化，无外乎是<strong>时间与空间的权衡</strong>。当系统更关注服务的处理响应时长，就会使用一些缓存的策略，降低CPU的重复计算，以此来提升性能。</p>
+<p>回到我们多线程的场景，为了保证多个线程对同一个共享内存对象的访问安全，所以通过同步锁的方式来保证串行访问，这样就会造成CPU的排队等待，性能受阻。那么，如果各个内存不去访问这个统一的共享对象，而是访问自己独享的对象，这样不就互不干扰、无需阻塞等待了吗？</p>
+<blockquote>
+<p>比如下面图中的收费站场景，多条路最后需要经由同一个收费站，所以导致收费站这里会出现堵塞。而如果每条路都建一个自己的收费站，这样就有效避免了堵塞的状况。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924690396217439870.png" alt="多条路共享一个收费站，堵点明显"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924694774930269780.png" alt="每条路各自有收费站，不用相互等待"></p>
+<p>仿照相同的原理，<code>ThreadLocal</code>便出现了。它通过<strong>冗余副本</strong>的方式，使得某个内存共享对象在各个线程上都有自己的拷贝副本。在尝试去了解<code>ThreadLocal</code>结构与原理前，可以先看下<code>ThreadLocal</code>的<code>set</code>方法实现源码：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void set(T value) &#123;
+    Thread t &#x3D; Thread.currentThread();
+    ThreadLocalMap map &#x3D; getMap(t);
+    if (map !&#x3D; null)
+        map.set(this, value);
+    else
+        createMap(t, value);
+&#125;</code></pre>
+
+<p>翻译成白话文，先获取到当前线程信息，然后获取到当前线程对应的<code>ThreadLocalMap</code>对象，然后将当前对象以及要存储的内容值存到Map中。也就是说：<strong>ThreadLocal只是一个方法封装，具体的数据实际存储在ThreadLocalMap中</strong>，而这个<code>ThreadLocalMap</code>是<strong>每个线程都有自己专属副本</strong>，里面存储着这个线程执行过程中使用的所有ThreadLocal对象以及对应数值（代码里面可能会new多个不同的ThreadLocal对象，比如有的用于存储当前用户，有的用于存储当前token信息之类的）。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924696611649402438.png"></p>
+<p>从ThreadLocal的实现原理中，我们可以发现_其适用的场景是有限的_，即<strong>只适用于需要在单个线程内全局共享的场景，而不适用于需要在多个线程间做数据交互共享的场景</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>⭐️<strong>适用场景举例</strong>⭐️<strong>：</strong></p>
+<blockquote>
+<p>一个SpringBoot构建的后端服务系统，对外以Controller方式提供诸多Restful接口方法供客户端调用。客户端调用的时候会携带token信息，然后鉴权逻辑中根据token获取到具体用户信息并缓存到内存中，后续的业务处理逻辑中有多处会需要获取该用户信息。</p>
+</blockquote>
+<p>这是ThreadLocal使用的一个典型场景，在通过<code>token</code>鉴权完成后，将用户信息设置到ThreadLocal对象中，这样后续所有需要用的地方，直接从ThreadLocal中获取就行了。</p>
+<p>为了方便后续使用，我们先封装一个工具类，提供些静态方法，便于对ThreadLocal进行操作：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public class CurrentUserHolder&#123;
+    private static final ThreadLocal&lt;UserDetail&gt; CURRENT_USER &#x3D; ThreadLocal.withInitial(() -&gt; null);
+    
+    public static void cacheUserDetail(UserDetail userDetail) &#123;
+        CURRENT_USER.set(userDetail);
+    &#125;
+    
+    public static UserDetail getCurrentUser() &#123;
+        CURRENT_USER.get();
+    &#125;
+    
+    public static void clearCache() &#123;
+        CURRENT_USER.remove();
+    &#125;
+&#125;</code></pre>
+
+<p>在业务处理开始之前先统一设置下用户的缓存信息。因为是基于SpringBoot项目来讲解，所以我们实现一个<code>HandlerInyerceptor</code>的实现类，并在<code>preHandle</code>方法中根据<code>token</code>获取到用户详情并缓存到<strong>ThreadLocal</strong>中：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public class AuthorityInterceptor implements HandlerInterceptor &#123;
+    private static final ThreadLocal&lt;UserDetail&gt; CURRENT_USER &#x3D; ThreadLocal.withInitial(() -&gt; null);
+    
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) &#123;
+        log.info(&quot;request IN, url: &#123;&#125;&quot;, request.getRequestURI());
+        try &#123;
+            UserDetail userDetail &#x3D; userAuthService.authUser(request.getHeader(&quot;token&quot;));
+            &#x2F;&#x2F; 校验通过，缓存用户信息
+            CurrentUserHolder.cacheUserDetail(userDetail);
+            return true;
+        &#125; catch (Exception e) &#123;
+            &#x2F;&#x2F; 校验没通过，清理线程数据
+            CurrentUserHolder.clearCache();
+            return false;
+        &#125;
+    &#125;
+&#125;</code></pre>
+
+<p>因为鉴权通过之后，会将当前的用户信息添加到缓存中，并进入到后续的业务实际处理代码中，所以业务处理的时候如果需要获取当前登录用户信息的时候，可以直接从<code>CurrentUserHolder</code>中获取即可。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void collectBookToMySpace(Book book) &#123;
+    UserDetail user &#x3D; CurrentUserHolder.getCurrentUser();
+    &#x2F;&#x2F; 其他逻辑省略
+&#125;</code></pre>
+
+<p>借助<code>ThreadLocal</code>可以让我们实现在线程内部共享对象，以此规避多线程间的同步等待处理，但是使用完毕之后，还<strong>需要保证清除掉当前线程的缓存数据值</strong>。为什么要这么做呢？拿线程池举个例子：</p>
+<blockquote>
+<p>既然是为每个线程拷贝一份独立的副本，对于同一个线程而言拿到的数据是同一个，那么对于使用线程池来处理多任务的场景，线程都是重复利用的，这样会导致同一个线程中正在处理的任务可能会拿到上一个任务设置的共享值。对于业务处理而言可能会得到非预期结果。</p>
+</blockquote>
+<p>当然，除了可能会导致业务处理的时候前后任务缓存数据错乱，使用完毕不清理缓存，有些时候还容易导致<strong>内存泄漏</strong>的问题。所以编码的时候、尤其涉及内存资源使用的时候，<strong>用完回收</strong>始终会是一个好习惯。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>⭐️<strong>可靠清除线程副本</strong>⭐️</p>
+<p>既然知道在使用完成之后需要可靠的清理掉当前线程的<code>ThreadLocal</code>副本数据，但是对于一些流程比较长、或者逻辑比较复杂的系统，其线程任务的退出分支可能有很多条，那么怎么样才能做到可靠清理、避免有分支遗漏呢？</p>
+<ol>
+<li>如果是自己实现的线程池或者线程分发操作，在子线程的<strong>调用顶层</strong>位置通过<code>try...finally...</code>包裹调用逻辑，并在<code>finally</code>中进行释放操作。</li>
+</ol>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void testReleaseThreadLocalSafely() &#123;
+    threadPool.submit(() -&gt; &#123;
+        try &#123;
+            &#x2F;&#x2F; 设置token信息
+            TOKEN.set(&quot;123456&quot;);
+            &#x2F;&#x2F; 执行业务处理操作
+            mockServiceOperations();
+        &#125; finally &#123;
+            &#x2F;&#x2F; finally分支中可靠清除当前线程的ThreadLocal副本
+            TOKEN.remove();
+        &#125;
+    &#125;);
+&#125;</code></pre>
+
+<ol start="2">
+<li>基于一些框架系统实现的场景，比如<code>SpringBoot</code>项目，可以定制个<code>Interceptor</code>并在<code>afterCompletion</code>等<strong>退出前回调</strong>方法中，添加上对应的清理逻辑。</li>
+</ol>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Override
+public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) &#123;
+    CurrentUserHolder.clearCurrentThreadCache();
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="volatile保证可见性"><a href="#volatile保证可见性" class="headerlink" title="volatile保证可见性"></a>volatile保证可见性</h3><p>与<code>synchronized</code>保证数据同步处理的原理不一样，<code>volatile</code>主要解决的是数据在多线程之间的可见性问题，但是不保证数据操作的原子性。<code>volatile</code>用于修饰变量，可以保证每个共享此变量数据的线程都可以第一时间拿到此值的真实值。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924698358554926168.png"></p>
+<p>当把变量声明为<code>volatile</code>类型后，编译器与运行时都会注意到这个变量是共享的，因此不会将该变量上的操作与其他内存操作一起重排序。<code>volatile</code>变量不会被缓存在寄存器或者对其他处理器不可见的地方，因此在读取volatile类型的变量时<strong>总会返回最新写入的值</strong>。</p>
+<p>但是因为它<strong>不保证原子操作</strong>，所以如果有多个线程同时来修改变量的值时，还是可能会出现问题。所以，v<strong>olatile适合那种单个线程去修改值内容，但是多个线程会共享读取</strong>变量结果的场景。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924699287497314143.png"></p>
+<p>比如项目代码中，我们需要支持系统配置属性的动态变更，我们可以将系统参数使用<code>volatile</code>修饰，然后使用固定一个线程进行系统属性值的维护，其余业务线程负责从内存中读取即可。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="发布订阅模式"><a href="#发布订阅模式" class="headerlink" title="发布订阅模式"></a>发布订阅模式</h3><p>在并发编程中使用<strong>发布订阅模式</strong>能够解决绝大多数并发问题。</p>
+<p>多线程协同配置的场景下，可以借助<code>MQ</code>实现<strong>发布订阅模式</strong>，可以保证每个任务都分配给不同的消费者进行处理，这样就不会出现重复处理的问题、也减少了线程或者进程间资源争夺的风险，正可谓是“无锁胜有锁、四两拨千斤”的典型。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924700383521011810.png"></p>
+<p>对于MQ的选型，如果是单进程内多线程间的使用，可以使用<code>BlockingQueue</code>来实现，而用于分布式系统内时，可以选用一些消息队列中间件，比如<code>RabbitMQ</code>、<code>Kakfa</code>等。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="CAS乐观锁策略"><a href="#CAS乐观锁策略" class="headerlink" title="CAS乐观锁策略"></a>CAS乐观锁策略</h3><p>所谓<strong>CAS</strong>，也即<code>Compare And Swap</code>，也即在对数据执行写操作前，先比较下数据是否有变更，没有变更的情况下才去执行写操作，否则重新读取最新记录并重新执行计算后，再执行比对操作，直到数据写入完成。<strong>CAS</strong>是一种典型的<strong>乐观锁</strong>策略，其与常规的加同步锁的处理策略有很大的不同，属于一种比较经典的<code>无锁机制</code>：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924701430288507776.png"></p>
+<p>并发场景对公共存储（比如<code>MySQL</code>）中的数据进行更新的时候，经常会需要考虑并发更新某个记录的情况，尤其是一些界面编辑更新的场景更是常见。这个场景下使用<code>CAS</code>机制可以有效解决问题。</p>
+<p>先看个问题场景：</p>
+<blockquote>
+<p>有个需求任务跟踪管理系统，团队内的成员可以编辑团队内的待办需求事项的进展描述，如果团队内有两个人都打开了某一个需求页面进行编辑进展说明，那么第一个人改动完成存储的内容，会被第二个人保存改动时直接覆盖掉。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924702336227632777.png"></p>
+<p>使用<code>CAS</code>的思路来解决上面场景提及的更新覆盖问题，我们可以对<code>DB</code>中的记录数据增加一个<code>version</code>字段，更新的时候必须保证<code>version</code>字段值与自己最初拿到的<code>version</code>值一致时才能更新成功，同时在每次<code>update</code>的时候更新下<code>version</code>字段，这样问题就解决啦，看下过程：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924703246244490076.png"></p>
+<p>代码实现起来也很简单：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void updateItem(Item  item) &#123;
+    int updateResult &#x3D; updateContentByIdAndVersion(item.getContent(), item.getId(), item.getVersion());
+    if (updateResult &#x3D;&#x3D; 0) &#123;
+        &#x2F;&#x2F; 没有更新成功任何记录，说明version比对失败已经有别人更新了
+        &#x2F;&#x2F; 要么放弃处理，要么重试
+    &#125;
+&#125;</code></pre>
+
+<p>CAS始终按照无锁的策略进行数据的处理、处理失败则重试或放弃。在<strong>竞争不是很激烈</strong>的并发场景下，可以有效的提升整体的处理效率，因为大部分的场景下都会执行成功，只有在少量的请求出现并发冲突的时候，才会进入自旋重试。但<strong>当竞争很激烈的场景下，会导致写入操作高频率失败进入自旋，这要会大大的浪费CPU资源</strong>，且因为自旋其实就是线程不停的循环，所以大量自旋可能会使得CPU的占用比较高。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924704356364767584.png"></p>
+<p><strong>补充说明</strong>：</p>
+<blockquote>
+<p>在单进程内的多线程间使用CAS机制保证并发的时候，需要结合volatile一起使用，以此来保证原子性与可见性。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>另外，我们在前面有提到<strong>JAVA7之前</strong><code>ConcurrentHashMap</code>使用的是分段锁的技术，而从<strong>JAVA7之后</strong>，<code>ConcurrentHashMap</code>线程安全保护的实现逻辑是改为了<code>CAS+synchronized</code>的方式来实现，以此来获取更好的性表现。</p>
+<h2 id="分布式锁——跨越进程的相逢"><a href="#分布式锁——跨越进程的相逢" class="headerlink" title="分布式锁——跨越进程的相逢"></a>分布式锁——跨越进程的相逢</h2><p>前面介绍了单进程内的一些多线程高并发场景的应对方案。但高并发的场景，除了单线程内的多线程间的并发之外，还有<strong>分布式系统集群内的多个进程之间的并发</strong>。所以<code>分布式锁</code>应运而生。</p>
+<p><strong>举个例子：</strong></p>
+<blockquote>
+<p>数据库有一张“热议话题”表，表中每条记录有个“当前热度”字段，<code>热度计算服务</code>需要每隔5分钟执行一次计算，然后更新表中每条记录的热度字段。</p>
+</blockquote>
+<p>为了保证系统的高可用，<code>热度计算服务</code>部署了多个进程节点，由定时器触发，每隔5分钟计算一次。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924705475873069389.png"></p>
+<p><strong>分布式锁</strong>的实现，有多种方式，比较常见的是基于<code>Redis</code>或者<code>MySQL</code>来实现。分布式锁在实现以及使用的时候，需要关注几个要点;</p>
+<ul>
+<li>客户端请求锁的整体操作需要是个原子操作，即需要保证锁分配结果的唯一性</li>
+<li>客户端获取到锁之后进行自身业务逻辑处理，处理完成之后必须要<code>主动释放锁</code>（<strong>需要注意判断下是否是自己所持有的锁</strong>）</li>
+<li><strong>锁要有兜底退出机制</strong>，防止某个客户端获取到锁之后出现宕机等异常情况，导致锁被持有后无法释放，其它客户端也无法继续申请</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924706552884921686.png"></p>
+<p>比如<strong>基于Redis实现分布式锁</strong>的时候，使用示意如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;&#x2F; 获取锁
+public boolean accuireLock(String lockName) &#123;
+    return stringRedisTemplate.opsForValue().setIfAbsent(lockName, &quot;&quot;, 1L, TimeUnit.MINUTES);
+&#125;
+
+&#x2F;&#x2F; 释放锁
+public void releaseLock(String lockName) &#123;
+    stringRedisTemplate.delete(lockName);
+&#125;</code></pre>
+
+<p>上面代码中，简单的使用<code>setNx</code>命令来实现分布式锁的申请，又设置了<code>redis</code>的<strong>超时时间</strong>，一旦在设定的时间内依旧没有主动释放锁，则redis将主动释放锁，供其余客户端再来请求。</p>
+<p>在上面归纳的分布式锁实现与使用的注意要点中，在提及业务处理完成之后要主动释放锁的时候，有特别补充了一个要求：<strong>需要判断下是否是自己的锁，只能释放自己的锁</strong>！为什么一定要强调这一点呢？以上述代码为例，看一种可能的情况：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/165924707572890534237.png"></p>
+<p>从上图可以看出，<code>Client-1</code>申请到了_锁1_，但是<code>Client-1</code>执行超时导致_锁1_被强制释放掉了，而<code>Client-2</code>随后获取到了_锁2_并开始执行处理逻辑。此时<code>Client-1</code>的任务终于执行完成了，然后去释放了锁（<code>Client-1</code>自己不知道自己超时，还是按照正常逻辑去释放锁），结果_Client-3_此时又申请到了_锁3_，然后开始执行自己的任务。这个时候就会出现了<code>Client-2</code>和<code>Client-3</code>同时执行的异常情况了。</p>
+<p>整个问题出现的原因就是<strong>释放锁的时候没有校验是否是自己的锁</strong>，所以出现了越权释放了别人的锁的情况。为了避免此情况的发生，我们对前面的分布式锁实现使用逻辑稍加改动即可：</p>
+<p>首先是申请分布式锁的时候，可以生成个随机UUID作为锁的value值，如果申请成功，则直接返回此锁的UUID唯一标识：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
+ * 获取锁，如果获取成功，则返回锁的value值（UUID随机）
+ *&#x2F;
+public String accuireLock(String lockName) &#123;
+    String uuid &#x3D; UUID.randomUUID().toString();
+    Boolean result &#x3D; stringRedisTemplate.opsForValue().setIfAbsent(lockName, uuid, 1L,
+            TimeUnit.MINUTES);
+    if (result &#x3D;&#x3D; null || !result) &#123;
+        throw new RuntimeException(&quot;获取锁失败&quot;);
+    &#125;
+    return uuid;
+&#125;</code></pre>
+
+<p>锁释放的时候，需要同时提供锁名称与锁的唯一UUID标识值，先根据锁名称尝试获取下已存在的锁，然后比对下锁value值是否一致，如果一致，则表名当前的锁是自己锁持有的这把锁，然后将其释放即可：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
+ * 释放锁，先比对锁value一致，才会释放
+ *&#x2F;
+public void releaseLock(String lockName, String lockUuid) &#123;
+    String lockValue &#x3D; stringRedisTemplate.opsForValue().get(lockName);
+    if (!StringUtils.equals(lockValue, lockUuid)) &#123;
+        throw new RuntimeException(&quot;锁释放失败，锁不存在&quot;);
+    &#125;
+    stringRedisTemplate.delete(lockName);
+&#125;</code></pre>
+
+<p>当然啦，我们这里举例是使用的Redis的<strong>setNx</strong>命令来实现的，此实现可以轻松的应对大部分的使用场景。但是，上述的释放锁实现代码中可以看出，由于获取锁内容、比对锁内容、释放锁内容三个操作是独立分开的，存在无法保证操作原子性的弊端。如果项目的要求级别较高，可以考虑使用<code>LUA脚本</code>封装为原子命令操作来解决，或者使用redis官方提供的<code>redission</code>来实现。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="补充：并发与并行"><a href="#补充：并发与并行" class="headerlink" title="补充：并发与并行"></a>补充：并发与并行</h2><p>本文主要讨论了多线程并发编程相关的内容，提到并发，往往还有个容易混淆的概念，叫并行。关于并行的具体介绍与实现策略，以及并发与并行的详细区别，可以参见我的另一个文档《<a target="_blank" rel="noopener" href="https://juejin.cn/post/7124124854747398175">JAVA基于CompletableFuture的流水线并行处理深度实践，满满干货</a>》，此处不述。</p>
+<p><strong>综合而言：</strong></p>
+<ol>
+<li>如果业务处理逻辑是<strong>CPU密集型</strong>的操作，优先使用基于线程池实现并发处理方案（可以避免线程间切换导致的系统性能浪费）。</li>
+<li>如果业务处理逻辑中存在较多<strong>需要阻塞等待</strong>的耗时场景、且相互之间没有依赖，比如本地IO操作、网络IO请求等等，这种情况优先选择使用<strong>并行处理策略</strong>（可以避免宝贵的线程资源被阻塞等待）。</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>好啦，关于多线程并发场景常见问题的相关应对策略，这里就探讨到这里啦。那么看到这里，相信您应该有所收获吧？那么你是否有实际应对过多线程并发场景的开发呢？那你是如何处理的呢？是否有发现过什么问题呢？<em>评论区一起讨论下吧、我会认真对待您的每一个评论</em>~~</p>
+<p><strong>此外</strong>：</p>
+<ul>
+<li>关于本文中涉及的<strong>演示代码</strong>的完整示例，我已经整理并提交到github中，如果您有需要，可以自取：<a target="_blank" rel="noopener" href="https://github.com/veezean/JavaBasicSkills">https://github.com/veezean/JavaBasicSkills</a></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312091.gif"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312656.gif"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn/post/20220728085417.html">https://blog.codingcoder.cn/post/20220728085417.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.codingcoder.cn" target="_blank">Veezean的小世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程</a><a class="post-meta__tags" href="/tags/%E5%B9%B6%E5%8F%91/">并发</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202301281101915.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20220811085417.html" title="用好JAVA中的函数式接口，轻松从通用代码框架中剥离掉业务定制逻辑"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">用好JAVA中的函数式接口，轻松从通用代码框架中剥离掉业务定制逻辑</div></div></a></div><div class="next-post pull-right"><a href="/post/20220725085417.html" title="使用JAVA CompletableFuture实现流水线化的并行处理，深度实践总结"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">使用JAVA CompletableFuture实现流水线化的并行处理，深度实践总结</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20220621125417.html" title="Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206132103053.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-21</div><div class="title">Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！</div></div></a></div><div><a href="/post/20220623164616.html" title="Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172113780.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-23</div><div class="title">Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA</div></div></a></div><div><a href="/post/20220624161616.html" title="Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301292149805.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-24</div><div class="title">Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍</div></div></a></div><div><a href="/post/20220625213411.html" title="Spring Data JPA系列4：Spring声明式事务处理与多数据源支持"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172105608.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-25</div><div class="title">Spring Data JPA系列4：Spring声明式事务处理与多数据源支持</div></div></a></div><div><a href="/post/20220628171111.html" title="Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172121044.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-28</div><div class="title">Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码</div></div></a></div><div><a href="/post/20220922085417.html" title="JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-22</div><div class="title">JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">道阻且长，行则将至</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E2%80%94%E2%80%94%E5%B9%B6%E5%8F%91%E7%AC%AC%E4%B8%80%E6%AD%A5"><span class="toc-number">1.</span> <span class="toc-text">多线程——并发第一步</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#synchronized%E4%B8%8Elock"><span class="toc-number">2.</span> <span class="toc-text">synchronized与lock</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%BB%E9%94%81%E2%80%94%E2%80%94%E4%B8%8D%E6%9C%9F%E8%80%8C%E9%81%87%E7%9A%84%E5%B0%8F%E6%83%8A%E5%90%93"><span class="toc-number">3.</span> <span class="toc-text">死锁——不期而遇的小惊吓</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%81%E4%BC%98%E5%8C%96%E6%80%9D%E6%83%B3%E2%80%94%E2%80%94%E9%99%8D%E4%BD%8E%E9%94%81%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">4.</span> <span class="toc-text">锁优化思想——降低锁的影响</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%8D%E4%BD%8E%E9%94%81%E8%8C%83%E5%9B%B4"><span class="toc-number">4.1.</span> <span class="toc-text">降低锁范围</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%A9%E5%B0%8F%E9%94%81%E7%B2%92%E5%BA%A6"><span class="toc-number">4.2.</span> <span class="toc-text">缩小锁粒度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%86%E5%8C%96%E9%94%81%E5%9C%BA%E6%99%AF"><span class="toc-number">4.3.</span> <span class="toc-text">细化锁场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E5%AE%83%E7%AD%96%E7%95%A5"><span class="toc-number">4.4.</span> <span class="toc-text">其它策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E9%94%81%E8%83%9C%E6%9C%89%E9%94%81%E2%80%94%E2%80%94%E5%B0%B1%E6%98%AF%E8%A6%81%E7%AB%99%E7%9D%80%E8%BF%98%E6%8A%8A%E9%92%B1%E6%8C%A3%E4%BA%86"><span class="toc-number">5.</span> <span class="toc-text">无锁胜有锁——就是要站着还把钱挣了</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ThreadLocal%E7%A9%BA%E9%97%B4%E6%8D%A2%E6%97%B6%E9%97%B4"><span class="toc-number">5.1.</span> <span class="toc-text">ThreadLocal空间换时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#volatile%E4%BF%9D%E8%AF%81%E5%8F%AF%E8%A7%81%E6%80%A7"><span class="toc-number">5.2.</span> <span class="toc-text">volatile保证可见性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85%E6%A8%A1%E5%BC%8F"><span class="toc-number">5.3.</span> <span class="toc-text">发布订阅模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CAS%E4%B9%90%E8%A7%82%E9%94%81%E7%AD%96%E7%95%A5"><span class="toc-number">5.4.</span> <span class="toc-text">CAS乐观锁策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E2%80%94%E2%80%94%E8%B7%A8%E8%B6%8A%E8%BF%9B%E7%A8%8B%E7%9A%84%E7%9B%B8%E9%80%A2"><span class="toc-number">6.</span> <span class="toc-text">分布式锁——跨越进程的相逢</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A5%E5%85%85%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C"><span class="toc-number">7.</span> <span class="toc-text">补充：并发与并行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewhelperdoc.html" title="CodeReview IDEA插件使用教程">CodeReview IDEA插件使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewversions.html" title="CodeReview IDEA插件版本更新记录">CodeReview IDEA插件版本更新记录</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewserverdeploydoc.html" title="CodeReview IDEA插件配套服务端使用教程">CodeReview IDEA插件配套服务端使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewfieldmodifyhelper.html" title="自定义CodeReview的检视字段属性详情">自定义CodeReview的检视字段属性详情</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">Copyright&copy;2023 By Veezean, All Rights Reserved.</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

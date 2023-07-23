@@ -1,0 +1,722 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>讲透JAVA Stream的collect用法与原理，远比你想象的更强大 | Veezean的小世界</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="大家好，又见面了。 在我前面的文章《吃透JAVA的Stream流操作，多年实践总结》中呢，对Stream的整体情况进行了细致全面的讲解，也大概介绍了下结果收集器Collectors的常见用法 —— 但远不是全部。 本篇文章就来专门剖析collect操作，一起解锁更多高级玩法，让Stream操作真正的成为我们编码中的神兵利器。   初识Collector先看一个简单的场景：  现有集团内所有人员列表">
+<meta property="og:type" content="article">
+<meta property="og:title" content="讲透JAVA Stream的collect用法与原理，远比你想象的更强大">
+<meta property="og:url" content="https://blog.codingcoder.cn/post/20220718085417.html">
+<meta property="og:site_name" content="Veezean的小世界">
+<meta property="og:description" content="大家好，又见面了。 在我前面的文章《吃透JAVA的Stream流操作，多年实践总结》中呢，对Stream的整体情况进行了细致全面的讲解，也大概介绍了下结果收集器Collectors的常见用法 —— 但远不是全部。 本篇文章就来专门剖析collect操作，一起解锁更多高级玩法，让Stream操作真正的成为我们编码中的神兵利器。   初识Collector先看一个简单的场景：  现有集团内所有人员列表">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg">
+<meta property="article:published_time" content="2022-07-18T00:54:17.000Z">
+<meta property="article:modified_time" content="2022-07-18T00:54:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="Stream">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.codingcoder.cn/post/20220718085417.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的小世界","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '讲透JAVA Stream的collect用法与原理，远比你想象的更强大',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-18 08:54:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的小世界"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的小世界</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">讲透JAVA Stream的collect用法与原理，远比你想象的更强大</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-18T00:54:17.000Z" title="发表于 2022-07-18 08:54:17">2022-07-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-18T00:54:17.000Z" title="更新于 2022-07-18 08:54:17">2022-07-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%9C%BA%E6%99%AF%E5%8C%96JAVA%E5%85%A8%E9%9D%A2%E6%95%99%E7%A8%8B/">场景化JAVA全面教程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">6.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>20分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="讲透JAVA Stream的collect用法与原理，远比你想象的更强大"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20220718085417.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20220718085417.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><p>大家好，又见面了。</p>
+<p>在我前面的文章《<a target="_blank" rel="noopener" href="https://juejin.cn/post/7118991438448164878">吃透JAVA的Stream流操作，多年实践总结</a>》中呢，对Stream的整体情况进行了细致全面的讲解，也大概介绍了下结果收集器<code>Collectors</code>的常见用法 —— 但远不是全部。</p>
+<p>本篇文章就来专门剖析<strong>collect操作</strong>，一起解锁更多高级玩法，让Stream操作真正的成为我们编码中的<strong>神兵利器</strong>。 </p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="初识Collector"><a href="#初识Collector" class="headerlink" title="初识Collector"></a>初识Collector</h2><p>先看一个简单的场景：</p>
+<blockquote>
+<p>现有集团内所有人员列表，需要从中筛选出上海子公司的全部人员</p>
+</blockquote>
+<p>假定人员信息数据如下：</p>
+<table>
+<thead>
+<tr>
+<th>姓名</th>
+<th>子公司</th>
+<th>部门</th>
+<th>年龄</th>
+<th>工资</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>大壮</td>
+<td>上海公司</td>
+<td>研发一部</td>
+<td>28</td>
+<td>3000</td>
+</tr>
+<tr>
+<td>二牛</td>
+<td>上海公司</td>
+<td>研发一部</td>
+<td>24</td>
+<td>2000</td>
+</tr>
+<tr>
+<td>铁柱</td>
+<td>上海公司</td>
+<td>研发二部</td>
+<td>34</td>
+<td>5000</td>
+</tr>
+<tr>
+<td>翠花</td>
+<td>南京公司</td>
+<td>测试一部</td>
+<td>27</td>
+<td>3000</td>
+</tr>
+<tr>
+<td>玲玲</td>
+<td>南京公司</td>
+<td>测试二部</td>
+<td>31</td>
+<td>4000</td>
+</tr>
+</tbody></table>
+<p>如果你曾经用过Stream流，或者你看过我前面关于Stream用法介绍的文章，那么借助Stream可以很轻松的实现上述诉求：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void filterEmployeesByCompany() &#123;
+    List&lt;Employee&gt; employees &#x3D; getAllEmployees().stream()
+            .filter(employee -&gt; &quot;上海公司&quot;.equals(employee.getSubCompany()))
+            .collect(Collectors.toList());
+    System.out.println(employees);
+&#125;</code></pre>
+
+<p>上述代码中，先创建流，然后通过一系列中间流操作（<code>filter</code>方法）进行业务层面的处理，然后经由终止操作（<code>collect</code>方法）将处理后的结果输出为List对象。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207161728852.png"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>但我们实际面对的需求场景中，往往会有一些更复杂的诉求，比如说：</p>
+<blockquote>
+<p>现有集团内所有人员列表，需要从中筛选出上海子公司的全部人员，并按照部门进行分组</p>
+</blockquote>
+<p>其实也就是加了个新的分组诉求，那就是先按照前面的代码实现逻辑基础上，再对结果进行分组处理就好咯：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void filterEmployeesThenGroup() &#123;
+    &#x2F;&#x2F; 先 筛选
+    List&lt;Employee&gt; employees &#x3D; getAllEmployees().stream()
+            .filter(employee -&gt; &quot;上海公司&quot;.equals(employee.getSubCompany()))
+            .collect(Collectors.toList());
+    &#x2F;&#x2F; 再 分组
+    Map&lt;String, List&lt;Employee&gt;&gt; resultMap &#x3D; new HashMap&lt;&gt;();
+    for (Employee employee : employees) &#123;
+        List&lt;Employee&gt; groupList &#x3D; resultMap
+                .computeIfAbsent(employee.getDepartment(), k -&gt; new ArrayList&lt;&gt;());
+        groupList.add(employee);
+    &#125;
+    System.out.println(resultMap);
+&#125;</code></pre>
+
+<p>似乎也没啥毛病，相信很多同学实际编码中也是这么处理的。但其实我们也可以使用Stream操作直接完成：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void filterEmployeesThenGroupByStream() &#123;
+    Map&lt;String, List&lt;Employee&gt;&gt; resultMap &#x3D; getAllEmployees().stream()
+            .filter(employee -&gt; &quot;上海公司&quot;.equals(employee.getSubCompany()))
+            .collect(Collectors.groupingBy(Employee::getDepartment));
+    System.out.println(resultMap);
+&#125;
+</code></pre>
+
+<p>两种写法都可以得到相同的结果：</p>
+<pre class="line-numbers language-none"><code class="language-none">&#123;
+    研发二部&#x3D;[Employee(subCompany&#x3D;上海公司, department&#x3D;研发二部, name&#x3D;铁柱, age&#x3D;34, salary&#x3D;5000)], 
+    研发一部&#x3D;[Employee(subCompany&#x3D;上海公司, department&#x3D;研发一部, name&#x3D;大壮, age&#x3D;28, salary&#x3D;3000), 
+             Employee(subCompany&#x3D;上海公司, department&#x3D;研发一部, name&#x3D;二牛, age&#x3D;24, salary&#x3D;2000)]
+&#125;</code></pre>
+
+<p>上述2种写法相比而言，第二种是不是代码上要简洁很多？而且是不是有种<strong>自注释</strong>的味道了？</p>
+<p>通过collect方法的合理恰当利用，可以让Stream适应更多实际的使用场景，大大的提升我们的开发编码效率。下面就一起来全面认识下collect、解锁更多高级操作吧。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="collect-Collector-Collectors区别与关联"><a href="#collect-Collector-Collectors区别与关联" class="headerlink" title="collect\Collector\Collectors区别与关联"></a>collect\Collector\Collectors区别与关联</h2><p>刚接触Stream收集器的时候，很多同学都会被<code>collect</code>,<code>Collector</code>,<code>Collectors</code>这几个概念搞的晕头转向，甚至还有很多人即使已经使用Stream好多年，也只是知道collect里面需要传入类似<code>Collectors.toList()</code>这种简单的用法，对其背后的细节也不甚了解。</p>
+<p>这里以一个collect收集器最简单的使用场景来剖析说明下其中的关系：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207161049425.png"></p>
+<p>📢<strong>概括来说</strong>：</p>
+<blockquote>
+<p>1️⃣ <code>collect</code>是Stream流的一个<strong>终止方法</strong>，会使用传入的收集器（入参）对结果执行相关的操作，这个收集器必须是<code>Collector接口</code>的某个具体实现类<br>2️⃣ <code>Collector</code>是一个<strong>接口</strong>，collect方法的收集器是Collector接口的<strong>具体实现类</strong><br>3️⃣ <code>Collectors</code>是一个<strong>工具类</strong>，提供了很多的静态工厂方法，<strong>提供了很多Collector接口的具体实现类</strong>，是为了方便程序员使用而预置的一些较为通用的收集器（如果不使用Collectors类，而是自己去实现Collector接口，也可以）。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="Collector使用与剖析"><a href="#Collector使用与剖析" class="headerlink" title="Collector使用与剖析"></a>Collector使用与剖析</h2><p>到这里我们可以看出，Stream结果收集操作的本质，其实<strong>就是将Stream中的元素通过收集器定义的函数处理逻辑进行加工，然后输出加工后的结果</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207161348487.png"></p>
+<p>根据其执行的操作类型来划分，又可将收集器分为几种不同的<strong>大类</strong>：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207161818493.png"></p>
+<p>下面分别阐述下。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="恒等处理Collector"><a href="#恒等处理Collector" class="headerlink" title="恒等处理Collector"></a>恒等处理Collector</h3><p>所谓<strong>恒等处理</strong>，指的就是Stream的元素在经过Collector函数处理前后完全不变，例如<code>toList()</code>操作，只是最终将结果从Stream中取出放入到List对象中，并没有对元素本身做任何的更改处理：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207161348005.png"></p>
+<p>恒等处理类型的Collector是实际编码中<strong>最常被使用</strong>的一种，比如：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">list.stream().collect(Collectors.toList());
+list.stream().collect(Collectors.toSet());
+list.stream().collect(Collectors.toCollection());</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="归约汇总Collector"><a href="#归约汇总Collector" class="headerlink" title="归约汇总Collector"></a>归约汇总Collector</h3><p>对于<strong>归约汇总</strong>类的操作，Stream流中的元素逐个遍历，进入到Collector处理函数中，然后会与上一个元素的处理结果进行合并处理，并得到一个新的结果，以此类推，直到遍历完成后，输出最终的结果。比如<code>Collectors.summingInt()</code>方法的处理逻辑如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207161623531.png"></p>
+<p>比如本文开头举的例子，如果需要计算上海子公司每个月需要支付的员工总工资，使用<code>Collectors.summingInt()</code>可以这么实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void calculateSum() &#123;
+    Integer salarySum &#x3D; getAllEmployees().stream()
+            .filter(employee -&gt; &quot;上海公司&quot;.equals(employee.getSubCompany()))
+            .collect(Collectors.summingInt(Employee::getSalary));
+    System.out.println(salarySum);
+&#125;</code></pre>
+
+<p>需要注意的是，这里的<code>汇总计算</code>，<strong>不单单只数学层面的累加汇总，而是一个广义上的汇总概念，即将多个元素进行处理操作，最终生成1个结果的操作</strong>，比如计算<code>Stream</code>中最大值的操作，最终也是多个元素中，最终得到一个结果：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207161622694.png"></p>
+<p>还是用之前举的例子，现在需要知道上海子公司里面工资最高的员工信息，我们可以这么实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void findHighestSalaryEmployee() &#123;
+    Optional&lt;Employee&gt; highestSalaryEmployee &#x3D; getAllEmployees().stream()
+            .filter(employee -&gt; &quot;上海公司&quot;.equals(employee.getSubCompany()))
+            .collect(Collectors.maxBy(Comparator.comparingInt(Employee::getSalary)));
+    System.out.println(highestSalaryEmployee.get());
+&#125;</code></pre>
+
+<p>因为这里我们要演示<code>collect</code>的用法，所以用了上述的写法。实际的时候JDK为了方便使用，也提供了上述逻辑的简化封装，我们可以直接使用<code>max()</code>方法来简化，即上述代码与下面的写法等价：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void findHighestSalaryEmployee2() &#123;
+    Optional&lt;Employee&gt; highestSalaryEmployee &#x3D; getAllEmployees().stream()
+            .filter(employee -&gt; &quot;上海公司&quot;.equals(employee.getSubCompany()))
+            .max(Comparator.comparingInt(Employee::getSalary));
+    System.out.println(highestSalaryEmployee.get());
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="分组分区Collector"><a href="#分组分区Collector" class="headerlink" title="分组分区Collector"></a>分组分区Collector</h3><p><strong>Collectors工具类</strong>中提供了<code>groupingBy</code>方法用来得到一个分组操作Collector，其内部处理逻辑可以参见下图的说明：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207162055560.png"></p>
+<p><code>groupingBy()</code>操作需要指定两个关键输入，即<strong>分组函数</strong>和<strong>值收集器</strong>：</p>
+<ul>
+<li><p><strong>分组函数</strong>：一个处理函数，用于基于指定的元素进行处理，返回一个用于分组的值（即<strong>分组结果HashMap的Key值</strong>），对于经过此函数处理后返回值相同的元素，将被分配到同一个组里。</p>
+</li>
+<li><p><strong>值收集器</strong>：对于分组后的数据元素的进一步处理转换逻辑，此处还是一个常规的Collector收集器，和collect()方法中传入的收集器完全等同（可以想想<strong>俄罗斯套娃</strong>，一个概念）。</p>
+</li>
+</ul>
+<p>对于<code>groupingBy</code>分组操作而言，<strong>分组函数</strong>与<strong>值收集器</strong>二者必不可少。为了方便使用，在Collectors工具类中，提供了两个<code>groupingBy</code>重载实现，其中有一个方法只需要传入一个分组函数即可，这是因为其默认使用了toList()作为值收集器：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207161557070.png"></p>
+<p>例如：仅仅是做一个常规的数据分组操作时，可以仅传入一个分组函数即可：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void groupBySubCompany() &#123;
+    &#x2F;&#x2F; 按照子公司维度将员工分组
+    Map&lt;String, List&lt;Employee&gt;&gt; resultMap &#x3D;
+            getAllEmployees().stream()
+                    .collect(Collectors.groupingBy(Employee::getSubCompany));
+    System.out.println(resultMap);
+&#125;</code></pre>
+<p>这样collect返回的结果，就是一个<code>HashMap</code>，其每一个HashValue的值为一个<code>List类型</code>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>而如果不仅需要分组，还需要对分组后的数据进行处理的时候，则需要同时给定分组函数以及值收集器：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void groupAndCaculate() &#123;
+    &#x2F;&#x2F; 按照子公司分组，并统计每个子公司的员工数
+    Map&lt;String, Long&gt; resultMap &#x3D; getAllEmployees().stream()
+            .collect(Collectors.groupingBy(Employee::getSubCompany,
+                    Collectors.counting()));
+    System.out.println(resultMap);
+&#125;</code></pre>
+
+<p>这样就同时实现了分组与组内数据的处理操作：</p>
+<pre class="line-numbers language-none"><code class="language-none">&#123;南京公司&#x3D;2, 上海公司&#x3D;3&#125;</code></pre>
+
+<p>上面的代码中<code>Collectors.groupingBy()</code>是一个分组Collector，而其内又传入了一个归约汇总Collector <code>Collectors.counting()</code>，也就是一个收集器中嵌套了另一个收集器。</p>
+<p>除了上述演示的场景外，还有一种特殊的分组操作，其分组的key类型仅为布尔值，这种情况，我们也可以通过<code>Collectors.partitioningBy()</code>提供的<strong>分区收集器</strong>来实现。</p>
+<p>例如：</p>
+<blockquote>
+<p>统计上海公司和非上海公司的员工总数, true表示是上海公司，false表示非上海公司</p>
+</blockquote>
+<p>使用分区收集器的方式，可以这么实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void partitionByCompanyAndDepartment() &#123;
+    Map&lt;Boolean, Long&gt; resultMap &#x3D; getAllEmployees().stream()
+            .collect(Collectors.partitioningBy(e -&gt; &quot;上海公司&quot;.equals(e.getSubCompany()),
+                    Collectors.counting()));
+    System.out.println(resultMap);
+&#125;</code></pre>
+
+<p>结果如下：</p>
+<pre class="line-numbers language-none"><code class="language-none">&#123;false&#x3D;2, true&#x3D;3&#125;</code></pre>
+
+<p><code>Collectors.partitioningBy()</code>分区收集器的使用方式与<code>Collectors.groupingBy()</code>分组收集器的使用方式相同。单纯从使用维度来看，<strong>分组收集器的<code>分组函数</code>返回值为<code>布尔值</code>，则效果等同于一个分区收集器</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="Collector的叠加嵌套"><a href="#Collector的叠加嵌套" class="headerlink" title="Collector的叠加嵌套"></a>Collector的叠加嵌套</h3><p>有的时候，我们需要根据先根据某个维度进行分组后，再根据第二维度进一步的分组，然后再对分组后的结果进一步的处理操作，这种场景里面，我们就可以通过Collector收集器的<strong>叠加嵌套</strong>使用来实现。</p>
+<p>例如下面的需求：</p>
+<blockquote>
+<p>现有整个集团全体员工的列表，需要统计各子公司内各部门下的员工人数。</p>
+</blockquote>
+<p>使用Stream的嵌套Collector，我们可以这么实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void groupByCompanyAndDepartment() &#123;
+    &#x2F;&#x2F; 按照子公司+部门双层维度，统计各个部门内的人员数
+    Map&lt;String, Map&lt;String, Long&gt;&gt; resultMap &#x3D; getAllEmployees().stream()
+            .collect(Collectors.groupingBy(Employee::getSubCompany,
+                    Collectors.groupingBy(Employee::getDepartment,
+                            Collectors.counting())));
+    System.out.println(resultMap);
+&#125;</code></pre>
+
+<p>可以看下输出结果，达到了需求预期的诉求：</p>
+<pre class="line-numbers language-none"><code class="language-none">&#123;
+    南京公司&#x3D;&#123;
+        测试二部&#x3D;1, 
+        测试一部&#x3D;1&#125;, 
+    上海公司&#x3D;&#123;
+        研发二部&#x3D;1, 
+        研发一部&#x3D;2&#125;
+&#125;</code></pre>
+
+<p>上面的代码中,就是一个典型的Collector嵌套处理的例子，同时也是一个典型的<strong>多级分组</strong>的实现逻辑。对代码的整体处理过程进行剖析，大致逻辑如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207161653721.png"></p>
+<p>借助多个Collector嵌套使用，可以让我们解锁很多复杂场景处理能力。你可以将这个操作想象为一个<strong>套娃操作</strong>，如果愿意，你可以无限嵌套下去（实际中不太可能会有如此荒诞的场景）。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="Collectors提供的收集器"><a href="#Collectors提供的收集器" class="headerlink" title="Collectors提供的收集器"></a>Collectors提供的收集器</h2><p>为了方便程序员使用呢，JDK中的Collectors工具类封装提供了很多现成的Collector实现类，可供编码时直接使用，对常用的收集器介绍如下：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>toList</td>
+<td>将流中的元素收集到一个List中</td>
+</tr>
+<tr>
+<td>toSet</td>
+<td>将流中的元素收集到一个Set中</td>
+</tr>
+<tr>
+<td>toCollection</td>
+<td>将流中的元素收集到一个Collection中</td>
+</tr>
+<tr>
+<td>toMap</td>
+<td>将流中的元素映射收集到一个Map中</td>
+</tr>
+<tr>
+<td>counting</td>
+<td>统计流中的元素个数</td>
+</tr>
+<tr>
+<td>summingInt</td>
+<td>计算流中指定int字段的累加总和。针对不同类型的数字类型，有不同的方法，比如summingDouble等</td>
+</tr>
+<tr>
+<td>averagingInt</td>
+<td>计算流中指定int字段的平均值。针对不同类型的数字类型，有不同的方法，比如averagingLong等</td>
+</tr>
+<tr>
+<td>joining</td>
+<td>将流中所有元素（或者元素的指定字段）字符串值进行拼接，可以指定拼接连接符，或者首尾拼接字符</td>
+</tr>
+<tr>
+<td>maxBy</td>
+<td>根据给定的比较器，选择出值最大的元素</td>
+</tr>
+<tr>
+<td>minBy</td>
+<td>根据给定的比较器，选择出值最小的元素</td>
+</tr>
+<tr>
+<td>groupingBy</td>
+<td>根据给定的分组函数的值进行分组，输出一个Map对象</td>
+</tr>
+<tr>
+<td>partitioningBy</td>
+<td>根据给定的分区函数的值进行分区，输出一个Map对象，且key始终为布尔值类型</td>
+</tr>
+<tr>
+<td>collectingAndThen</td>
+<td>包裹另一个收集器，对其结果进行二次加工转换</td>
+</tr>
+<tr>
+<td>reducing</td>
+<td>从给定的初始值开始，将元素进行逐个的处理，最终将所有元素计算为最终的1个值输出</td>
+</tr>
+</tbody></table>
+<p>上述的大部分方法，前面都有使用示例，这里对<code>collectAndThen</code>补充介绍下。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><code>collectAndThen</code>对应的收集器，必须传入一个真正用于结果收集处理的<strong>实际收集器downstream</strong>以及一个<strong>finisher方法</strong>，当downstream收集器计算出结果后，使用finisher方法对结果进行二次处理，并将处理结果作为最终结果返回。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207162101083.png"></p>
+<p>还是拿之前的例子来举例：</p>
+<blockquote>
+<p>给定集团所有员工列表，找出上海公司中工资最高的员工。</p>
+</blockquote>
+<p>我们可以写出如下代码：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void findHighestSalaryEmployee() &#123;
+    Optional&lt;Employee&gt; highestSalaryEmployee &#x3D; getAllEmployees().stream()
+            .filter(employee -&gt; &quot;上海公司&quot;.equals(employee.getSubCompany()))
+            .collect(Collectors.maxBy(Comparator.comparingInt(Employee::getSalary)));
+    System.out.println(highestSalaryEmployee.get());
+&#125;</code></pre>
+
+<p>但是这个结果最终输出的是个<code>Optional&lt;Employee&gt;</code>类型，使用的时候比较麻烦，那能不能直接返回我们需要的<code>Employee</code>类型呢？这里就可以借助<code>collectAndThen</code>来实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void testCollectAndThen() &#123;
+    Employee employeeResult &#x3D; getAllEmployees().stream()
+            .filter(employee -&gt; &quot;上海公司&quot;.equals(employee.getSubCompany()))
+            .collect(
+                    Collectors.collectingAndThen(
+                            Collectors.maxBy(Comparator.comparingInt(Employee::getSalary)),
+                            Optional::get)
+            );
+    System.out.println(employeeResult);
+&#125;</code></pre>
+
+<p>这样就可以啦，是不是超简单的？</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="开发个自定义收集器"><a href="#开发个自定义收集器" class="headerlink" title="开发个自定义收集器"></a>开发个自定义收集器</h2><p>前面我们演示了很多Collectors工具类中提供的收集器的用法，上一节中列出来的Collectors提供的常用收集器，也可以覆盖大部分场景的开发诉求了。</p>
+<p>但也许在项目中，我们会遇到一些定制化的场景，现有的收集器无法满足我们的诉求，这个时候，我们也可以自己来实现<strong>定制化的收集器</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="Collector接口介绍"><a href="#Collector接口介绍" class="headerlink" title="Collector接口介绍"></a>Collector接口介绍</h3><p>我们知道，所谓的收集器，其实就是一个Collector接口的具体实现类。所以如果想要定制自己的收集器，首先要先了解Collector接口到底有哪些方法需要我们去实现，以及各个方法的作用与用途。</p>
+<p>当我们新建一个<code>MyCollector</code>类并声明实现Collector接口的时候，会发现需要我们实现<code>5个</code>接口：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207162105039.png"></p>
+<p>这5个接口的含义说明归纳如下：</p>
+<table>
+<thead>
+<tr>
+<th>接口名称</th>
+<th>功能含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>supplier</td>
+<td>创建新的结果容器，可以是一个容器，也可以是一个累加器实例，总之是用来存储结果数据的</td>
+</tr>
+<tr>
+<td>accumlator</td>
+<td>元素进入收集器中的具体处理操作</td>
+</tr>
+<tr>
+<td>finisher</td>
+<td>当所有元素都处理完成后，在返回结果前的对结果的最终处理操作，当然也可以选择不做任何处理，直接返回</td>
+</tr>
+<tr>
+<td>combiner</td>
+<td>各个子流的处理结果最终如何合并到一起去，比如并行流处理场景，元素会被切分为好多个分片进行并行处理，最终各个分片的数据需要合并为一个整体结果，即通过此方法来指定子结果的合并逻辑</td>
+</tr>
+<tr>
+<td>characteristics</td>
+<td>对此收集器处理行为的补充描述，比如此收集器是否允许并行流中处理，是否finisher方法必须要有等等，此处返回一个Set集合，里面的候选值是固定的几个可选项。</td>
+</tr>
+</tbody></table>
+<p>对于<code>characteristics</code>返回set集合中的可选值，说明如下：</p>
+<table>
+<thead>
+<tr>
+<th>取值</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UNORDERED</td>
+<td>声明此收集器的汇总归约结果与Stream流元素遍历顺序无关，不受元素处理顺序影响</td>
+</tr>
+<tr>
+<td>CONCURRENT</td>
+<td>声明此收集器可以多个线程并行处理，允许并行流中进行处理</td>
+</tr>
+<tr>
+<td>IDENTITY_FINISH</td>
+<td>声明此收集器的finisher方法是一个恒等操作，可以跳过</td>
+</tr>
+</tbody></table>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>现在，我们知道了这5个接口方法各自的含义与用途了，那么作为一个Collector收集器，这几个接口之间是如何配合处理并将Stream数据收集为需要的输出结果的呢？下面这张图可以清晰的阐述这一过程：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207171257100.png"></p>
+<p>当然，如果我们的Collector是支持在<strong>并行流</strong>中使用的，则其处理过程会稍有不同：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207171259409.png"></p>
+<p>为了对上述方法有个直观的理解，我们可以看下<code>Collectors.toList()</code>这个收集器的实现源码：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">static final Set&lt;Collector.Characteristics&gt; CH_ID
+            &#x3D; Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
+
+public static &lt;T&gt; Collector&lt;T, ?, List&lt;T&gt;&gt; toList() &#123;
+    return new CollectorImpl&lt;&gt;((Supplier&lt;List&lt;T&gt;&gt;) ArrayList::new, List::add,
+                               (left, right) -&gt; &#123; left.addAll(right); return left; &#125;,
+                               CH_ID);
+&#125;</code></pre>
+
+<p>对上述代码拆解分析如下：</p>
+<ul>
+<li><p><strong>supplier方法</strong>：<code>ArrayList::new</code>，即new了个<code>ArrayList</code>作为结果存储容器。</p>
+</li>
+<li><p><strong>accumulator方法</strong>：<code>List::add</code>，也就是对于stream中的每个元素，都调用<code>list.add()</code>方法添加到结果容器追踪。</p>
+</li>
+<li><p><strong>combiner方法</strong>：<code>(left, right) -&gt; &#123; left.addAll(right); return left; &#125;</code>，也就是对于并行操作生成的各个<code>子ArrayList</code>结果，最终通过<code>list.addAll()</code>方法合并为最终结果。</p>
+</li>
+<li><p><strong>finisher方法</strong>：没提供，使用的默认的，因为无需做任何处理，属于恒等操作。</p>
+</li>
+<li><p><strong>characteristics</strong>：返回的是<code>IDENTITY_FINISH</code>，也即最终结果直接返回，无需finisher方法去二次加工。注意这里没有声明<code>CONCURRENT</code>，因为ArrayList是个非线程安全的容器，所以这个收集器是<strong>不支持在并发过程中使用</strong>。</p>
+</li>
+</ul>
+<p>通过上面的逐个方法描述，再联想下<code>Collectors.toList()</code>的具体表现，想必对各个接口方法的含义应该有了比较直观的理解了吧？</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="实现Collector接口"><a href="#实现Collector接口" class="headerlink" title="实现Collector接口"></a>实现Collector接口</h3><p>既然已经搞清楚Collector接口中的主要方法作用，那就可以开始动手写自己的收集器啦。新建一个class类，然后声明实现Collector接口，然后去实现具体的接口方法就行咯。</p>
+<p>前面介绍过，<code>Collectors.summingInt</code>收集器是用来计算每个元素中某个int类型字段的总和的，假设我们需要一个新的累加功能：</p>
+<blockquote>
+<p>计算流中每个元素的某个int字段值平方的总和</p>
+</blockquote>
+<p>下面，我们就一起来自定义一个收集器来实现此功能。</p>
+<ul>
+<li><strong>supplier方法</strong></li>
+</ul>
+<p>supplier方法的职责，是<strong>创建一个结果存储累加的容器</strong>。既然我们要计算多个值的累加结果，那首先就是要先声明一个<code>int sum = 0</code>用来存储累加结果。但是为了让我们的收集器可以支持在并发模式下使用，我们这里可以采用<strong>线程安全的AtomicInteger</strong>来实现。</p>
+<p>所以我们便可以确定supplier方法的实现逻辑了：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Override
+public Supplier&lt;AtomicInteger&gt; supplier() &#123;
+    &#x2F;&#x2F; 指定用于最终结果的收集，此处返回new AtomicInteger(0)，后续在此基础上累加
+    return () -&gt; new AtomicInteger(0);
+&#125;</code></pre>
+
+<ul>
+<li><strong>accumulator方法</strong></li>
+</ul>
+<p><code>accumulator</code>方法是实现具体的计算逻辑的，也是整个Collector的<strong>核心业务逻辑</strong>所在的方法。收集器处理的时候，Stream流中的元素会逐个进入到Collector中，然后由<code>accumulator</code>方法来进行逐个计算：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Override
+public BiConsumer&lt;AtomicInteger, T&gt; accumulator() &#123;
+    &#x2F;&#x2F; 每个元素进入的时候的遍历策略，当前元素值的平方与sum结果进行累加
+    return (sum, current) -&gt; &#123;
+        int intValue &#x3D; mapper.applyAsInt(current);
+        sum.addAndGet(intValue * intValue);
+    &#125;;
+&#125;</code></pre>
+
+<p>这里也补充说下，收集器中的几个方法中，仅有<code>accumulator</code>是需要重复执行的，有几个元素就会执行几次，其余的方法都不会直接与Stream中的元素打交道。</p>
+<ul>
+<li><strong>combiner方法</strong></li>
+</ul>
+<p>因为我们前面supplier方法中使用了线程安全的AtomicInteger作为结果容器，所以其支持在并行流中使用。根据上面介绍，并行流是将Stream切分为多个分片，然后分别对分片进行计算处理得到分片各自的结果，最后这些<strong>分片的结果需要合并为同一份总的结果</strong>，这个如何合并，就是此处我们需要实现的：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Override
+public BinaryOperator&lt;AtomicInteger&gt; combiner() &#123;
+    &#x2F;&#x2F; 多个分段结果处理的策略，直接相加
+    return (sum1, sum2) -&gt; &#123;
+        sum1.addAndGet(sum2.get());
+        return sum1;
+    &#125;;
+&#125;</code></pre>
+
+<p>因为我们这里是要做一个数字平方的总和，所以这里对于分片后的结果，我们直接累加到一起即可。</p>
+<ul>
+<li><strong>finisher方法</strong></li>
+</ul>
+<p>我们的收集器目标结果是输出一个累加的<code>Integer</code>结果值，但是为了保证并发流中的线程安全，我们使用AtomicInteger作为了结果容器。也就是最终我们需要将内部的<code>AtomicInteger</code>对象转换为Integer对象，所以<code>finisher</code>方法我们的实现逻辑如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Override
+public Function&lt;AtomicInteger, Integer&gt; finisher() &#123;
+    &#x2F;&#x2F; 结果处理完成之后对结果的二次处理
+    &#x2F;&#x2F; 为了支持多线程并发处理，此处内部使用了AtomicInteger作为了结果累加器
+    &#x2F;&#x2F; 但是收集器最终需要返回Integer类型值，此处进行对结果的转换
+    return AtomicInteger::get;
+&#125;</code></pre>
+
+<ul>
+<li><strong>characteristics方法</strong></li>
+</ul>
+<p>这里呢，我们声明下该Collector收集器的一些特性就行了：</p>
+<ol>
+<li>因为我们实现的收集器是允许并行流中使用的，所以我们声明了<code>CONCURRENT</code>属性；</li>
+<li>作为一个数字累加算总和的操作，对元素的先后计算顺序并没有关系，所以我们也同时声明<code>UNORDERED</code>属性；</li>
+<li>因为我们的finisher方法里面是做了个结果处理转换操作的，并非是一个恒等处理操作，所以这里就不能声明<code>IDENTITY_FINISH</code>属性。</li>
+</ol>
+<p>基于此分析，此方法的实现如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Override
+public Set&lt;Characteristics&gt; characteristics() &#123;
+    Set&lt;Characteristics&gt; characteristics &#x3D; new HashSet&lt;&gt;();
+    &#x2F;&#x2F; 指定该收集器支持并发处理（前面也发现我们采用了线程安全的AtomicInteger方式）
+    characteristics.add(Characteristics.CONCURRENT);
+    &#x2F;&#x2F; 声明元素数据处理的先后顺序不影响最终收集的结果
+    characteristics.add(Characteristics.UNORDERED);
+    &#x2F;&#x2F; 注意:这里没有添加下面这句，因为finisher方法对结果进行了处理，非恒等转换
+    &#x2F;&#x2F; characteristics.add(Characteristics.IDENTITY_FINISH);
+    return characteristics;
+&#125;</code></pre>
+
+<p>这样呢，我们的自定义收集器就实现好了，如果需要完整代码，可以到文末的github仓库地址上获取。</p>
+<p>我们使用下自己定义的收集器看看：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">public void testMyCollector() &#123;
+    Integer result &#x3D; Stream.of(new Score(1), new Score(2), new Score(3), new Score(4))
+            .collect(new MyCollector&lt;&gt;(Score::getScore));
+    System.out.println(result);
+&#125;</code></pre>
+
+<p>输出结果：</p>
+<pre class="line-numbers language-none"><code class="language-none">30</code></pre>
+
+<p>完全符合我们的预期，自定义收集器就实现好了。回头再看下，是不是挺简单的？</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>好啦，关于Java中Stream的collect用法与Collector收集器的内容，这里就给大家分享到这里咯。看到这里，不知道你是否掌握了呢？是否还有什么疑问或者更好的见解呢？欢迎多多留言切磋交流。</p>
+<p>📢<strong>此外：</strong></p>
+<ul>
+<li>关于本文中涉及的<strong>演示代码</strong>的完整示例，我已经整理并提交到github中，如果您有需要，可以自取：<a target="_blank" rel="noopener" href="https://github.com/veezean/JavaBasicSkills">https://github.com/veezean/JavaBasicSkills</a></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请点个关注，也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312091.gif"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn/post/20220718085417.html">https://blog.codingcoder.cn/post/20220718085417.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.codingcoder.cn" target="_blank">Veezean的小世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/Stream/">Stream</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202301281101915.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20220725085417.html" title="使用JAVA CompletableFuture实现流水线化的并行处理，深度实践总结"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">使用JAVA CompletableFuture实现流水线化的并行处理，深度实践总结</div></div></a></div><div class="next-post pull-right"><a href="/post/20220714085417.html" title="是时候优雅地和NullPointException说再见了"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">是时候优雅地和NullPointException说再见了</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20220711085417.html" title="全面吃透JAVA Stream流操作，让代码更加的优雅"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-11</div><div class="title">全面吃透JAVA Stream流操作，让代码更加的优雅</div></div></a></div><div><a href="/post/20220621125417.html" title="Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206132103053.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-21</div><div class="title">Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！</div></div></a></div><div><a href="/post/20220623164616.html" title="Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172113780.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-23</div><div class="title">Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA</div></div></a></div><div><a href="/post/20220624161616.html" title="Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301292149805.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-24</div><div class="title">Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍</div></div></a></div><div><a href="/post/20220625213411.html" title="Spring Data JPA系列4：Spring声明式事务处理与多数据源支持"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172105608.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-25</div><div class="title">Spring Data JPA系列4：Spring声明式事务处理与多数据源支持</div></div></a></div><div><a href="/post/20220628171111.html" title="Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172121044.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-28</div><div class="title">Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">道阻且长，行则将至</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E8%AF%86Collector"><span class="toc-number">1.</span> <span class="toc-text">初识Collector</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#collect-Collector-Collectors%E5%8C%BA%E5%88%AB%E4%B8%8E%E5%85%B3%E8%81%94"><span class="toc-number">2.</span> <span class="toc-text">collect\Collector\Collectors区别与关联</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Collector%E4%BD%BF%E7%94%A8%E4%B8%8E%E5%89%96%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">Collector使用与剖析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%81%92%E7%AD%89%E5%A4%84%E7%90%86Collector"><span class="toc-number">3.1.</span> <span class="toc-text">恒等处理Collector</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%92%E7%BA%A6%E6%B1%87%E6%80%BBCollector"><span class="toc-number">3.2.</span> <span class="toc-text">归约汇总Collector</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E7%BB%84%E5%88%86%E5%8C%BACollector"><span class="toc-number">3.3.</span> <span class="toc-text">分组分区Collector</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Collector%E7%9A%84%E5%8F%A0%E5%8A%A0%E5%B5%8C%E5%A5%97"><span class="toc-number">3.4.</span> <span class="toc-text">Collector的叠加嵌套</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Collectors%E6%8F%90%E4%BE%9B%E7%9A%84%E6%94%B6%E9%9B%86%E5%99%A8"><span class="toc-number">4.</span> <span class="toc-text">Collectors提供的收集器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%8F%91%E4%B8%AA%E8%87%AA%E5%AE%9A%E4%B9%89%E6%94%B6%E9%9B%86%E5%99%A8"><span class="toc-number">5.</span> <span class="toc-text">开发个自定义收集器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Collector%E6%8E%A5%E5%8F%A3%E4%BB%8B%E7%BB%8D"><span class="toc-number">5.1.</span> <span class="toc-text">Collector接口介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0Collector%E6%8E%A5%E5%8F%A3"><span class="toc-number">5.2.</span> <span class="toc-text">实现Collector接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewhelperdoc.html" title="CodeReview IDEA插件使用教程">CodeReview IDEA插件使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewversions.html" title="CodeReview IDEA插件版本更新记录">CodeReview IDEA插件版本更新记录</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewserverdeploydoc.html" title="CodeReview IDEA插件配套服务端使用教程">CodeReview IDEA插件配套服务端使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewfieldmodifyhelper.html" title="自定义CodeReview的检视字段属性详情">自定义CodeReview的检视字段属性详情</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">Copyright&copy;2023 By Veezean, All Rights Reserved.</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

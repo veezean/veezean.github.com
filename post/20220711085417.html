@@ -1,0 +1,698 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>全面吃透JAVA Stream流操作，让代码更加的优雅 | Veezean的小世界</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="在JAVA中，涉及到对 数组、Collection等集合类中的元素进行操作的时候，通常会通过循环的方式进行逐个处理，或者使用Stream的方式进行处理。 例如，现在有这么一个需求：  从给定句子中返回单词长度大于5的单词列表，按长度倒序输出，最多返回3个  在JAVA7及之前的代码中，我们会可以照如下的方式进行实现：  &#x2F;**  * 【常规方式】  * 从给定句子中返回单词长度大于5的单">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全面吃透JAVA Stream流操作，让代码更加的优雅">
+<meta property="og:url" content="https://blog.codingcoder.cn/post/20220711085417.html">
+<meta property="og:site_name" content="Veezean的小世界">
+<meta property="og:description" content="在JAVA中，涉及到对 数组、Collection等集合类中的元素进行操作的时候，通常会通过循环的方式进行逐个处理，或者使用Stream的方式进行处理。 例如，现在有这么一个需求：  从给定句子中返回单词长度大于5的单词列表，按长度倒序输出，最多返回3个  在JAVA7及之前的代码中，我们会可以照如下的方式进行实现：  &#x2F;**  * 【常规方式】  * 从给定句子中返回单词长度大于5的单">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg">
+<meta property="article:published_time" content="2022-07-11T00:54:17.000Z">
+<meta property="article:modified_time" content="2022-07-11T00:54:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="Stream">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.codingcoder.cn/post/20220711085417.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的小世界","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '全面吃透JAVA Stream流操作，让代码更加的优雅',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-11 08:54:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的小世界"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的小世界</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">全面吃透JAVA Stream流操作，让代码更加的优雅</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-11T00:54:17.000Z" title="发表于 2022-07-11 08:54:17">2022-07-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-11T00:54:17.000Z" title="更新于 2022-07-11 08:54:17">2022-07-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%9C%BA%E6%99%AF%E5%8C%96JAVA%E5%85%A8%E9%9D%A2%E6%95%99%E7%A8%8B/">场景化JAVA全面教程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>18分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="全面吃透JAVA Stream流操作，让代码更加的优雅"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20220711085417.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20220711085417.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><p>在JAVA中，涉及到对 <code>数组</code>、<code>Collection</code>等集合类中的元素进行操作的时候，通常会通过<strong>循环的方式</strong>进行逐个处理，或者<strong>使用Stream</strong>的方式进行处理。</p>
+<p>例如，现在有这么一个需求：</p>
+<blockquote>
+<p>从给定句子中返回单词长度大于5的单词列表，按长度倒序输出，最多返回3个</p>
+</blockquote>
+<p>在<strong>JAVA7及之前</strong>的代码中，我们会可以照如下的方式进行实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+&#x2F;**
+ * 【常规方式】
+ * 从给定句子中返回单词长度大于5的单词列表，按长度倒序输出，最多返回3个
+ *
+ * @param sentence 给定的句子，约定非空，且单词之间仅由一个空格分隔
+ * @return 倒序输出符合条件的单词列表
+ *&#x2F;
+public List&lt;String&gt; sortGetTop3LongWords(@NotNull String sentence) &#123;
+    &#x2F;&#x2F; 先切割句子，获取具体的单词信息
+    String[] words &#x3D; sentence.split(&quot; &quot;);
+    List&lt;String&gt; wordList &#x3D; new ArrayList&lt;&gt;();
+    &#x2F;&#x2F; 循环判断单词的长度，先过滤出符合长度要求的单词
+    for (String word : words) &#123;
+        if (word.length() &gt; 5) &#123;
+            wordList.add(word);
+        &#125;
+    &#125;
+    &#x2F;&#x2F; 对符合条件的列表按照长度进行排序
+    wordList.sort((o1, o2) -&gt; o2.length() - o1.length());
+    &#x2F;&#x2F; 判断list结果长度，如果大于3则截取前三个数据的子list返回
+    if (wordList.size() &gt; 3) &#123;
+        wordList &#x3D; wordList.subList(0, 3);
+    &#125;
+    return wordList;
+&#125;
+</code></pre>
+
+<p>在<strong>JAVA8及之后</strong>的版本中，借助Stream流，我们可以更加优雅的写出如下代码：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+&#x2F;**
+ * 【Stream方式】
+ * 从给定句子中返回单词长度大于5的单词列表，按长度倒序输出，最多返回3个
+ *
+ * @param sentence 给定的句子，约定非空，且单词之间仅由一个空格分隔
+ * @return 倒序输出符合条件的单词列表
+ *&#x2F;
+public List&lt;String&gt; sortGetTop3LongWordsByStream(@NotNull String sentence) &#123;
+    return Arrays.stream(sentence.split(&quot; &quot;))
+            .filter(word -&gt; word.length() &gt; 5)
+            .sorted((o1, o2) -&gt; o2.length() - o1.length())
+            .limit(3)
+            .collect(Collectors.toList());
+&#125;
+</code></pre>
+
+<p>直观感受上，<code>Stream</code>的实现方式代码更加简洁、一气呵成。很多的同学在代码中也经常使用Stream流，但是对Stream流的认知往往也是仅限于会一些简单的 <code>filter</code>、<code>map</code>、<code>collect</code>等操作，但JAVA的Stream可以适用的场景与能力远不止这些。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>那么问题来了：<strong>Stream相较于传统的foreach的方式处理，到底有啥优势</strong>？</p>
+<p>这里我们可以先搁置这个问题，先整体全面的了解下Stream，然后再来讨论下这个问题。</p>
+<p>笔者结合在团队中多年的代码检视遇到的情况，结合平时项目编码实践经验，对<strong>Stream的核心要点与易混淆用法</strong>、<strong>典型使用场景</strong>等进行了详细的梳理总结，希望可以帮助大家对Stream有个更全面的认知，也可以更加高效的应用到项目开发中去。</p>
+<h2 id="Stream初相识"><a href="#Stream初相识" class="headerlink" title="Stream初相识"></a>Stream初相识</h2><p>概括讲，可以将Stream流操作分为<strong>3种类型</strong>：</p>
+<ul>
+<li>创建Stream</li>
+<li>Stream中间处理</li>
+<li>终止Steam</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207101448482.png"></p>
+<p>每个Stream管道操作类型都包含若干API方法，先列举下各个API方法的功能介绍。</p>
+<ul>
+<li><strong>开始管道</strong></li>
+</ul>
+<p>主要负责新建一个Stream流，或者基于现有的数组、List、Set、Map等集合类型对象创建出新的Stream流。</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>功能说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>stream()</td>
+<td>创建出一个新的stream串行流对象</td>
+</tr>
+<tr>
+<td>parallelStream()</td>
+<td>创建出一个可并行执行的stream流对象</td>
+</tr>
+<tr>
+<td>Stream.of()</td>
+<td>通过给定的一系列元素创建一个新的Stream串行流对象</td>
+</tr>
+</tbody></table>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<ul>
+<li><strong>中间管道</strong></li>
+</ul>
+<p>负责对Stream进行处理操作，并返回一个新的Stream对象，中间管道操作可以进行<strong>叠加</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>功能说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>filter()</td>
+<td>按照条件过滤符合要求的元素， 返回新的stream流</td>
+</tr>
+<tr>
+<td>map()</td>
+<td>将已有元素转换为另一个对象类型，一对一逻辑，返回新的stream流</td>
+</tr>
+<tr>
+<td>flatMap()</td>
+<td>将已有元素转换为另一个对象类型，一对多逻辑，即原来一个元素对象可能会转换为1个或者多个新类型的元素，返回新的stream流</td>
+</tr>
+<tr>
+<td>limit()</td>
+<td>仅保留集合前面指定个数的元素，返回新的stream流</td>
+</tr>
+<tr>
+<td>skip()</td>
+<td>跳过集合前面指定个数的元素，返回新的stream流</td>
+</tr>
+<tr>
+<td>concat()</td>
+<td>将两个流的数据合并起来为1个新的流，返回新的stream流</td>
+</tr>
+<tr>
+<td>distinct()</td>
+<td>对Stream中所有元素进行去重，返回新的stream流</td>
+</tr>
+<tr>
+<td>sorted()</td>
+<td>对stream中所有的元素按照指定规则进行排序，返回新的stream流</td>
+</tr>
+<tr>
+<td>peek()</td>
+<td>对stream流中的每个元素进行逐个遍历处理，返回处理后的stream流</td>
+</tr>
+</tbody></table>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<ul>
+<li><strong>终止管道</strong></li>
+</ul>
+<p>顾名思义，通过终止管道操作之后，Stream流将<strong>会结束</strong>，最后可能会执行某些逻辑处理，或者是按照要求返回某些执行后的结果数据。</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>功能说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>count()</td>
+<td>返回stream处理后最终的元素个数</td>
+</tr>
+<tr>
+<td>max()</td>
+<td>返回stream处理后的元素最大值</td>
+</tr>
+<tr>
+<td>min()</td>
+<td>返回stream处理后的元素最小值</td>
+</tr>
+<tr>
+<td>findFirst()</td>
+<td>找到第一个符合条件的元素时则终止流处理</td>
+</tr>
+<tr>
+<td>findAny()</td>
+<td>找到任何一个符合条件的元素时则退出流处理，这个<strong>对于串行流时与findFirst相同，对于并行流时比较高效</strong>，任何分片中找到都会终止后续计算逻辑</td>
+</tr>
+<tr>
+<td>anyMatch()</td>
+<td>返回一个boolean值，类似于isContains(),用于判断是否有符合条件的元素</td>
+</tr>
+<tr>
+<td>allMatch()</td>
+<td>返回一个boolean值，用于判断是否所有元素都符合条件</td>
+</tr>
+<tr>
+<td>noneMatch()</td>
+<td>返回一个boolean值， 用于判断是否所有元素都不符合条件</td>
+</tr>
+<tr>
+<td>collect()</td>
+<td>将流转换为指定的类型，通过Collectors进行指定</td>
+</tr>
+<tr>
+<td>toArray()</td>
+<td>将流转换为数组</td>
+</tr>
+<tr>
+<td>iterator()</td>
+<td>将流转换为Iterator对象</td>
+</tr>
+<tr>
+<td>foreach()</td>
+<td>无返回值，对元素进行逐个遍历，然后执行给定的处理逻辑</td>
+</tr>
+</tbody></table>
+<h2 id="Stream方法使用"><a href="#Stream方法使用" class="headerlink" title="Stream方法使用"></a>Stream方法使用</h2><h3 id="map与flatMap"><a href="#map与flatMap" class="headerlink" title="map与flatMap"></a>map与flatMap</h3><p><code>map</code>与 <code>flatMap</code>都是用于转换已有的元素为其它元素，区别点在于：</p>
+<ul>
+<li>map <strong>必须是一对一的</strong>，即每个元素都只能转换为1个新的元素</li>
+<li>flatMap <strong>可以是一对多的</strong>，即每个元素都可以转换为1个或者多个新的元素</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207101616088.png"></p>
+<p>比如：<strong>有一个字符串ID列表，现在需要将其转为User对象列表</strong>。可以使用map来实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+&#x2F;**
+ * 演示map的用途：一对一转换
+ *&#x2F;
+public void stringToIntMap() &#123;
+    List&lt;String&gt; ids &#x3D; Arrays.asList(&quot;205&quot;, &quot;105&quot;, &quot;308&quot;, &quot;469&quot;, &quot;627&quot;, &quot;193&quot;, &quot;111&quot;);
+    &#x2F;&#x2F; 使用流操作
+    List&lt;User&gt; results &#x3D; ids.stream()
+            .map(id -&gt; &#123;
+                User user &#x3D; new User();
+                user.setId(id);
+                return user;
+            &#125;)
+            .collect(Collectors.toList());
+    System.out.println(results);
+&#125;
+</code></pre>
+
+<p>执行之后，会发现每一个元素都被转换为对应新的元素，但是前后总元素个数是一致的：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+[User&#123;id&#x3D;&#39;205&#39;&#125;, 
+ User&#123;id&#x3D;&#39;105&#39;&#125;,
+ User&#123;id&#x3D;&#39;308&#39;&#125;, 
+ User&#123;id&#x3D;&#39;469&#39;&#125;, 
+ User&#123;id&#x3D;&#39;627&#39;&#125;, 
+ User&#123;id&#x3D;&#39;193&#39;&#125;, 
+ User&#123;id&#x3D;&#39;111&#39;&#125;]
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>再比如：<strong>现有一个句子列表，需要将句子中每个单词都提取出来得到一个所有单词列表</strong>。这种情况用map就搞不定了，需要 <code>flatMap</code>上场了：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void stringToIntFlatmap() &#123;
+    List&lt;String&gt; sentences &#x3D; Arrays.asList(&quot;hello world&quot;,&quot;Jia Gou Wu Dao&quot;);
+    &#x2F;&#x2F; 使用流操作
+    List&lt;String&gt; results &#x3D; sentences.stream()
+            .flatMap(sentence -&gt; Arrays.stream(sentence.split(&quot; &quot;)))
+            .collect(Collectors.toList());
+    System.out.println(results);
+&#125;
+</code></pre>
+
+<p>执行结果如下，可以看到结果列表中元素个数是比原始列表元素个数要多的：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+[hello, world, Jia, Gou, Wu, Dao]
+</code></pre>
+
+<p>这里需要补充一句，<code>flatMap</code>操作的时候其实是先每个元素处理并返回一个新的Stream，然后将多个Stream展开合并为了一个完整的新的Stream，如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207101630745.png"></p>
+<h3 id="peek和foreach方法"><a href="#peek和foreach方法" class="headerlink" title="peek和foreach方法"></a>peek和foreach方法</h3><p><code>peek</code>和 <code>foreach</code>，都可以用于对元素进行遍历然后逐个的进行处理。</p>
+<p>但根据前面的介绍，<strong>peek属于中间方法</strong>，而<strong>foreach属于终止方法</strong>。这也就意味着peek只能作为管道中途的一个处理步骤，而没法直接执行得到结果，其后面必须还要有其它终止操作的时候才会被执行；而foreach作为无返回值的终止方法，则可以直接执行相关操作。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testPeekAndforeach() &#123;
+    List&lt;String&gt; sentences &#x3D; Arrays.asList(&quot;hello world&quot;,&quot;Jia Gou Wu Dao&quot;);
+    &#x2F;&#x2F; 演示点1： 仅peek操作，最终不会执行
+    System.out.println(&quot;----before peek----&quot;);
+    sentences.stream().peek(sentence -&gt; System.out.println(sentence));
+    System.out.println(&quot;----after peek----&quot;);
+    &#x2F;&#x2F; 演示点2： 仅foreach操作，最终会执行
+    System.out.println(&quot;----before foreach----&quot;);
+    sentences.stream().forEach(sentence -&gt; System.out.println(sentence));
+    System.out.println(&quot;----after foreach----&quot;);
+    &#x2F;&#x2F; 演示点3： peek操作后面增加终止操作，peek会执行
+    System.out.println(&quot;----before peek and count----&quot;);
+    sentences.stream().peek(sentence -&gt; System.out.println(sentence)).count();
+    System.out.println(&quot;----after peek and count----&quot;);
+&#125;
+</code></pre>
+
+<p>输出结果可以看出，peek独自调用时并没有被执行、但peek后面加上终止操作之后便可以被执行，而foreach可以直接被执行：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+----before peek----
+----after peek----
+----before foreach----
+hello world
+Jia Gou Wu Dao
+----after foreach----
+----before peek and count----
+hello world
+Jia Gou Wu Dao
+----after peek and count----
+
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="filter、sorted、distinct、limit"><a href="#filter、sorted、distinct、limit" class="headerlink" title="filter、sorted、distinct、limit"></a>filter、sorted、distinct、limit</h3><p>这几个都是常用的Stream的中间操作方法，具体的方法的含义在上面的表格里面有说明。具体使用的时候，<strong>可以根据需要选择一个或者多个进行组合使用，或者同时使用多个相同方法的组合</strong>：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testGetTargetUsers() &#123;
+    List&lt;String&gt; ids &#x3D; Arrays.asList(&quot;205&quot;,&quot;10&quot;,&quot;308&quot;,&quot;49&quot;,&quot;627&quot;,&quot;193&quot;,&quot;111&quot;, &quot;193&quot;);
+    &#x2F;&#x2F; 使用流操作
+    List&lt;Dept&gt; results &#x3D; ids.stream()
+            .filter(s -&gt; s.length() &gt; 2)
+            .distinct()
+            .map(Integer::valueOf)
+            .sorted(Comparator.comparingInt(o -&gt; o))
+            .limit(3)
+            .map(id -&gt; new Dept(id))
+            .collect(Collectors.toList());
+    System.out.println(results);
+&#125;
+</code></pre>
+
+<p>上面的代码片段的处理逻辑很清晰：</p>
+<ol>
+<li>使用filter过滤掉不符合条件的数据</li>
+<li>通过distinct对存量元素进行去重操作</li>
+<li>通过map操作将字符串转成整数类型</li>
+<li>借助sorted指定按照数字大小正序排列</li>
+<li>使用limit截取排在前3位的元素</li>
+<li>又一次使用map将id转为Dept对象类型</li>
+<li>使用collect终止操作将最终处理后的数据收集到list中</li>
+</ol>
+<p>输出结果：</p>
+<pre class="line-numbers language-none"><code class="language-none">[Dept&#123;id&#x3D;111&#125;,  Dept&#123;id&#x3D;193&#125;,  Dept&#123;id&#x3D;205&#125;]
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="简单结果终止方法"><a href="#简单结果终止方法" class="headerlink" title="简单结果终止方法"></a>简单结果终止方法</h3><p>按照前面介绍的，终止方法里面像 <code>count</code>、<code>max</code>、<code>min</code>、<code>findAny</code>、<code>findFirst</code>、<code>anyMatch</code>、<code>allMatch</code>、<code>noneMatch</code>等方法，均属于这里说的简单结果终止方法。所谓简单，指的是其结果形式是数字、布尔值或者Optional对象值等。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testSimpleStopOptions() &#123;
+    List&lt;String&gt; ids &#x3D; Arrays.asList(&quot;205&quot;, &quot;10&quot;, &quot;308&quot;, &quot;49&quot;, &quot;627&quot;, &quot;193&quot;, &quot;111&quot;, &quot;193&quot;);
+    &#x2F;&#x2F; 统计stream操作后剩余的元素个数
+    System.out.println(ids.stream().filter(s -&gt; s.length() &gt; 2).count());
+    &#x2F;&#x2F; 判断是否有元素值等于205
+    System.out.println(ids.stream().filter(s -&gt; s.length() &gt; 2).anyMatch(&quot;205&quot;::equals));
+    &#x2F;&#x2F; findFirst操作
+    ids.stream().filter(s -&gt; s.length() &gt; 2)
+            .findFirst()
+            .ifPresent(s -&gt; System.out.println(&quot;findFirst:&quot; + s));
+&#125;
+</code></pre>
+
+<p>执行后结果为：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+6
+true
+findFirst:205
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>避坑提醒</strong></p>
+<p>这里需要补充提醒下，<strong>一旦一个Stream被执行了终止操作之后，后续便不可以再读这个流执行其他的操作</strong>了，否则会报错，看下面示例：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testHandleStreamAfterClosed() &#123;
+    List&lt;String&gt; ids &#x3D; Arrays.asList(&quot;205&quot;, &quot;10&quot;, &quot;308&quot;, &quot;49&quot;, &quot;627&quot;, &quot;193&quot;, &quot;111&quot;, &quot;193&quot;);
+    Stream&lt;String&gt; stream &#x3D; ids.stream().filter(s -&gt; s.length() &gt; 2);
+    &#x2F;&#x2F; 统计stream操作后剩余的元素个数
+    System.out.println(stream.count());
+    System.out.println(&quot;-----下面会报错-----&quot;);
+    &#x2F;&#x2F; 判断是否有元素值等于205
+    try &#123;
+        System.out.println(stream.anyMatch(&quot;205&quot;::equals));
+    &#125; catch (Exception e) &#123;
+        e.printStackTrace();
+    &#125;
+    System.out.println(&quot;-----上面会报错-----&quot;);
+&#125;
+</code></pre>
+
+<p>执行的时候，结果如下：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+6
+-----下面会报错-----
+java.lang.IllegalStateException: stream has already been operated upon or closed
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:229)
+	at java.util.stream.ReferencePipeline.anyMatch(ReferencePipeline.java:449)
+	at com.veezean.skills.stream.StreamService.testHandleStreamAfterClosed(StreamService.java:153)
+	at com.veezean.skills.stream.StreamService.main(StreamService.java:176)
+-----上面会报错-----
+</code></pre>
+
+<p>因为stream已经被执行 <code>count()</code>终止方法了，所以对stream再执行 <code>anyMatch</code>方法的时候，就会报错 <code>stream has already been operated upon or closed</code>，这一点在使用的时候需要特别注意。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="结果收集终止方法"><a href="#结果收集终止方法" class="headerlink" title="结果收集终止方法"></a>结果收集终止方法</h3><p>因为Stream主要用于对集合数据的处理场景，所以除了上面几种获取简单结果的终止方法之外，更多的场景是获取一个集合类的结果对象，比如List、Set或者HashMap等。</p>
+<p>这里就需要 <code>collect</code>方法出场了，它可以支持生成如下类型的结果数据：</p>
+<ul>
+<li>一个 <code>集合类</code>，比如List、Set或者HashMap等</li>
+<li>StringBuilder对象，支持将多个 <code>字符串进行拼接</code>处理并输出拼接后结果</li>
+<li>一个可以记录个数或者计算总和的对象（<code>数据批量运算统计</code>）</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h4 id="生成集合"><a href="#生成集合" class="headerlink" title="生成集合"></a>生成集合</h4><p>应该算是collect最常被使用到的一个场景了：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testCollectStopOptions() &#123;
+    List&lt;Dept&gt; ids &#x3D; Arrays.asList(new Dept(17), new Dept(22), new Dept(23));
+    &#x2F;&#x2F; collect成list
+    List&lt;Dept&gt; collectList &#x3D; ids.stream().filter(dept -&gt; dept.getId() &gt; 20)
+            .collect(Collectors.toList());
+    System.out.println(&quot;collectList:&quot; + collectList);
+    &#x2F;&#x2F; collect成Set
+    Set&lt;Dept&gt; collectSet &#x3D; ids.stream().filter(dept -&gt; dept.getId() &gt; 20)
+            .collect(Collectors.toSet());
+    System.out.println(&quot;collectSet:&quot; + collectSet);
+    &#x2F;&#x2F; collect成HashMap，key为id，value为Dept对象
+    Map&lt;Integer, Dept&gt; collectMap &#x3D; ids.stream().filter(dept -&gt; dept.getId() &gt; 20)
+            .collect(Collectors.toMap(Dept::getId, dept -&gt; dept));
+    System.out.println(&quot;collectMap:&quot; + collectMap);
+&#125;
+</code></pre>
+
+<p>结果如下：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+collectList:[Dept&#123;id&#x3D;22&#125;, Dept&#123;id&#x3D;23&#125;]
+collectSet:[Dept&#123;id&#x3D;23&#125;, Dept&#123;id&#x3D;22&#125;]
+collectMap:&#123;22&#x3D;Dept&#123;id&#x3D;22&#125;, 23&#x3D;Dept&#123;id&#x3D;23&#125;&#125;
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h4 id="生成拼接字符串"><a href="#生成拼接字符串" class="headerlink" title="生成拼接字符串"></a>生成拼接字符串</h4><p><strong>将一个List或者数组中的值拼接到一个字符串里并以逗号分隔开</strong>，这个场景相信大家都不陌生吧？</p>
+<p>如果通过 <code>for</code>循环和 <code>StringBuilder</code>去循环拼接，还得考虑下最后一个逗号如何处理的问题，很繁琐:</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testForJoinStrings() &#123;
+    List&lt;String&gt; ids &#x3D; Arrays.asList(&quot;205&quot;, &quot;10&quot;, &quot;308&quot;, &quot;49&quot;, &quot;627&quot;, &quot;193&quot;, &quot;111&quot;, &quot;193&quot;);
+    StringBuilder builder &#x3D; new StringBuilder();
+    for (String id : ids) &#123;
+        builder.append(id).append(&#39;,&#39;);
+    &#125;
+    &#x2F;&#x2F; 去掉末尾多拼接的逗号
+    builder.deleteCharAt(builder.length() - 1);
+    System.out.println(&quot;拼接后：&quot; + builder.toString());
+&#125;
+</code></pre>
+
+<p>但是现在有了Stream，使用 <code>collect</code>可以轻而易举的实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testCollectJoinStrings() &#123;
+    List&lt;String&gt; ids &#x3D; Arrays.asList(&quot;205&quot;, &quot;10&quot;, &quot;308&quot;, &quot;49&quot;, &quot;627&quot;, &quot;193&quot;, &quot;111&quot;, &quot;193&quot;);
+    String joinResult &#x3D; ids.stream().collect(Collectors.joining(&quot;,&quot;));
+    System.out.println(&quot;拼接后：&quot; + joinResult);
+&#125;
+</code></pre>
+
+<p>两种方式都可以得到完全相同的结果，但Stream的方式更优雅：</p>
+<pre class="line-numbers language-none"><code class="language-none">拼接后：205,10,308,49,627,193,111,193
+</code></pre>
+
+<p>📢 <strong>敲黑板：</strong></p>
+<p>关于这里的说明，评论区中很多的小伙伴提出过疑问，就是这个场景其实使用 <code>String.join()</code> 就可以搞定了，并不需要上面使用 <code>stream</code> 的方式去实现。这里要声明下，<strong>Stream的魅力之处就在于其可以结合到其它的业务逻辑中进行处理</strong>，让代码逻辑更加的自然、一气呵成。如果纯粹是个String字符串拼接的诉求，确实没有必要使用Stream来实现，毕竟杀鸡焉用牛刀嘛~ 但是可以看看下面给出的这个示例，便可以感受出使用Stream进行字符串拼接的真正魅力所在。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209241126617.png"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h4 id="数据批量数学运算"><a href="#数据批量数学运算" class="headerlink" title="数据批量数学运算"></a>数据批量数学运算</h4><p>还有一种场景，实际使用的时候可能会比较少，就是使用collect生成数字数据的总和信息，也可以了解下实现方式：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testNumberCalculate() &#123;
+    List&lt;Integer&gt; ids &#x3D; Arrays.asList(10, 20, 30, 40, 50);
+    &#x2F;&#x2F; 计算平均值
+    Double average &#x3D; ids.stream().collect(Collectors.averagingInt(value -&gt; value));
+    System.out.println(&quot;平均值：&quot; + average);
+    &#x2F;&#x2F; 数据统计信息
+    IntSummaryStatistics summary &#x3D; ids.stream().collect(Collectors.summarizingInt(value -&gt; value));
+    System.out.println(&quot;数据统计信息： &quot; + summary);
+&#125;
+</code></pre>
+
+<p>上面的例子中，使用collect方法来对list中元素值进行数学运算，结果如下：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+平均值：30.0
+总和： IntSummaryStatistics&#123;count&#x3D;5, sum&#x3D;150, min&#x3D;10, average&#x3D;30.000000, max&#x3D;50&#125;
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="并行Stream"><a href="#并行Stream" class="headerlink" title="并行Stream"></a>并行Stream</h2><h3 id="机制说明"><a href="#机制说明" class="headerlink" title="机制说明"></a>机制说明</h3><p>使用并行流，可以有效利用计算机的多CPU硬件，提升逻辑的执行速度。并行流通过将一整个stream划分为 <code>多个片段</code>，然后对各个分片流并行执行处理逻辑，最后将各个分片流的执行结果汇总为一个整体流。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102118100.png"></p>
+<h3 id="约束与限制"><a href="#约束与限制" class="headerlink" title="约束与限制"></a>约束与限制</h3><p>并行流类似于多线程在并行处理，所以与多线程场景相关的一些问题同样会存在，比如死锁等问题，所以在并行流终止执行的函数逻辑，必须要保证<strong>线程安全</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="回答最初的问题"><a href="#回答最初的问题" class="headerlink" title="回答最初的问题"></a>回答最初的问题</h2><p>到这里，关于JAVA Stream的相关概念与用法介绍，基本就讲完了。我们再把焦点切回本文刚开始时提及的一个问题：</p>
+<p><strong>Stream相较于传统的foreach的方式处理stream，到底有啥优势</strong>？</p>
+<p>根据前面的介绍，我们应该可以得出如下几点答案：</p>
+<ul>
+<li><strong>代码更简洁</strong>、偏声明式的编码风格，更容易体现出代码的逻辑意图</li>
+<li><strong>逻辑间解耦</strong>，一个stream中间处理逻辑，无需关注上游与下游的内容，只需要按约定实现自身逻辑即可</li>
+<li>并行流场景<strong>效率</strong>会比迭代器逐个循环更高</li>
+<li>函数式接口，<strong>延迟执行</strong>的特性，中间管道操作不管有多少步骤都不会立即执行，只有遇到终止操作的时候才会开始执行，可以避免一些中间不必要的操作消耗</li>
+</ul>
+<p>当然了，Stream也不全是优点，在有些方面也有其弊端：</p>
+<ul>
+<li>代码调测debug不便</li>
+<li>程序员从历史写法切换到Stream时，需要一定的适应时间</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>好啦，关于JAVA Stream的理解要点与使用技能的阐述就先到这里啦。那通过上面的介绍，各位小伙伴们是否已经跃跃欲试了呢？快去项目中使用体验下吧！当然啦，如果有疑问，也欢迎找我一起探讨探讨咯。</p>
+<p><strong>此外</strong>：</p>
+<ul>
+<li>关于<strong>Stream中collect的分组、分片等进阶操作，以及对并行流的深入探讨</strong>，因为涉及内容比较多且相对独立，<strong>我会在后续的文档中展开专门介绍下</strong>，如果有兴趣的话，可以点个关注、避免迷路。</li>
+<li>关于本文中涉及的<strong>演示代码</strong>的完整示例，我已经整理并提交到github中，如果您有需要，可以自取：<a target="_blank" rel="noopener" href="https://github.com/veezean/JavaBasicSkills">https://github.com/veezean/JavaBasicSkills</a></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请点个关注，也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312091.gif"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn/post/20220711085417.html">https://blog.codingcoder.cn/post/20220711085417.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.codingcoder.cn" target="_blank">Veezean的小世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/Stream/">Stream</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202301281101915.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20220714085417.html" title="是时候优雅地和NullPointException说再见了"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">是时候优雅地和NullPointException说再见了</div></div></a></div><div class="next-post pull-right"><a href="/post/20220708085417.html" title="JAVA中计算两个日期时间的差值竟然也有这么多门道"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">JAVA中计算两个日期时间的差值竟然也有这么多门道</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20220718085417.html" title="讲透JAVA Stream的collect用法与原理，远比你想象的更强大"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-18</div><div class="title">讲透JAVA Stream的collect用法与原理，远比你想象的更强大</div></div></a></div><div><a href="/post/20220621125417.html" title="Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206132103053.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-21</div><div class="title">Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！</div></div></a></div><div><a href="/post/20220623164616.html" title="Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172113780.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-23</div><div class="title">Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA</div></div></a></div><div><a href="/post/20220624161616.html" title="Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301292149805.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-24</div><div class="title">Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍</div></div></a></div><div><a href="/post/20220625213411.html" title="Spring Data JPA系列4：Spring声明式事务处理与多数据源支持"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172105608.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-25</div><div class="title">Spring Data JPA系列4：Spring声明式事务处理与多数据源支持</div></div></a></div><div><a href="/post/20220628171111.html" title="Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172121044.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-28</div><div class="title">Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">道阻且长，行则将至</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Stream%E5%88%9D%E7%9B%B8%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">Stream初相识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Stream%E6%96%B9%E6%B3%95%E4%BD%BF%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">Stream方法使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#map%E4%B8%8EflatMap"><span class="toc-number">2.1.</span> <span class="toc-text">map与flatMap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#peek%E5%92%8Cforeach%E6%96%B9%E6%B3%95"><span class="toc-number">2.2.</span> <span class="toc-text">peek和foreach方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#filter%E3%80%81sorted%E3%80%81distinct%E3%80%81limit"><span class="toc-number">2.3.</span> <span class="toc-text">filter、sorted、distinct、limit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E7%BB%93%E6%9E%9C%E7%BB%88%E6%AD%A2%E6%96%B9%E6%B3%95"><span class="toc-number">2.4.</span> <span class="toc-text">简单结果终止方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C%E6%94%B6%E9%9B%86%E7%BB%88%E6%AD%A2%E6%96%B9%E6%B3%95"><span class="toc-number">2.5.</span> <span class="toc-text">结果收集终止方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E9%9B%86%E5%90%88"><span class="toc-number">2.5.1.</span> <span class="toc-text">生成集合</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E6%8B%BC%E6%8E%A5%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">2.5.2.</span> <span class="toc-text">生成拼接字符串</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%89%B9%E9%87%8F%E6%95%B0%E5%AD%A6%E8%BF%90%E7%AE%97"><span class="toc-number">2.5.3.</span> <span class="toc-text">数据批量数学运算</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E8%A1%8CStream"><span class="toc-number">3.</span> <span class="toc-text">并行Stream</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%BA%E5%88%B6%E8%AF%B4%E6%98%8E"><span class="toc-number">3.1.</span> <span class="toc-text">机制说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%A6%E6%9D%9F%E4%B8%8E%E9%99%90%E5%88%B6"><span class="toc-number">3.2.</span> <span class="toc-text">约束与限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E7%AD%94%E6%9C%80%E5%88%9D%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">回答最初的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewhelperdoc.html" title="CodeReview IDEA插件使用教程">CodeReview IDEA插件使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewversions.html" title="CodeReview IDEA插件版本更新记录">CodeReview IDEA插件版本更新记录</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewserverdeploydoc.html" title="CodeReview IDEA插件配套服务端使用教程">CodeReview IDEA插件配套服务端使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewfieldmodifyhelper.html" title="自定义CodeReview的检视字段属性详情">自定义CodeReview的检视字段属性详情</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">Copyright&copy;2023 By Veezean, All Rights Reserved.</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

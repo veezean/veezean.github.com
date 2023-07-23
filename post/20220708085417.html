@@ -1,0 +1,757 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>JAVA中计算两个日期时间的差值竟然也有这么多门道 | Veezean的小世界</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="上半年春招的时候，作为面试官，对于面试表现的不错的同学会要求其写一小段代码看看。题目很简单：  给定一个日期，然后计算下距离今天相差的天数。  本以为这么个问题就是用来活跃面试氛围的，但是结果却让人大跌眼镜，真正能写出来的人竟然寥寥无几，很多人写了一整张A4纸都写不下，最后还是没写完…他们在做什么？先取出今天的日期，然后分别计算得出年、月、日的值，然后将给定的字符串进行切割，得到目标的年、月、日，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JAVA中计算两个日期时间的差值竟然也有这么多门道">
+<meta property="og:url" content="https://blog.codingcoder.cn/post/20220708085417.html">
+<meta property="og:site_name" content="Veezean的小世界">
+<meta property="og:description" content="上半年春招的时候，作为面试官，对于面试表现的不错的同学会要求其写一小段代码看看。题目很简单：  给定一个日期，然后计算下距离今天相差的天数。  本以为这么个问题就是用来活跃面试氛围的，但是结果却让人大跌眼镜，真正能写出来的人竟然寥寥无几，很多人写了一整张A4纸都写不下，最后还是没写完…他们在做什么？先取出今天的日期，然后分别计算得出年、月、日的值，然后将给定的字符串进行切割，得到目标的年、月、日，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg">
+<meta property="article:published_time" content="2022-07-08T00:54:17.000Z">
+<meta property="article:modified_time" content="2022-07-08T00:54:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="日期计算">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.codingcoder.cn/post/20220708085417.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的小世界","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JAVA中计算两个日期时间的差值竟然也有这么多门道',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-08 08:54:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的小世界"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的小世界</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">JAVA中计算两个日期时间的差值竟然也有这么多门道</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-08T00:54:17.000Z" title="发表于 2022-07-08 08:54:17">2022-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-08T00:54:17.000Z" title="更新于 2022-07-08 08:54:17">2022-07-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%9C%BA%E6%99%AF%E5%8C%96JAVA%E5%85%A8%E9%9D%A2%E6%95%99%E7%A8%8B/">场景化JAVA全面教程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>16分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="JAVA中计算两个日期时间的差值竟然也有这么多门道"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20220708085417.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20220708085417.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><p>上半年春招的时候，作为面试官，对于面试表现的不错的同学会要求其写一小段代码看看。题目很简单：</p>
+<blockquote>
+<p>给定一个日期，然后计算下距离今天相差的天数。</p>
+</blockquote>
+<p>本以为这么个问题就是用来活跃面试氛围的，但是结果却让人大跌眼镜，真正能写出来的人竟然寥寥无几，很多人写了一整张A4纸都写不下，最后还是没写完…他们在做什么？先取出今天的日期，然后分别计算得出年、月、日的值，然后将给定的字符串进行切割，得到目标的年、月、日，然后再判断是否闰年之类的逻辑，决定每月应该是加28天还是29天还是30或者31天，最后得出一个天数！ </p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>想想都令人窒息的操作…</p>
+<p>日期时间的处理，是软件开发中极其常见的场景，JAVA中与日期、时间相关的一些类与API方法也很多，这里结合平时的编码实践全面的整理了下，希望可以帮助大家厘清其中的门道，更加游刃有余的面对此方面的处理~ </p>
+<h2 id="JAVA中与日期时间相关的类"><a href="#JAVA中与日期时间相关的类" class="headerlink" title="JAVA中与日期时间相关的类"></a>JAVA中与日期时间相关的类</h2><h3 id="java-util包中"><a href="#java-util包中" class="headerlink" title="java.util包中"></a>java.util包中</h3><table>
+<thead>
+<tr>
+<th>类名</th>
+<th>具体描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Date</td>
+<td>Date对象算是JAVA中历史比较悠久的用于处理日期、时间相关的类了，但是随着版本的迭代演进，其中的众多方法都已经被弃用，所以Date更多的时候仅被用来做一个数据类型使用，用于记录对应的日期与时间信息</td>
+</tr>
+<tr>
+<td>Calender</td>
+<td>为了弥补Date对象在日期时间处理方法上的一些缺陷，JAVA提供了Calender抽象类来辅助实现Date相关的一些日历日期时间的处理与计算。</td>
+</tr>
+<tr>
+<td>TimeZone</td>
+<td>Timezone类提供了一些有用的方法用于获取时区的相关信息</td>
+</tr>
+</tbody></table>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="java-time包中"><a href="#java-time包中" class="headerlink" title="java.time包中"></a>java.time包中</h3><p>JAVA8之后新增了java.time包，提供了一些与日期时间有关的新实现类：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207081913366.png"></p>
+<p>具体每个类对应的含义说明梳理如下表：</p>
+<table>
+<thead>
+<tr>
+<th>类名</th>
+<th>含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LocalDate</td>
+<td>获取当前的日期信息，仅有简单的日期信息，不包含具体时间、不包含时区信息。</td>
+</tr>
+<tr>
+<td>LocalTime</td>
+<td>获取当前的时间信息，仅有简单的时间信息，不含具体的日期、时区信息。</td>
+</tr>
+<tr>
+<td>LocalDateTime</td>
+<td>可以看做是LocalDate和LocalTime的组合体，其同时含有日期信息与时间信息，但是依旧不包含任何时区信息。</td>
+</tr>
+<tr>
+<td>OffsetDateTime</td>
+<td>在LocalDateTime基础上增加了时区偏移量信息</td>
+</tr>
+<tr>
+<td>ZonedDateTime</td>
+<td>在OffsetDateTime基础上，增加了时区信息</td>
+</tr>
+<tr>
+<td>ZoneOffset</td>
+<td>时区偏移量信息， 比如+8:00或者-5:00等</td>
+</tr>
+<tr>
+<td>ZoneId</td>
+<td>具体的时区信息，比如Asia&#x2F;Shanghai或者America&#x2F;Chicago</td>
+</tr>
+</tbody></table>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="时间间隔计算"><a href="#时间间隔计算" class="headerlink" title="时间间隔计算"></a>时间间隔计算</h2><h3 id="Period与Duration类"><a href="#Period与Duration类" class="headerlink" title="Period与Duration类"></a>Period与Duration类</h3><p>JAVA8开始新增的java.time包中有提供Duration和Period两个类，用于处理日期时间间隔相关的场景，两个类的区别点如下：</p>
+<table>
+<thead>
+<tr>
+<th>类</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Duration</td>
+<td>时间间隔，用于秒级的时间间隔计算</td>
+</tr>
+<tr>
+<td>Period</td>
+<td>日期间隔，用于天级别的时间间隔计算，比如年月日维度的</td>
+</tr>
+</tbody></table>
+<p>Duration与Period具体使用的时候还需要有一定的甄别，因为部分的方法很容易使用中被混淆，下面分别说明下。</p>
+<ul>
+<li>Duration</li>
+</ul>
+<p>Duration的最小计数单位为纳秒，其内部使用seconds和nanos两个字段来进行组合计数表示duration总长度。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207081914545.png"></p>
+<p>Duration的常用API方法梳理如下：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>between</td>
+<td>计算两个时间的间隔，默认是秒</td>
+</tr>
+<tr>
+<td>ofXxx</td>
+<td>以of开头的一系列方法，表示基于给定的值创建一个Duration实例。比如ofHours(2L)，则表示创建一个Duration对象，其值为间隔2小时</td>
+</tr>
+<tr>
+<td>plusXxx</td>
+<td>以plus开头的一系列方法，用于在现有的Duration值基础上增加对应的时间长度，比如plusDays()表示追加多少天，或者plusMinutes()表示追加多少分钟</td>
+</tr>
+<tr>
+<td>minusXxx</td>
+<td>以minus开头的一系列方法，用于在现有的Duration值基础上扣减对应的时间长度，与plusXxx相反</td>
+</tr>
+<tr>
+<td>toXxxx</td>
+<td>以to开头的一系列方法，用于将当前Duration对象转换为对应单位的long型数据，比如toDays()表示将当前的时间间隔的值，转换为相差多少天，而toHours()则标识转换为相差多少小时。</td>
+</tr>
+<tr>
+<td>getSeconds</td>
+<td>获取当前Duration对象对应的秒数， 与toXxx方法类似，只是因为Duration使用秒作为计数单位，所以直接通过get方法即可获取到值，而toDays()是需要通过将秒数转为天数换算之后返回结果，所以提供的方法命名上会有些许差异。</td>
+</tr>
+<tr>
+<td>getNano</td>
+<td>获取当前Duration对应的纳秒数“零头”。<strong>注意这里与toNanos()不一样，toNanos是Duration值的纳秒单位总长度，getNano()只是获取不满1s剩余的那个零头，以纳秒表示。</strong></td>
+</tr>
+<tr>
+<td>isNegative</td>
+<td>检查Duration实例是否小于0，若小于0返回true, 若大于等于0返回false</td>
+</tr>
+<tr>
+<td>isZero</td>
+<td>用于判断当前的时间间隔值是否为0 ，比如比较两个时间是否一致，可以通过between计算出Duration值，然后通过isZero判断是否没有差值。</td>
+</tr>
+<tr>
+<td>withSeconds</td>
+<td>对现有的Duration对象的nanos零头值不变的情况下，变更seconds部分的值，然后返回一个新的Duration对象</td>
+</tr>
+<tr>
+<td>withNanos</td>
+<td>对现有的Duration对象的seconds值不变的情况下，变更nanos部分的值，然后返回一个新的Duration对象</td>
+</tr>
+</tbody></table>
+<p>关于Duration的主要API的使用，参见如下示意：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testDuration() &#123;
+    LocalTime target &#x3D; LocalTime.parse(&quot;00:02:35.700&quot;);
+    &#x2F;&#x2F; 获取当前日期，此处为了保证后续结果固定，注掉自动获取当前日期，指定固定日期
+    &#x2F;&#x2F; LocalDate today &#x3D; LocalDate.now();
+    LocalTime today &#x3D; LocalTime.parse(&quot;12:12:25.600&quot;);
+    &#x2F;&#x2F; 输出：12:12:25.600
+    System.out.println(today);
+    &#x2F;&#x2F; 输出：00:02:35.700
+    System.out.println(target);
+    Duration duration &#x3D; Duration.between(target, today);
+    &#x2F;&#x2F; 输出：PT12H9M49.9S
+    System.out.println(duration);
+    &#x2F;&#x2F; 输出：43789
+    System.out.println(duration.getSeconds());
+    &#x2F;&#x2F; 输出：900000000
+    System.out.println(duration.getNano());
+    &#x2F;&#x2F; 输出：729
+    System.out.println(duration.toMinutes());
+    &#x2F;&#x2F; 输出：PT42H9M49.9S
+    System.out.println(duration.plusHours(30L));
+    &#x2F;&#x2F; 输出：PT15.9S
+    System.out.println(duration.withSeconds(15L));
+&#125;</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<ul>
+<li>Period</li>
+</ul>
+<p>Period相关接口与Duration类似，其计数的最小单位是天，看下Period内部时间段记录采用了年、月、日三个field来记录：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207081915443.png"></p>
+<p>常用的API方法列举如下：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>between</td>
+<td>计算两个日期之间的时间间隔。注意，这里只能计算出相差几年几个月几天。</td>
+</tr>
+<tr>
+<td>ofXxx</td>
+<td>of()或者以of开头的一系列static方法，用于基于传入的参数构造出一个新的Period对象</td>
+</tr>
+<tr>
+<td>withXxx</td>
+<td>以with开头的方法，比如withYears、withMonths、withDays等方法，用于对现有的Period对象中对应的年、月、日等字段值进行修改（只修改对应的字段，比如withYears方法，只修改year，保留month和day不变），并生成一个新的Period对象</td>
+</tr>
+<tr>
+<td>getXxx</td>
+<td>读取Period中对应的year、month、day字段的值。注意下，这里是<strong>仅get其中的一个字段值</strong>，而非整改Period的不同单位维度的总值。</td>
+</tr>
+<tr>
+<td>plusXxx</td>
+<td>对指定的字段进行追加数值操作</td>
+</tr>
+<tr>
+<td>minusXxx</td>
+<td>对指定的字段进行扣减数值操作</td>
+</tr>
+<tr>
+<td>isNegative</td>
+<td>检查Period实例是否小于0，若小于0返回true, 若大于等于0返回false</td>
+</tr>
+<tr>
+<td>isZero</td>
+<td>用于判断当前的时间间隔值是否为0 ，比如比较两个时间是否一致，可以通过between计算出Period值，然后通过isZero判断是否没有差值。</td>
+</tr>
+</tbody></table>
+<p>关于Period的主要API的使用，参见如下示意：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void calculateDurationDays() &#123;
+    LocalDate target &#x3D; LocalDate.parse(&quot;2021-07-11&quot;);
+    &#x2F;&#x2F; 获取当前日期，此处为了保证后续结果固定，注掉自动获取当前日期，指定固定日期
+    &#x2F;&#x2F; LocalDate today &#x3D; LocalDate.now();
+    LocalDate today &#x3D; LocalDate.parse(&quot;2022-07-08&quot;);
+    &#x2F;&#x2F; 输出：2022-07-08
+    System.out.println(today);
+    &#x2F;&#x2F; 输出：2021-07-11
+    System.out.println(target);
+    Period period &#x3D; Period.between(target, today);
+    &#x2F;&#x2F; 输出：P11M27D， 表示11个月27天
+    System.out.println(period);
+    &#x2F;&#x2F; 输出：0， 因为period值为11月27天，即year字段为0
+    System.out.println(period.getYears());
+    &#x2F;&#x2F; 输出：11， 因为period值为11月27天，即month字段为11
+    System.out.println(period.getMonths());
+    &#x2F;&#x2F; 输出：27， 因为period值为11月27天，即days字段为27
+    System.out.println(period.getDays());
+    &#x2F;&#x2F; 输出：P14M27D， 因为period为11月27天，加上3月，变成14月27天
+    System.out.println(period.plusMonths(3L));
+    &#x2F;&#x2F; 输出：P11M15D，因为period为11月27天，仅将days值设置为15，则变为11月15天
+    System.out.println(period.withDays(15));
+    &#x2F;&#x2F; 输出：P2Y3M44D
+    System.out.println(Period.of(2, 3, 44));
+&#125;
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="Duration与Period踩坑记"><a href="#Duration与Period踩坑记" class="headerlink" title="Duration与Period踩坑记"></a>Duration与Period踩坑记</h3><p>Duration与Period都是用于日期之间的计算操作。Duration主要用于秒、纳秒等维度的数据处理与计算。Period主要用于计算年、月、日等维度的数据处理与计算。</p>
+<p>先看个例子，计算两个日期相差的天数，使用Duration的时候：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void calculateDurationDays(String targetDate) &#123;
+    LocalDate target &#x3D; LocalDate.parse(targetDate);
+    LocalDate today &#x3D; LocalDate.now();
+    System.out.println(&quot;today : &quot; + today);
+    System.out.println(&quot;target: &quot; + target);
+    long days &#x3D; Duration.between(target, today).abs().toDays();
+    System.out.println(&quot;相差：&quot;  + days + &quot;天&quot;);
+&#125;
+</code></pre>
+
+<p>运行后会报错：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+today : 2022-07-07
+target: 2022-07-11
+Exception in thread &quot;main&quot; java.time.temporal.UnsupportedTemporalTypeException: Unsupported unit: Seconds
+	at java.time.LocalDate.until(LocalDate.java:1614)
+	at java.time.Duration.between(Duration.java:475)
+	at com.veezean.demo5.DateService.calculateDurationDays(DateService.java:24)
+</code></pre>
+
+<p>点击看下<code>Duration.between</code>源码，可以看到注释上明确有标注着，这个方法是用于秒级的时间段间隔计算，而我们这里传入的是两个<code>天</code>级别的数据，所以就不支持此类型运算，然后抛异常了。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207071408568.png"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>再看下使用Period的实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void calculateDurationDays(String targetDate) &#123;
+    LocalDate target &#x3D; LocalDate.parse(targetDate);
+    LocalDate today &#x3D; LocalDate.now();
+    System.out.println(&quot;today : &quot; + today);
+    System.out.println(&quot;target: &quot; + target);
+    &#x2F;&#x2F; 注意，此处写法错误！这里容易踩坑：
+    long days &#x3D; Math.abs(Period.between(target, today).getDays());
+    System.out.println(&quot;相差：&quot;  + days + &quot;天&quot;);
+&#125;
+</code></pre>
+
+<p>执行结果：</p>
+<pre class="line-numbers language-none"><code class="language-none">today : 2022-07-07
+target: 2021-07-07
+相差：0天
+</code></pre>
+
+<p>执行是不报错，但是结果明显是错误的。这是因为getDays()并不会将Period值换算为天数，而是单独计算年、月、日，此处只是返回天数这个单独的值。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>再看下面的写法：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void calculateDurationDays(String targetDate) &#123;
+    LocalDate target &#x3D; LocalDate.parse(targetDate);
+    LocalDate today &#x3D; LocalDate.now();
+    System.out.println(&quot;today : &quot; + today);
+    System.out.println(&quot;target: &quot; + target);
+    Period between &#x3D; Period.between(target, today);
+    System.out.println(&quot;相差：&quot;
+            + Math.abs(between.getYears()) + &quot;年&quot;
+            + Math.abs(between.getMonths()) + &quot;月&quot;
+            + Math.abs(between.getDays()) + &quot;天&quot;);
+&#125;
+</code></pre>
+
+<p>结果为：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+today : 2022-07-07
+target: 2021-07-11
+相差：0年11月26天
+</code></pre>
+
+<p>所以说，如果想要计算两个日期之间相差的绝对天数，用Period不是一个好的思路。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="计算日期差"><a href="#计算日期差" class="headerlink" title="计算日期差"></a>计算日期差</h3><ul>
+<li>通过LocalDate来计算</li>
+</ul>
+<p>LocalDate中的toEpocDay可返回当前时间距离原点时间之间的天数，可以基于这一点，来实现计算两个日期之间相差的天数：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207081916337.png"></p>
+<p>代码如下：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void calculateDurationDays(String targetDate) &#123;
+    LocalDate target &#x3D; LocalDate.parse(targetDate);
+    LocalDate today &#x3D; LocalDate.now();
+    System.out.println(&quot;today : &quot; + today);
+    System.out.println(&quot;target: &quot; + target);
+    long days &#x3D; Math.abs(target.toEpochDay() - today.toEpochDay());
+    System.out.println(&quot;相差：&quot; + days + &quot;天&quot;);
+&#125;
+</code></pre>
+
+<p>结果为：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+today : 2022-07-07
+target: 2021-07-11
+相差：361天
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<ul>
+<li>通过时间戳来计算</li>
+</ul>
+<p>如果是使用的Date对象，则可以通过将Date日期转换为毫秒时间戳的方式相减然后将毫秒数转为天数的方式来得到结果。需要注意的是通过毫秒数计算日期天数的差值时，需要屏蔽掉时分秒带来的误差影响。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void calculateDaysGap(Date start, Date end) &#123;
+    final long ONE_DAY_MILLIS &#x3D; 1000L * 60 * 60 * 24;
+    &#x2F;&#x2F; 此处要注意，去掉时分秒的差值影响，此处采用先换算为天再相减的方式
+    long gapDays &#x3D; Math.abs(end.getTime()&#x2F;ONE_DAY_MILLIS - start.getTime()&#x2F;ONE_DAY_MILLIS);
+    System.out.println(gapDays);
+&#125;
+</code></pre>
+
+<p>输出结果：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+today : 2022-07-08
+target: 2021-07-11
+相差：362天
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<ul>
+<li>数学逻辑计算</li>
+</ul>
+<p>分别算出年、月、日差值，然后根据是否闰年、每月是30还是31天等计数逻辑，纯数学硬怼方式计算。</p>
+<p>不推荐、代码略…</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="计算接口处理耗时"><a href="#计算接口处理耗时" class="headerlink" title="计算接口处理耗时"></a>计算接口处理耗时</h3><p>在一些性能优化的场景中，我们需要获取到方法处理的执行耗时，很多人都是这么写的：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void doSomething() &#123;
+    &#x2F;&#x2F; 记录开始时间戳
+    long startMillis &#x3D; System.currentTimeMillis();
+    &#x2F;&#x2F; do something ...
+    
+    &#x2F;&#x2F; 计算结束时间戳
+    long endMillis &#x3D; System.currentTimeMillis();
+    
+    &#x2F;&#x2F; 计算相差的毫秒数
+    System.out.println(endMillis - startMillis);
+&#125;
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p>当然啦，如果你使用的是JDK8+的版本，你还可以这么写：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void doSomething() &#123;
+    &#x2F;&#x2F; 记录开始时间戳
+    Instant start &#x3D; Instant.now();
+    &#x2F;&#x2F; do something ...
+
+    &#x2F;&#x2F; 计算结束时间戳
+    Instant end &#x3D; Instant.now();
+
+    &#x2F;&#x2F; 计算相差的毫秒数
+    System.out.println(Duration.between(start, end).toMillis());
+&#125;
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="时间格式转换"><a href="#时间格式转换" class="headerlink" title="时间格式转换"></a>时间格式转换</h2><p>项目中，时间格式转换是一个非常典型的日期处理操作，可能会涉及到将一个字符串日期转换为JAVA对象，或者是将一个JAVA日期对象转换为指定格式的字符串日期时间。</p>
+<h3 id="SimpleDataFormat实现"><a href="#SimpleDataFormat实现" class="headerlink" title="SimpleDataFormat实现"></a>SimpleDataFormat实现</h3><p>在JAVA8之前，通常会使用SimpleDateFormat类来处理日期与字符串之间的相互转换：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testDateFormatter() &#123;
+    SimpleDateFormat simpleDateFormat &#x3D; new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;);
+    &#x2F;&#x2F; 日期转字符串
+    String format &#x3D; simpleDateFormat.format(new Date());
+    System.out.println(&quot;当前时间：&quot; + format);
+   
+    try &#123;
+        &#x2F;&#x2F; 字符串转日期
+        Date parseDate &#x3D; simpleDateFormat.parse(&quot;2022-07-08 06:19:27&quot;);
+        System.out.println(&quot;转换后Date对象： &quot; + parseDate);
+        &#x2F;&#x2F; 按照指定的时区进行转换，可以对比下前面转换后的结果，会发现不一样
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone(&quot;GMT+5:00&quot;));
+        parseDate &#x3D; simpleDateFormat.parse(&quot;2022-07-08 06:19:27&quot;);
+        System.out.println(&quot;指定时区转换后Date对象： &quot; + parseDate);
+    &#125; catch (Exception e) &#123;
+        e.printStackTrace();
+    &#125;
+&#125;
+</code></pre>
+
+<p>输出结果如下：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+当前时间：2022-07-08 06:25:31
+转换后Date对象： Fri Jul 08 06:19:27 CST 2022
+指定时区转换后Date对象： Fri Jul 08 09:19:27 CST 2022
+</code></pre>
+
+<p>补充说明：</p>
+<blockquote>
+<p>SimpleDateFormat对象是非线程安全的，所以项目中在封装为工具方法使用的时候需要特别留意，最好结合ThreadLocal来适应在多线程场景的正确使用。<br>JAVA8之后，推荐使用DateTimeFormat替代SimpleDateFormat。</p>
+</blockquote>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="DataTimeFormatter实现"><a href="#DataTimeFormatter实现" class="headerlink" title="DataTimeFormatter实现"></a>DataTimeFormatter实现</h3><p>JAVA8开始提供的新的用于日期与字符串之间转换的类，它很好的解决了SimpleDateFormat多线程的弊端，也可以更方便的与java.time中心的日期时间相关类的集成调用。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public void testDateFormatter() &#123;
+    DateTimeFormatter dateTimeFormatter &#x3D; DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;);
+    LocalDateTime localDateTime &#x3D; LocalDateTime.now();
+    &#x2F;&#x2F; 格式化为字符串
+    String format &#x3D; localDateTime.format(dateTimeFormatter);
+    System.out.println(&quot;当前时间：&quot; + format);
+    &#x2F;&#x2F; 字符串转Date
+    LocalDateTime parse &#x3D; LocalDateTime.parse(&quot;2022-07-08 06:19:27&quot;, dateTimeFormatter);
+    Date date &#x3D; Date.from(parse.atZone(ZoneId.systemDefault()).toInstant());
+    System.out.println(&quot;转换后Date对象： &quot; + date);
+&#125;
+
+</code></pre>
+
+<p>输出结果：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+当前时间：2022-07-08 18:37:46
+转换后Date对象： Fri Jul 08 06:19:27 CST 2022
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="日期时间格式模板"><a href="#日期时间格式模板" class="headerlink" title="日期时间格式模板"></a>日期时间格式模板</h3><p>对于计算机而言，时间处理的时候按照基于时间原点的数字进行处理即可，但是转为人类方便识别的场景显示时，经常会需要转换为不同的日期时间显示格式，比如：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+2022-07-08 12:02:34
+2022&#x2F;07&#x2F;08 12:02:34.238
+2022年07月08日 12点03分48秒
+</code></pre>
+
+<p>在JAVA中，为了方便各种格式转换，提供了基于时间模板进行转换的实现能力：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207081917481.png"></p>
+<p>时间格式模板中的字幕含义说明如下：</p>
+<table>
+<thead>
+<tr>
+<th>字母</th>
+<th>使用说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>yyyy</td>
+<td>4位数的年份</td>
+</tr>
+<tr>
+<td>yy</td>
+<td>显示2位数的年份，比如2022年，则显示为22年</td>
+</tr>
+<tr>
+<td>MM</td>
+<td>显示2位数的月份，不满2位数的，前面补0，比如7月份显示07月</td>
+</tr>
+<tr>
+<td>M</td>
+<td>月份，不满2位的月份不会补0</td>
+</tr>
+<tr>
+<td>dd</td>
+<td>天， 如果1位数的天数，则补0</td>
+</tr>
+<tr>
+<td>d</td>
+<td>天，不满2位数字的，不补0</td>
+</tr>
+<tr>
+<td>HH</td>
+<td>24小时制的时间显示，小时数，两位数，不满2位数字的前面补0</td>
+</tr>
+<tr>
+<td>H</td>
+<td>24小时制的时间显示，小时数，不满2位数字的不补0</td>
+</tr>
+<tr>
+<td>hh</td>
+<td>12小时制的时间显示，小时数，两位数，不满2位数字的前面补0</td>
+</tr>
+<tr>
+<td>ss</td>
+<td>秒数，不满2位的前面补0</td>
+</tr>
+<tr>
+<td>s</td>
+<td>秒数，不满2位的不补0</td>
+</tr>
+<tr>
+<td>SSS</td>
+<td>毫秒数</td>
+</tr>
+<tr>
+<td>z</td>
+<td>时区名称，比如北京时间东八区，则显示CST</td>
+</tr>
+<tr>
+<td>Z</td>
+<td>时区偏移信息，比如北京时间东八区，则显示+0800</td>
+</tr>
+</tbody></table>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="消失的8小时问题"><a href="#消失的8小时问题" class="headerlink" title="消失的8小时问题"></a>消失的8小时问题</h2><h3 id="日期字符串存入DB后差8小时"><a href="#日期字符串存入DB后差8小时" class="headerlink" title="日期字符串存入DB后差8小时"></a>日期字符串存入DB后差8小时</h3><p>在后端与数据库交互的时候，可能会遇到一个问题，就是往DB中存储了一个时间字段之后，后面再查询的时候，就会发现时间数值差了8个小时，这个需要在DB的连接信息中指定下时区信息：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+spring.datasource.druid.url&#x3D;jdbc:mysql:&#x2F;&#x2F;127.0.0.1:3306&#x2F;test?serverTimezone&#x3D;Asia&#x2F;Shanghai
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="界面时间与后台时间差8小时"><a href="#界面时间与后台时间差8小时" class="headerlink" title="界面时间与后台时间差8小时"></a>界面时间与后台时间差8小时</h3><p>在有一些前后端交互的项目中，可能会遇到一个问题，就是前端选择并保存了一个时间信息，再查询的时候就会发现与设置的时间差了8个小时，这个其实就是后端时区转换设置的问题。</p>
+<p>SpringBoot的配置文件中，需要指定时间字符串转换的时区信息：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+spring.jackson.time-zone&#x3D;GMT+8
+</code></pre>
+
+<p>这样从接口json中传递过来的时间信息，jackson框架可以根据对应时区转换为正确的Date数据进行处理。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<hr>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请点个关注，也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312656.gif"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn/post/20220708085417.html">https://blog.codingcoder.cn/post/20220708085417.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.codingcoder.cn" target="_blank">Veezean的小世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/%E6%97%A5%E6%9C%9F%E8%AE%A1%E7%AE%97/">日期计算</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202301281101915.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20220711085417.html" title="全面吃透JAVA Stream流操作，让代码更加的优雅"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">全面吃透JAVA Stream流操作，让代码更加的优雅</div></div></a></div><div class="next-post pull-right"><a href="/post/20220706085417.html" title="JAVA中简单的for循环竟有这么多坑，你踩过吗"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">JAVA中简单的for循环竟有这么多坑，你踩过吗</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20220621125417.html" title="Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206132103053.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-21</div><div class="title">Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！</div></div></a></div><div><a href="/post/20220623164616.html" title="Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172113780.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-23</div><div class="title">Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA</div></div></a></div><div><a href="/post/20220624161616.html" title="Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301292149805.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-24</div><div class="title">Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍</div></div></a></div><div><a href="/post/20220625213411.html" title="Spring Data JPA系列4：Spring声明式事务处理与多数据源支持"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172105608.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-25</div><div class="title">Spring Data JPA系列4：Spring声明式事务处理与多数据源支持</div></div></a></div><div><a href="/post/20220628171111.html" title="Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172121044.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-28</div><div class="title">Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码</div></div></a></div><div><a href="/post/20220922085417.html" title="JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-22</div><div class="title">JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">道阻且长，行则将至</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JAVA%E4%B8%AD%E4%B8%8E%E6%97%A5%E6%9C%9F%E6%97%B6%E9%97%B4%E7%9B%B8%E5%85%B3%E7%9A%84%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text">JAVA中与日期时间相关的类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#java-util%E5%8C%85%E4%B8%AD"><span class="toc-number">1.1.</span> <span class="toc-text">java.util包中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#java-time%E5%8C%85%E4%B8%AD"><span class="toc-number">1.2.</span> <span class="toc-text">java.time包中</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E9%97%B4%E9%9A%94%E8%AE%A1%E7%AE%97"><span class="toc-number">2.</span> <span class="toc-text">时间间隔计算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Period%E4%B8%8EDuration%E7%B1%BB"><span class="toc-number">2.1.</span> <span class="toc-text">Period与Duration类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Duration%E4%B8%8EPeriod%E8%B8%A9%E5%9D%91%E8%AE%B0"><span class="toc-number">2.2.</span> <span class="toc-text">Duration与Period踩坑记</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%97%A5%E6%9C%9F%E5%B7%AE"><span class="toc-number">2.3.</span> <span class="toc-text">计算日期差</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%8E%A5%E5%8F%A3%E5%A4%84%E7%90%86%E8%80%97%E6%97%B6"><span class="toc-number">2.4.</span> <span class="toc-text">计算接口处理耗时</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E6%A0%BC%E5%BC%8F%E8%BD%AC%E6%8D%A2"><span class="toc-number">3.</span> <span class="toc-text">时间格式转换</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SimpleDataFormat%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.1.</span> <span class="toc-text">SimpleDataFormat实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DataTimeFormatter%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.2.</span> <span class="toc-text">DataTimeFormatter实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E6%9C%9F%E6%97%B6%E9%97%B4%E6%A0%BC%E5%BC%8F%E6%A8%A1%E6%9D%BF"><span class="toc-number">3.3.</span> <span class="toc-text">日期时间格式模板</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E5%A4%B1%E7%9A%848%E5%B0%8F%E6%97%B6%E9%97%AE%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">消失的8小时问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E6%9C%9F%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%98%E5%85%A5DB%E5%90%8E%E5%B7%AE8%E5%B0%8F%E6%97%B6"><span class="toc-number">4.1.</span> <span class="toc-text">日期字符串存入DB后差8小时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%95%8C%E9%9D%A2%E6%97%B6%E9%97%B4%E4%B8%8E%E5%90%8E%E5%8F%B0%E6%97%B6%E9%97%B4%E5%B7%AE8%E5%B0%8F%E6%97%B6"><span class="toc-number">4.2.</span> <span class="toc-text">界面时间与后台时间差8小时</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewhelperdoc.html" title="CodeReview IDEA插件使用教程">CodeReview IDEA插件使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewversions.html" title="CodeReview IDEA插件版本更新记录">CodeReview IDEA插件版本更新记录</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewserverdeploydoc.html" title="CodeReview IDEA插件配套服务端使用教程">CodeReview IDEA插件配套服务端使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewfieldmodifyhelper.html" title="自定义CodeReview的检视字段属性详情">自定义CodeReview的检视字段属性详情</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">Copyright&copy;2023 By Veezean, All Rights Reserved.</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

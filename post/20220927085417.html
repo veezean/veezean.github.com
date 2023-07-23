@@ -1,0 +1,318 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案 | Veezean的小世界</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案 在项目编码中经常会遇到一些新的需求试图复用已有的功能逻辑进行实现的场景，但是已有的逻辑又不能完全满足新需求的要求，所以就会出现各种生搬硬套的操作。本篇文档就一起来聊一聊如何借助Adapter实现高效复用已有逻辑、让代码复用起来更加的得体与优雅。  大家好，又见面了。 不知道下面这玩意大家有没有见过或者使用过？这是一个插座转换器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案">
+<meta property="og:url" content="https://blog.codingcoder.cn/post/20220927085417.html">
+<meta property="og:site_name" content="Veezean的小世界">
+<meta property="og:description" content="编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案 在项目编码中经常会遇到一些新的需求试图复用已有的功能逻辑进行实现的场景，但是已有的逻辑又不能完全满足新需求的要求，所以就会出现各种生搬硬套的操作。本篇文档就一起来聊一聊如何借助Adapter实现高效复用已有逻辑、让代码复用起来更加的得体与优雅。  大家好，又见面了。 不知道下面这玩意大家有没有见过或者使用过？这是一个插座转换器">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg">
+<meta property="article:published_time" content="2022-09-27T00:54:17.000Z">
+<meta property="article:modified_time" content="2022-09-27T00:54:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="Adapter">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.codingcoder.cn/post/20220927085417.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的小世界","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-09-27 08:54:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的小世界"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的小世界</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-09-27T00:54:17.000Z" title="发表于 2022-09-27 08:54:17">2022-09-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-09-27T00:54:17.000Z" title="更新于 2022-09-27 08:54:17">2022-09-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%9C%BA%E6%99%AF%E5%8C%96JAVA%E5%85%A8%E9%9D%A2%E6%95%99%E7%A8%8B/">场景化JAVA全面教程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20220927085417.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20220927085417.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><h1 id="编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案"><a href="#编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案" class="headerlink" title="编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案"></a>编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案</h1><blockquote>
+<p>在项目编码中经常会遇到一些新的需求试图复用已有的功能逻辑进行实现的场景，但是已有的逻辑又不能完全满足新需求的要求，所以就会出现各种生搬硬套的操作。本篇文档就一起来聊一聊如何借助Adapter实现高效复用已有逻辑、让代码复用起来更加的得体与优雅。</p>
+</blockquote>
+<p>大家好，又见面了。</p>
+<p>不知道下面这玩意大家有没有见过或者使用过？这是一个<em>插座转换器</em>。我们都知道日常使用的是<code>220v</code>的交流电，而国外不同国家使用的电流电压是不一样的（比如日本使用的是<code>110v</code>）、且插座的接口样式也是各不相同的（比如欧洲国家使用的是两个<em>小圆柱</em>状的插头接口），如果我们到别的国家去旅行的时候，借助这个插座转换器，就可以让我们的手机充电器在国外也能正常使用了。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209230645119.png"></p>
+<p>当然，除了使用插座转换器，还有个方法也可以让我们出国之后正常地使用各种电子产品，那就是在当地<strong>重新买一套</strong>！显然，这样的<strong>成本</strong>就会非常巨大，明显不符合我们 勤（<strong>nang</strong>）俭（<strong>zhong</strong>）持（<strong>xiu</strong>）家（<strong>se</strong>） 的特征。</p>
+<p>看过我前面的文章的小伙伴应该知道，我的文章中一直反复地在阐述自己的一个观念，即“<strong>编码源于生活</strong>” ，这里依旧不例外。现实生活中的朴素哲学思维，在代码世界中其实也无时无刻不在体现着。上面举的例子，在我们的项目中又何尝不是在频繁上演此类情况呢？</p>
+<blockquote>
+<p>我们先按照原有的业务逻辑实现了一套代码，后来又来了个新的需求，如果重新开发一套需要投入大量的人力物力，所以首选方案就是去思考如何去复用已有的逻辑，以最小的代价将业务对接适配使用现有的逻辑去实现。</p>
+</blockquote>
+<p>本篇文章中，我们就从这个“插座转换器”来作为切入点，聊一聊在软件系统中无处不在的“插座转换器” —— 编码中的适配器（<code>Adapter</code>）。选定以<code>Adapter</code>为题材进行阐述，并非是因为<code>Adapter</code>在技术实现上有多复杂，其实<code>Adapter</code>真正实现起来是非常简单的，而且很多人有意或无意中其实也都在使用。更多的是想一起探讨这种<strong>借助Adapter来复用与兼容已有逻辑的思路</strong>，以及如何<strong>利用Adapter来践行OCP（开闭原则）的系统架构设计理念</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="Adapter的百媚千姿"><a href="#Adapter的百媚千姿" class="headerlink" title="Adapter的百媚千姿"></a>Adapter的百媚千姿</h2><h3 id="新瓶旧酒：复用现成的实现逻辑"><a href="#新瓶旧酒：复用现成的实现逻辑" class="headerlink" title="新瓶旧酒：复用现成的实现逻辑"></a>新瓶旧酒：复用现成的实现逻辑</h3><p><strong>新瓶装旧酒</strong>，在我们的系统里面是一个很“节省”的操作，可以让我们基于一个现有的能力快速的封装提供出一个全新的业务功能，当然有的时候，系统现有的能力可能会某些方面无法完全满足新业务的需求，需要做一些转换适配处理。</p>
+<p>举个例子：</p>
+<blockquote>
+<p>一个视频网站，原先已有一个评论能力，用户可以在视频下方发表评论，然后评论内容以列表的形式展示在视频下方页面上。现在需要开发一个新功能，支持视频发送弹幕能力，并将弹幕显示在视频播放画面上。</p>
+</blockquote>
+<p>从需求功能上来说，<strong>评论</strong>与<strong>弹幕</strong>有很多相似之处。对后端而言，其处理逻辑与存储数据结构几乎都是相同的，只是在数据<code>列表API</code>实现的时候，需要过滤出评论信息展示到评论区、或者过滤出弹幕信息显示到视频画面上。但是由于弹幕信息有一些特殊的属性，又没法直接完全使用现有的评论接口，比如弹幕可能会设置显示在屏幕的位置、弹幕的字体颜色等等。这种情况下，我们可以通过构造个<code>Adapter</code>适配器的方式，在复用已有评论能力的基础上，顺便扩展实现需要的弹幕新特性。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209261741163.png"></p>
+<p>如上图所示，我们可以在<code>Adapter</code>中封装扩展弹幕需要的新特性，然后对于数据存储等逻辑则直接复用已有的评论功能处理逻辑，这样就可以大大减少我们的开发工作量、后续也只需要维护一套主体代码即可。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="负重前行：兼容历史版本"><a href="#负重前行：兼容历史版本" class="headerlink" title="负重前行：兼容历史版本"></a>负重前行：兼容历史版本</h3><p>和上面讨论的场景相反，实际开发中还有一种非常常见的情况，就是原先的时候实现了一套业务逻辑，然后因为业务变化或者系统重构，需要对底层具体实现逻辑进行大改。这种情况下，为了保证此前调用该API的业务可以正常使用，通常有两种思路：</p>
+<ol>
+<li><p>保持原先的内容不动，完全<strong>另起炉灶</strong>全新实现一套，然后两套逻辑并存，同时维护；</p>
+</li>
+<li><p>按照新的逻辑去实现，并将原先的对外API适配转换对接使用新逻辑实现。</p>
+</li>
+</ol>
+<p>显然，从成本与可维护性层面考虑，<code>思路2</code>更为可行、更加<strong>经济</strong>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209252055796.png"></p>
+<p>对比我们文首举的那个“插头转换器”的例子，我们可以把图中<code>V1版本业务逻辑</code>当做我们国内的手机充电插头，而图中绿色部分的<code>V2新版本依赖逻辑</code>，则是欧洲地区的圆孔墙面插座，那么如何让国标的扁口插头能用上欧标的圆孔插座呢？关键就是那个插头转换器（<code>Adapter</code>）。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="另类心机：屏蔽开源协议传染"><a href="#另类心机：屏蔽开源协议传染" class="headerlink" title="另类心机：屏蔽开源协议传染"></a>另类心机：屏蔽开源协议传染</h3><p>大家可以回想下，曾经是否也有过从<code>github</code>上“<strong>借鉴</strong>”一些代码放进了自己的项目中，然后简单修改为符合自己诉求的逻辑，便当做是自研代码去正常使用了？不知道你是否有关注过你所拷贝的代码所对应的<strong>开源协议</strong>呢？要小心啦、这个看似平常的操作，也许会给项目<em>埋下致命隐患</em>！</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209261618101.png"></p>
+<p>为什么说的这么危言耸听呢？因为有一些不太友好的开源协议（比如<code>GPL</code>协议），会要求使用了其代码的项目<strong>如果商用就必须要开源其全部源码</strong>！而对于很多软件公司而言，源码便是公司的核心资产，是公司最为核心的竞争力，将源码开源无异于是要了老板和公司的命。也许有人会对此很不屑，大家都这么干，似乎并没有发现有人来追责呢？有个词叫做“<strong>树大招风</strong>”，只要你的产品做得够大，就一定会被盯上 —— 你品，你细品。在当前知识版权保护越来越强的情况下，我们还是应该关注并提前做好应对这种危机出现的可能，避免埋下隐患。</p>
+<p>这种情况下，可以基于<code>Adapter</code>的机制，实现弃卒保车的效果。即构建一个适配层，然后仅将适配层进行开源，而核心的模块代码中，则通过接口调用的方式使用适配层即可，这样避免了核心模块代码被开源协议传染。由于核心模块中并没有集成被二次改动后的开源源码，所以也不具有开放源码的义务、而Adapter层没有任何核心业务逻辑，即使开源对公司、对项目也没有影响。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209261752243.png"></p>
+<p>基于<code>Adapter适配层</code>的方式来切断开源协议传染的成功实践，最典型的莫过于<code>Android</code>项目（<em>AOSP</em>）了。因为<em>AOSP</em>是基于<code>Linux kernel</code>内核进行构建的，而<code>Linux Kernel</code>使用的是<code>GPL</code>协议，那么按照要求，<em>AOSP</em>也需要开源其源码。但是问题来了，如果<em>AOSP</em>开源源码了，势必导致所有基于<code>Android</code>定制的各个硬件厂商底层的设备驱动相关的代码也都要全部开源，显然不会有公司愿意这么干。</p>
+<p>为了让各个公司可以放心的基于<code>Android</code>去开发自己的产品，<code>AOSP</code>将自己的协议搞成了<code>Apache</code>开源协议，这样对产商而言就非常友好了，无需将自己的核心源码开源。那么Google是如何做到将本来需要以GPL协议开源的AOSP给变为使用Apache协议开源的呢？其实就是做了一个<code>Adapter</code> —— 也即<em>HAL</em>（<code>Hardware Abstract Layer</code>，硬件抽象层）。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="Adapter是一种理念"><a href="#Adapter是一种理念" class="headerlink" title="Adapter是一种理念"></a>Adapter是一种理念</h2><p>关于编码中的<code>Adapter</code>，常规的文档或者资料中，往往都是指的狭义上的适配器，也就是代<code>码class</code>类维度的<strong>Adapter</strong>。</p>
+<p>我们跳出纯粹的编码层面，站到全局系统架构视角去审视的时候，其实<code>Adapter</code>在系统架构与编码设计中是一个比较宽泛的概念。我个人更愿意<code>Adapter</code>看做是一种<strong>问题解决的思想</strong>、一种<strong>方案设计的理念</strong>。</p>
+<p>根据要解决的问题<code>level</code>与<code>范围</code>的不同，<code>Adapter</code>对应的粒度与呈现形态也会有差异。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="服务型Adapter"><a href="#服务型Adapter" class="headerlink" title="服务型Adapter"></a>服务型Adapter</h3><p>如果是在一个分布式微服务系统中，消息推送能力可以预见的会提供给很多不同的服务节点去调用，则可以将消息推送能力也封装为一个对外微服务，业务通过RPC或者HTTP等方式进行远程调用。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209251655185.png"></p>
+<p>这种是一种相对<code>High Level</code>的Adapter抽象使用（但抽象为服务独立部署后，其实也不仅仅是个Adapter了），广泛的应用于系统架构层面，是解决系统功能复用、业务解耦的一种有效手段。</p>
+<p>在我此前的一篇文章中，介绍了一个构建通用在线文档预览服务的实际案例，里面对“预览编辑服务”的定位就是一个典型的服务型Adapter，如下图所示。通过预览编辑服务这个Adapter，将文档预览能力所涉及的后端对接<code>OnlyOffice</code>或者对接<code>kkFileView</code>等细节逻辑给屏蔽掉，业务服务通过Adapter进行调用，大大简化了业务的使用复杂度，也保持了业务模块与文档预览服务内部模块之间的耦合。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202208261411910.png"></p>
+<p>服务型Adapter着眼解决的是系统进程层面的适配与统一封装，自身既是一个Adapter，又是一个独立的服务，封装内部细节差异化的实现，保证其它进程服务相对简单的调用逻辑。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="依赖库型Adapter"><a href="#依赖库型Adapter" class="headerlink" title="依赖库型Adapter"></a>依赖库型Adapter</h3><p>在一些中小型项目中，会有若干个业务模块中会用到消息发送的能力，但是整体体量与业务规划层面而言，却也无需单独部署一个专门的消息推送服务进程，这种情况下，可以将其封装为一个依赖库，比如<code>JAVA</code>中的一个jar包，或者<code>C++</code>中的一个so库文件，亦或是<code>C#</code>中的dll库文件。这样各个业务模块可以集成此库文件，直接进行API调用即可。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209251655826.png"></p>
+<p>此种类型的Adapter实现，在很多的框架中非常常见。比如在JAVA中的<code>SpringBoot</code>中的日志框架，底层可以选择是使用<code>logback</code>，也可以选择切换到<code>log4j</code>。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="代码类Adapter"><a href="#代码类Adapter" class="headerlink" title="代码类Adapter"></a>代码类Adapter</h3><p>在单个项目模块中，我们为了保持业务逻辑的清晰与独立，也会通过<code>Adapter类</code>的方式，来解耦具体的业务逻辑。比如这里的消息推送服务，如果仅当前模块需要使用，则可以创建一个独立的Adapter类，提供接口供其他类调用，在<code>Adapter类</code>中完成具体逻辑的封装实现。</p>
+<p>还是以前面举的告警通知消息发送的例子来说明，使用<code>Adapter</code>方式隔离消息通道与业务逻辑的实现UML图如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209251704789.png"></p>
+<p>代码类的<code>Adapter</code>在实际项目中使用的场景非常的广泛，是用于屏蔽代码底层差异化逻辑的不二选择。在总结各种实际使用场景与优秀实践的基础上，演进为23种设计模式之一的<strong>适配器模式</strong>。</p>
+<p>下面我们一起聊一聊适配器模式。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="Adapter是一种设计模式"><a href="#Adapter是一种设计模式" class="headerlink" title="Adapter是一种设计模式"></a>Adapter是一种设计模式</h2><p>所谓<strong>设计模式</strong>，便是将常规代码编码中常遇到的一些场景的处理方式进行了总结与抽象，固化成一个<code>优秀实践范例模板</code>，使其整体实现更符合<code>设计原则</code>的要求。也就是说：设计模式并非是凭空捏造的，其实就是<strong>来源于常规的编码实践总结</strong>。</p>
+<p>按照通俗意义上对代码设计模式的理解，适配器模式也可以分为2种形式，即<strong>类适配器模式</strong>与<strong>对象适配器模式</strong>。</p>
+<p>下面分别阐述下。</p>
+<h3 id="类适配器模式"><a href="#类适配器模式" class="headerlink" title="类适配器模式"></a>类适配器模式</h3><p>类适配器模式整体非常的简单，涉及的角色也很少。类适配器模式中，<code>Adapter</code>与被适配的<code>Adaptee</code>之间，通过<strong>继承</strong>的方式来实现，其<code>UML</code>图如下所示。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209252221791.png"></p>
+<p>主要角色说明如下：</p>
+<ul>
+<li><p><strong>Adaptee</strong>：原始被适配的类，即不符合诉求需要由Adapter进行适配的<em>原始接口</em>。</p>
+</li>
+<li><p><strong>Adapter</strong>：适配器本身，也是<em>类适配器模式的核心</em>，用于将Adaptee适配为目标的Target。</p>
+</li>
+<li><p><strong>Target</strong>：期待获取到的目标结果。也即Adaptee经由Adapter适配后得到的统一的<em>目标接口</em>。</p>
+</li>
+</ul>
+<p>还是以前面的告警通知发送的场景为例，我们按照聚合的方式，演示下对应的Adapter实现逻辑。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Service
+public class MsgSendAdapter extends SmsSender implements IMsgSender &#123;
+    @Override
+    public void send(AlarmDetail detail) &#123;
+        &#x2F;&#x2F; detail转SMS请求体的逻辑
+        SmsContent sms &#x3D; convertToSmsContent(detail);
+        super.sendSms(sms);
+    &#125;
+&#125;</code></pre>
+
+<p>上述代码中，<code>MsgSendAdapter</code>继承了<code>SmsSender</code>类并且实现了<code>IMsgSender</code>接口，将父类<code>SmsSender</code>中的<code>sendSms</code>接口转换为了<code>IMsgSender</code>接口提供的目标接口<code>send()</code>，业务可以调用<code>IMsgSender.send()</code>接口，实现对<code>SmsSender.sendSms()</code>逻辑的调用。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h3 id="对象适配器模式"><a href="#对象适配器模式" class="headerlink" title="对象适配器模式"></a>对象适配器模式</h3><p>对象适配器模式与类适配器模式类似，区别点在于<code>Adapter</code>与被适配的<code>Adaptee</code>之间非继承关系，而是对象<strong>组合</strong>关系。其<code>UML</code>图如下：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202209252229177.png"></p>
+<p>按照对象适配器的设计思路，其代码可以如下方式来实现：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">@Service
+public class MsgSendAdapter implements IMsgSender &#123;
+    @Autowired
+    private SmsSender smsSender;
+
+    @Override
+    public void send(AlarmDetail detail) &#123;
+        &#x2F;&#x2F; detail转SMS请求体的逻辑
+        SmsContent sms &#x3D; convertToSmsContent(detail);
+        smsSender.sendSms(sms);
+    &#125;
+&#125;</code></pre>
+
+<p>上述代码中，<code>MsgSendAdapter</code>类中以组合的方式持有<code>SmsSender</code>对象（<code>Adaptee</code>），相比较类适配器的继承逻辑，<strong>灵活性更高</strong>，所以对象适配器要更加的灵活与实用（其实在架构设计领域也一直有一种观点叫“<strong>组合优于继承</strong>”，因为继承打破了面向对象的封装）。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<h2 id="总结回顾"><a href="#总结回顾" class="headerlink" title="总结回顾"></a>总结回顾</h2><p>好啦，关于<code>Adapter</code>相关的讨论与个人的理解，这里就给大家分享到这里。<code>Adapter</code>不仅是一个简单的具体实现类，也不仅仅是23种设计模式之一，更是一种问题解决的思想、一种方案设计的理念。</p>
+<p>关于本篇文档中的内容，不知道屏幕前的各位小伙伴是否在项目中有使用过Adapter或者Adapter模式来帮助自己实现某些功能呢？是否对Adapter还有一些别的独到见解呢？欢迎评论区留言一起交流下。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207102124124.gif"></p>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请<strong>点赞 + 关注</strong>让我感受到您的支持。也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312091.gif"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091312656.gif"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn/post/20220927085417.html">https://blog.codingcoder.cn/post/20220927085417.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.codingcoder.cn" target="_blank">Veezean的小世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><a class="post-meta__tags" href="/tags/Adapter/">Adapter</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202301281101915.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20221028085417.html" title="聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">聊一聊作为高并发系统基石之一的缓存，会用很简单，用好才是技术活</div></div></a></div><div class="next-post pull-right"><a href="/post/20220922085417.html" title="JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20220922085417.html" title="JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-22</div><div class="title">JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器</div></div></a></div><div><a href="/post/20220621125417.html" title="Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206132103053.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-21</div><div class="title">Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！</div></div></a></div><div><a href="/post/20220623164616.html" title="Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172113780.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-23</div><div class="title">Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA</div></div></a></div><div><a href="/post/20220624161616.html" title="Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301292149805.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-24</div><div class="title">Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍</div></div></a></div><div><a href="/post/20220625213411.html" title="Spring Data JPA系列4：Spring声明式事务处理与多数据源支持"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172105608.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-25</div><div class="title">Spring Data JPA系列4：Spring声明式事务处理与多数据源支持</div></div></a></div><div><a href="/post/20220628171111.html" title="Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172121044.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-28</div><div class="title">Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">道阻且长，行则将至</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E4%B8%AD%E7%9A%84Adapter%EF%BC%8C%E4%B8%8D%E4%BB%85%E6%98%AF%E4%B8%80%E7%A7%8D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8C%E6%9B%B4%E6%98%AF%E4%B8%80%E7%A7%8D%E6%9E%B6%E6%9E%84%E7%90%86%E5%BF%B5%E4%B8%8E%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">1.</span> <span class="toc-text">编码中的Adapter，不仅是一种设计模式，更是一种架构理念与解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Adapter%E7%9A%84%E7%99%BE%E5%AA%9A%E5%8D%83%E5%A7%BF"><span class="toc-number">1.1.</span> <span class="toc-text">Adapter的百媚千姿</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E7%93%B6%E6%97%A7%E9%85%92%EF%BC%9A%E5%A4%8D%E7%94%A8%E7%8E%B0%E6%88%90%E7%9A%84%E5%AE%9E%E7%8E%B0%E9%80%BB%E8%BE%91"><span class="toc-number">1.1.1.</span> <span class="toc-text">新瓶旧酒：复用现成的实现逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9F%E9%87%8D%E5%89%8D%E8%A1%8C%EF%BC%9A%E5%85%BC%E5%AE%B9%E5%8E%86%E5%8F%B2%E7%89%88%E6%9C%AC"><span class="toc-number">1.1.2.</span> <span class="toc-text">负重前行：兼容历史版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%A6%E7%B1%BB%E5%BF%83%E6%9C%BA%EF%BC%9A%E5%B1%8F%E8%94%BD%E5%BC%80%E6%BA%90%E5%8D%8F%E8%AE%AE%E4%BC%A0%E6%9F%93"><span class="toc-number">1.1.3.</span> <span class="toc-text">另类心机：屏蔽开源协议传染</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Adapter%E6%98%AF%E4%B8%80%E7%A7%8D%E7%90%86%E5%BF%B5"><span class="toc-number">1.2.</span> <span class="toc-text">Adapter是一种理念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%9E%8BAdapter"><span class="toc-number">1.2.1.</span> <span class="toc-text">服务型Adapter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E5%BA%93%E5%9E%8BAdapter"><span class="toc-number">1.2.2.</span> <span class="toc-text">依赖库型Adapter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E7%B1%BBAdapter"><span class="toc-number">1.2.3.</span> <span class="toc-text">代码类Adapter</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Adapter%E6%98%AF%E4%B8%80%E7%A7%8D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.3.</span> <span class="toc-text">Adapter是一种设计模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.3.1.</span> <span class="toc-text">类适配器模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.3.2.</span> <span class="toc-text">对象适配器模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%9B%9E%E9%A1%BE"><span class="toc-number">1.4.</span> <span class="toc-text">总结回顾</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewhelperdoc.html" title="CodeReview IDEA插件使用教程">CodeReview IDEA插件使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewversions.html" title="CodeReview IDEA插件版本更新记录">CodeReview IDEA插件版本更新记录</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewserverdeploydoc.html" title="CodeReview IDEA插件配套服务端使用教程">CodeReview IDEA插件配套服务端使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewfieldmodifyhelper.html" title="自定义CodeReview的检视字段属性详情">自定义CodeReview的检视字段属性详情</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">Copyright&copy;2023 By Veezean, All Rights Reserved.</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>JAVA中简单的for循环竟有这么多坑，你踩过吗 | Veezean的小世界</title><meta name="author" content="Veezean"><meta name="copyright" content="Veezean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="实际的业务项目开发中，大家应该对从给定的list中剔除不满足条件的元素这个操作不陌生吧？ 很多同学可以立刻想出很多种实现的方式，但你想到的这些实现方式都是人畜无害的吗？很多看似正常的操作其实背后是个陷阱，很多新手可能稍不留神就会掉入其中。 倘若不幸踩中：  代码运行时直接抛异常报错，这个算是不幸中的万幸，至少可以及时发现并去解决 代码运行不报错，但是业务逻辑莫名其妙的出现各种奇怪问题，这种就比较悲">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JAVA中简单的for循环竟有这么多坑，你踩过吗">
+<meta property="og:url" content="https://blog.codingcoder.cn/post/20220706085417.html">
+<meta property="og:site_name" content="Veezean的小世界">
+<meta property="og:description" content="实际的业务项目开发中，大家应该对从给定的list中剔除不满足条件的元素这个操作不陌生吧？ 很多同学可以立刻想出很多种实现的方式，但你想到的这些实现方式都是人畜无害的吗？很多看似正常的操作其实背后是个陷阱，很多新手可能稍不留神就会掉入其中。 倘若不幸踩中：  代码运行时直接抛异常报错，这个算是不幸中的万幸，至少可以及时发现并去解决 代码运行不报错，但是业务逻辑莫名其妙的出现各种奇怪问题，这种就比较悲">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg">
+<meta property="article:published_time" content="2022-07-06T00:54:17.000Z">
+<meta property="article:modified_time" content="2022-07-06T00:54:17.000Z">
+<meta property="article:author" content="Veezean">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="for循环">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics.codingcoder.cn/pics/202301281101915.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.codingcoder.cn/post/20220706085417.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: {"limitDay":600,"position":"bottom","messagePrev":"此文章发布至今已经过去","messageNext":"天，鉴于技术更新迭代的速度估算，文中部分内容可能已过期，如有发现此类情况，请下方留言联系作者，一起探讨下。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Veezean","link":"链接: ","source":"来源: Veezean的小世界","info":"著作权归作者所有，商业转载请联系作者获得授权，非商业转载请注明出处。欢迎关注公众号【架构悟道】，技术路上一起成长。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#a96899","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  percent: {
+    toc: false,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JAVA中简单的for循环竟有这么多坑，你踩过吗',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-06 08:54:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_3871042_lmkpqmsbbor.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Veezean的小世界"><img class="site-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg"/><span class="site-name">Veezean的小世界</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 专栏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/msg-board/"><i class="fa-fw fas fa-book"></i><span> 留言</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">JAVA中简单的for循环竟有这么多坑，你踩过吗</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-06T00:54:17.000Z" title="发表于 2022-07-06 08:54:17">2022-07-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-06T00:54:17.000Z" title="更新于 2022-07-06 08:54:17">2022-07-06</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%9C%BA%E6%99%AF%E5%8C%96JAVA%E5%85%A8%E9%9D%A2%E6%95%99%E7%A8%8B/">场景化JAVA全面教程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="JAVA中简单的for循环竟有这么多坑，你踩过吗"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/post/20220706085417.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/post/20220706085417.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><article class="post-content" id="article-container"><p>实际的业务项目开发中，大家应该对<code>从给定的list中剔除不满足条件的元素</code>这个操作不陌生吧？</p>
+<p>很多同学可以立刻想出很多种实现的方式，但你想到的这些实现方式都是<code>人畜无害</code>的吗？很多看似正常的操作其实背后是个陷阱，很多新手可能稍不留神就会掉入其中。</p>
+<p>倘若不幸踩中：</p>
+<ul>
+<li>代码运行时直接抛异常报错，这个算是不幸中的万幸，至少可以及时发现并去解决</li>
+<li>代码运行不报错，但是业务逻辑莫名其妙的出现各种奇怪问题，这种就比较悲剧了，因为这个问题稍不留神的话，可能就会给后续业务埋下隐患。</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207050811299.gif"></p>
+<p>那么，到底有哪些实现方式呢？哪些实现方式可能会存在问题呢？这里我们一起探讨下。注意哦，这里讨论的可不是茴香豆的“茴”字有有种写法的问题，而是很严肃很现实也很容易被忽略的技术问题。</p>
+<p>假设需求场景：</p>
+<blockquote>
+<p>给定一个用户列表allUsers，需要从该列表中剔除隶属部门为dev的人员，将剩余的人员信息返回</p>
+</blockquote>
+<h2 id="踩坑操作"><a href="#踩坑操作" class="headerlink" title="踩坑操作"></a>踩坑操作</h2><h3 id="foreach循环剔除方式"><a href="#foreach循环剔除方式" class="headerlink" title="foreach循环剔除方式"></a>foreach循环剔除方式</h3><p>很多新手的第一想法就是for循环逐个判断校验下然后符合条件的剔除掉就行了嘛~ so easy… </p>
+<p>1分钟就把代码写完了：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public List&lt;UserDetail&gt; filterAllDevDeptUsers(List&lt;UserDetail&gt; allUsers) &#123;
+    for (UserDetail user : allUsers) &#123;
+        &#x2F;&#x2F; 判断部门如果属于dev,则直接剔除
+        if (&quot;dev&quot;.equals(user.getDepartment())) &#123;
+            allUsers.remove(user);
+        &#125;
+    &#125;
+    &#x2F;&#x2F; 返回剩余的用户数据
+    return allUsers;
+&#125;
+</code></pre>
+
+<p>然后信心满满的点击了执行按钮：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+java.util.ConcurrentModificationException: null
+	at java.util.ArrayList$Itr.checkForComodification(ArrayList.java:909)
+	at java.util.ArrayList$Itr.next(ArrayList.java:859)
+	at com.veezean.demo4.UserService.filterAllDevDeptUsers(UserService.java:13)
+	at com.veezean.demo4.Main.main(Main.java:26)
+</code></pre>
+
+<p>诶？ what are you 弄啥嘞？咋抛异常了？</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206261511925.gif"></p>
+<p>一不留神就踩坑里了，下面就一起分析下为啥会抛异常。</p>
+<p><strong>原因分析：</strong></p>
+<p>JAVA的foreach语法实际处理是基于迭代器Iterator进行实现的。</p>
+<p>在循环开始时，会首先创建一个迭代实例，这个迭代实例的<code>expectedModCount</code> 赋值为集合的<code>modCount</code>。而每当迭代器使⽤ <code>hashNext()</code> &#x2F; <code>next()</code> 遍历下⼀个元素之前，都会检测 <code>modCount</code> 变量与<code>expectedModCount</code> 值是否相等，相等的话就返回遍历；否则就抛出异常<code>ConcurrentModificationException</code>，终⽌遍历。</p>
+<p>如果在循环中添加或删除元素，是直接调用集合的<code>add()</code>，<code>remove()</code>方法，导致了<code>modCount</code>增加或减少，但这些方法不会修改迭代实例中的<code>expectedModCount</code>，导致在迭代实例中<code>expectedModCount</code>与 <code>modCount</code>的值不相等，抛出ConcurrentModificationException异常。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207051846860.png"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207050811299.gif"></p>
+<h3 id="下标循环操作"><a href="#下标循环操作" class="headerlink" title="下标循环操作"></a>下标循环操作</h3><p>嗯哼？既然foreach方式不行，那就用原始的下标循环的方式来搞，总不会报错了吧？依旧很easy …</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public List&lt;UserDetail&gt; filterAllDevDeptUsers(List&lt;UserDetail&gt; allUsers) &#123;
+    for (int i &#x3D; 0; i &lt; allUsers.size(); i++) &#123;
+        &#x2F;&#x2F; 判断部门如果属于dev,则直接剔除
+        if (&quot;dev&quot;.equals(allUsers.get(i).getDepartment())) &#123;
+            allUsers.remove(i);
+        &#125;
+    &#125;
+    &#x2F;&#x2F; 返回剩余的用户数据
+    return allUsers;
+&#125;
+</code></pre>
+
+<p>代码一气呵成，执行一下，看下处理后的输出：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+&#123;id&#x3D;2, name&#x3D;&#39;李四&#39;, department&#x3D;&#39;dev&#39;&#125;
+&#123;id&#x3D;3, name&#x3D;&#39;王五&#39;, department&#x3D;&#39;product&#39;&#125;
+&#123;id&#x3D;4, name&#x3D;&#39;铁柱&#39;, department&#x3D;&#39;pm&#39;&#125;
+</code></pre>
+
+<p>果然，不报错了，结果也输出了，完美~</p>
+<p>等等？这样真的OK了吗？我们的代码逻辑里面是判断如果<code>&quot;dev&quot;.equals(department)</code>，但是输出结果里面，为啥还是有<code>department=dev</code>这种本应被剔除掉的数据呢？</p>
+<p>这里如果是在真实业务项目中，开发阶段不报错，又没有仔细去验证结果的情况下，流到生产线上，就可能造成业务逻辑的异常。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206261508327.gif"></p>
+<p>接下来看下出现这个现象的具体原因。</p>
+<p><strong>原因分析：</strong></p>
+<p>我们知道，list中的元素与下标之间，其实并没有强绑定关系，仅仅只是一个位置顺序的对应关系，list中元素变更之后，其每个元素对应的下标都可能会变更，如下示意：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207051904508.png"></p>
+<p>那么，从List中删除元素之后，List中被删元素后面的所有元素下标都发生前移，但是<code>for</code>循环的指针<code>i</code>是始终往后累加的，再处理下一个的时候，就可能会有部分元素被漏掉没有处理。</p>
+<p>比如下图的示意，<code>i=0</code>时，判断A元素需要删除，则直接删除；再循环时<code>i=1</code>，此时因为list中元素位置前移，导致B元素变成了原来下标为0的位置，直接被漏掉了：</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207051907534.png"></p>
+<p>所以到这里呢，也就可以知道为啥上面的代码执行后会出现漏网之鱼啦~</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207050811299.gif"></p>
+<h2 id="正确方式"><a href="#正确方式" class="headerlink" title="正确方式"></a>正确方式</h2><p>见识了上面2个坑操作之后，那正确妥当的操作方式应该是怎么样的呢？</p>
+<h3 id="迭代器方式"><a href="#迭代器方式" class="headerlink" title="迭代器方式"></a>迭代器方式</h3><p>诶？没搞错吧？前面不是刚说过foreach方式也是使用的迭代器，但是其实是坑操作吗？这里怎么又说迭代器模式是正确方式呢？</p>
+<p>虽然都是基于迭代器，但是使用逻辑是不一样的，看下代码：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public List&lt;UserDetail&gt; filterAllDevDeptUsers(List&lt;UserDetail&gt; allUsers) &#123;
+    Iterator&lt;UserDetail&gt; iterator &#x3D; allUsers.iterator();
+    while (iterator.hasNext()) &#123;
+        &#x2F;&#x2F; 判断部门如果属于dev,则直接剔除
+        if (&quot;dev&quot;.equals(iterator.next().getDepartment())) &#123;
+            &#x2F;&#x2F; 这是重点，此处操作的是Iterator，而不是list
+            iterator.remove();
+        &#125;
+    &#125;
+    &#x2F;&#x2F; 返回剩余的用户数据
+    return allUsers;
+&#125;
+</code></pre>
+
+<p>执行结果：</p>
+<pre class="line-numbers language-none"><code class="language-none">
+&#123;id&#x3D;3, name&#x3D;&#39;王五&#39;, department&#x3D;&#39;product&#39;&#125;
+&#123;id&#x3D;4, name&#x3D;&#39;铁柱&#39;, department&#x3D;&#39;pm&#39;&#125;
+</code></pre>
+
+<p>这次竟然直接执行成功了，且结果也是正确的。为啥呢？</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206261513878.gif"></p>
+<p>在前面<code>foreach</code>方式的时候，我们提过之所以会报错的原因，是由于直接修改了原始<code>list</code>数据而没有同步让<code>Iterator</code>感知到，所以导致<code>Iterator</code>操作前校验失败抛异常了。而此处的写法中，直接调用迭代器中的<code>remove()</code>方法，此操作会在调用集合的<code>remove()</code>，<code>add()</code>方法后，将<code>expectedModCount</code>重新赋值为<code>modCount</code>，所以在迭代器中增加、删除元素是可以正常运行的。，所以这样就不会出问题啦。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207051928343.png"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207050811299.gif"></p>
+<h3 id="Lambda表达式"><a href="#Lambda表达式" class="headerlink" title="Lambda表达式"></a>Lambda表达式</h3><p>言简意赅，直接上代码：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public List&lt;UserDetail&gt; filterAllDevDeptUsers(List&lt;UserDetail&gt; allUsers) &#123;
+    allUsers.removeIf(user -&gt; &quot;dev&quot;.equals(user.getDepartment()));
+    return allUsers;
+&#125;
+
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207050811299.gif"></p>
+<h3 id="Stream流操作"><a href="#Stream流操作" class="headerlink" title="Stream流操作"></a>Stream流操作</h3><p>作为JAVA8开始加入的Stream，使得这种场景实现起来更加的优雅与易懂：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public List&lt;UserDetail&gt; filterAllDevDeptUsers(List&lt;UserDetail&gt; allUsers) &#123;
+    return allUsers.stream()
+            .filter(user -&gt; !&quot;dev&quot;.equals(user.getDepartment()))
+            .collect(Collectors.toList());
+&#125;
+</code></pre>
+
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207050811299.gif"></p>
+<h3 id="中间对象辅助方式"><a href="#中间对象辅助方式" class="headerlink" title="中间对象辅助方式"></a>中间对象辅助方式</h3><p>既然前面说了不能直接循环的时候执行移除操作，那就先搞个list对象将需要移除的元素暂存起来，最后一起剔除就行啦 ~ </p>
+<p>嗯，虽然有点挫，但是不得不承认，实际情况中，很多人都在用这个方法：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public List&lt;UserDetail&gt; filterAllDevDeptUsers(List&lt;UserDetail&gt; allUsers) &#123;
+    List&lt;UserDetail&gt; needRemoveUsers &#x3D; new ArrayList&lt;&gt;();
+    for (UserDetail user : allUsers) &#123;
+        if (&quot;dev&quot;.equals(user.getDepartment())) &#123;
+            needRemoveUsers.add(user);
+        &#125;
+    &#125;
+    allUsers.removeAll(needRemoveUsers);
+    return allUsers;
+&#125;
+</code></pre>
+
+<p>或者：</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+public List&lt;UserDetail&gt; filterAllDevDeptUsers(List&lt;UserDetail&gt; allUsers) &#123;
+    List&lt;UserDetail&gt; resultUsers &#x3D; new ArrayList&lt;&gt;();
+    for (UserDetail user : allUsers) &#123;
+        if (!&quot;dev&quot;.equals(user.getDepartment())) &#123;
+            resultUsers.add(user);
+        &#125;
+    &#125;
+    return resultUsers;
+&#125;
+
+![](https:&#x2F;&#x2F;pics.codingcoder.cn&#x2F;pics&#x2F;202207050811299.gif)
+</code></pre>
+
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207050811299.gif"></p>
+<h2 id="回顾"><a href="#回顾" class="headerlink" title="回顾"></a>回顾</h2><p>好啦，关于JAVA中循环场景中对列表操作的相关内容我们就聊这么多了~ 你有踩过上面的坑么？你还有什么更好的方式来实现吗？欢迎一起讨论交流~</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207050811299.gif"></p>
+<hr>
+<p><strong>我是悟道，聊技术、又不仅仅聊技术~</strong></p>
+<p>如果觉得有用，请点个关注，也可以关注下我的公众号【架构悟道】，获取更及时的更新。</p>
+<p>期待与你一起探讨，一起成长为更好的自己。</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202207091317876.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn">Veezean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.codingcoder.cn/post/20220706085417.html">https://blog.codingcoder.cn/post/20220706085417.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.codingcoder.cn" target="_blank">Veezean的小世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/tags/for%E5%BE%AA%E7%8E%AF/">for循环</a></div><div class="post_share"><div class="social-share" data-image="https://pics.codingcoder.cn/pics/202301281101915.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wexin_zanshangma.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/wexin_zanshangma.png" alt="码字不易，感谢鼓励"/></a><div class="post-qr-code-desc">码字不易，感谢鼓励</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/20220708085417.html" title="JAVA中计算两个日期时间的差值竟然也有这么多门道"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">JAVA中计算两个日期时间的差值竟然也有这么多门道</div></div></a></div><div class="next-post pull-right"><a href="/post/20220628171111.html" title="Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172121044.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/20220621125417.html" title="Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206132103053.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-21</div><div class="title">Spring Data JPA系列1——JDBC、ORM、JPA、Spring Data JPA，傻傻分不清楚？一文带你厘清个中曲直，给你个选择SpringDataJPA的理由！</div></div></a></div><div><a href="/post/20220623164616.html" title="Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172113780.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-23</div><div class="title">Spring Data JPA系列2：SpringBoot集成JPA详细教程，快速在项目中熟练使用JPA</div></div></a></div><div><a href="/post/20220624161616.html" title="Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301292149805.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-24</div><div class="title">Spring Data JPA系列3：JPA项目中核心场景与进阶用法介绍</div></div></a></div><div><a href="/post/20220625213411.html" title="Spring Data JPA系列4：Spring声明式事务处理与多数据源支持"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172105608.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-25</div><div class="title">Spring Data JPA系列4：Spring声明式事务处理与多数据源支持</div></div></a></div><div><a href="/post/20220628171111.html" title="Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202206172121044.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-28</div><div class="title">Spring Data JPA系列5：让IDEA自动帮你写JPA实体定义代码</div></div></a></div><div><a href="/post/20220922085417.html" title="JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-22</div><div class="title">JAVA中容器设计的进化史：从白盒到黑盒，再到跻身为设计模式之一的迭代器</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202301281101915.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Veezean</div><div class="author-info__description">道阻且长，行则将至</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" href="/about/"><i class="fab fa-github"></i><span>联系我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="/contact/" target="_blank" title="微信公众号"><i class="iconfont icon-weixingongzhonghao"></i></a><a class="social-icon" href="/contact/" target="_blank" title="微信"><i class="iconfont icon-weixin"></i></a><a class="social-icon" href="https://juejin.cn/user/1028798616709294/posts" target="_blank" title="掘金技术社区"><i class="iconfont icon-juejin"></i></a><a class="social-icon" href="https://www.cnblogs.com/softwarearch" target="_blank" title="博客园"><i class="iconfont icon-cnblogs"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B8%A9%E5%9D%91%E6%93%8D%E4%BD%9C"><span class="toc-number">1.</span> <span class="toc-text">踩坑操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#foreach%E5%BE%AA%E7%8E%AF%E5%89%94%E9%99%A4%E6%96%B9%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">foreach循环剔除方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8B%E6%A0%87%E5%BE%AA%E7%8E%AF%E6%93%8D%E4%BD%9C"><span class="toc-number">1.2.</span> <span class="toc-text">下标循环操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E7%A1%AE%E6%96%B9%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">正确方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%96%B9%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">迭代器方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">2.2.</span> <span class="toc-text">Lambda表达式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Stream%E6%B5%81%E6%93%8D%E4%BD%9C"><span class="toc-number">2.3.</span> <span class="toc-text">Stream流操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E9%97%B4%E5%AF%B9%E8%B1%A1%E8%BE%85%E5%8A%A9%E6%96%B9%E5%BC%8F"><span class="toc-number">2.4.</span> <span class="toc-text">中间对象辅助方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E9%A1%BE"><span class="toc-number">3.</span> <span class="toc-text">回顾</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewhelperdoc.html" title="CodeReview IDEA插件使用教程">CodeReview IDEA插件使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewversions.html" title="CodeReview IDEA插件版本更新记录">CodeReview IDEA插件版本更新记录</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewserverdeploydoc.html" title="CodeReview IDEA插件配套服务端使用教程">CodeReview IDEA插件配套服务端使用教程</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/codereviewfieldmodifyhelper.html" title="自定义CodeReview的检视字段属性详情">自定义CodeReview的检视字段属性详情</a><time datetime="2023-03-13T14:21:12.000Z" title="发表于 2023-03-13 22:21:12">2023-03-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="https://pics.codingcoder.cn/pics/202210050807355.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现"/></a><div class="content"><a class="title" href="/post/20230118065917.html" title="探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现">探讨下如何更好的使用缓存 —— Redis缓存的特殊用法以及与本地缓存一起构建多级缓存的实现</a><time datetime="2023-01-17T22:59:17.000Z" title="发表于 2023-01-18 06:59:17">2023-01-18</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">Copyright&copy;2023 By Veezean, All Rights Reserved.</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn"><span>备案信息： 苏ICP备20019163号-1</span></a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'gmAHZQPv9N5AdyJg7sXVJAYg-gzGzoHsz',
+      appKey: 'qW16efVsSUyMnjDbGeXgxjLv',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
